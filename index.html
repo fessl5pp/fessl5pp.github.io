@@ -1,155 +1,228 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Faisal Legendary</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Faisal Legendary</title>
 
-<style>
-body {
-  margin:0;
-  font-family:Arial;
-  background: radial-gradient(circle,#0a0a0a,#000);
-  color:white;
-  text-align:center;
-}
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: radial-gradient(circle, #0a0a0a, #000);
+      color: white;
+      text-align: center;
+    }
 
-h1 {
-  color:#00ffcc;
-  margin-top:30px;
-}
+    h1 {
+      color: #00ffcc;
+      margin-top: 30px;
+    }
 
-.box {
-  background:#111;
-  margin:auto;
-  padding:20px;
-  width:320px;
-  border-radius:20px;
-  box-shadow:0 0 20px #00ffcc33;
-}
+    .box {
+      background: #111;
+      margin: 20px auto;
+      padding: 20px;
+      width: 320px;
+      border-radius: 20px;
+      box-shadow: 0 0 20px rgba(0,255,204,0.2);
+    }
 
-button {
-  width:100%;
-  padding:12px;
-  margin-top:10px;
-  border:none;
-  border-radius:10px;
-  background:#00ffcc;
-  color:black;
-  font-weight:bold;
-  cursor:pointer;
-}
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 10px;
+      background: #00ffcc;
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 15px;
+    }
 
-#title {
-  margin-top:15px;
-  font-size:20px;
-  color:#00ffcc;
-}
+    #title {
+      margin-top: 15px;
+      font-size: 20px;
+      color: #00ffcc;
+      font-weight: bold;
+    }
 
-img {
-  width:100%;
-  margin-top:10px;
-  border-radius:15px;
-  display:none;
-}
+    img.car-image {
+      width: 100%;
+      margin-top: 10px;
+      border-radius: 15px;
+      display: none;
+    }
 
-/* مربع معلومات الجهاز */
-.device-box {
-  position: fixed;
-  bottom: 15px;
-  left: 15px;
-  width: 260px;
-  background: rgba(10,10,10,0.95);
-  border: 1px solid rgba(0,255,204,0.4);
-  border-radius: 15px;
-  padding: 12px;
-  font-size: 12px;
-  color: #ddd;
-  box-shadow: 0 0 15px rgba(0,255,204,0.2);
-  display: none;
-}
+    .device-box {
+      position: fixed;
+      bottom: 15px;
+      left: 15px;
+      width: 260px;
+      background: rgba(10,10,10,0.95);
+      border: 1px solid rgba(0,255,204,0.4);
+      border-radius: 15px;
+      padding: 12px;
+      font-size: 12px;
+      color: #ddd;
+      box-shadow: 0 0 15px rgba(0,255,204,0.2);
+      display: none;
+      text-align: right;
+      line-height: 1.8;
+    }
 
-.device-box span {
-  color:#00ffcc;
-  font-weight:bold;
-}
+    .device-box span {
+      color: #00ffcc;
+      font-weight: bold;
+    }
 
-/* زر التحكم */
-.toggle-btn {
-  position: fixed;
-  bottom: 15px;
-  left: 15px;
-  transform: translateY(-60px);
-  padding:10px;
-  border:none;
-  border-radius:10px;
-  background:#00ffcc;
-  color:black;
-  cursor:pointer;
-  font-size:12px;
-}
-</style>
+    .toggle-btn {
+      position: fixed;
+      bottom: 85px;
+      left: 15px;
+      width: 170px;
+      padding: 10px;
+      border: none;
+      border-radius: 10px;
+      background: #00ffcc;
+      color: black;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .feedback-box {
+      background: #111;
+      margin: 20px auto 40px;
+      padding: 20px;
+      width: 320px;
+      border-radius: 20px;
+      box-shadow: 0 0 20px rgba(0,255,204,0.2);
+    }
+
+    .feedback-box h3 {
+      color: #00ffcc;
+      margin-top: 0;
+    }
+
+    .feedback-box input,
+    .feedback-box textarea {
+      width: 100%;
+      margin-top: 10px;
+      padding: 12px;
+      border: 1px solid rgba(0,255,204,0.3);
+      border-radius: 10px;
+      background: #0d0d0d;
+      color: white;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    .feedback-box textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    #time {
+      color: #00ffcc;
+      margin-top: 15px;
+    }
+
+    .note {
+      font-size: 12px;
+      color: #aaa;
+      margin-top: 10px;
+      line-height: 1.7;
+    }
+  </style>
 </head>
 
 <body>
 
-<h1>🔥 موقع فيصل 🔥</h1>
+  <h1>🔥 موقع فيصل 🔥</h1>
 
-<div class="box">
-  <button onclick="showFord()">فيصل</button>
-  <button onclick="showLexus()">ثامر</button>
+  <div class="box">
+    <button onclick="showFord()">فيصل</button>
+    <button onclick="showLexus()">ثامر</button>
 
-  <div id="title"></div>
-  <img id="image">
-  
-  <p id="time"></p>
+    <div id="title"></div>
+    <img id="image" class="car-image" src="" alt="الصورة">
 
-  <!-- عداد الزوار -->
-  <img src="https://visitor-badge.laobi.icu/badge?page_id=fessl5pp.github.io">
-</div>
+    <p id="time"></p>
 
-<!-- زر فتح/إغلاق -->
-<button class="toggle-btn" onclick="toggleDevice()">📱 معلومات الجهاز</button>
+    <img src="https://visitor-badge.laobi.icu/badge?page_id=fessl5pp.github.io" alt="عداد الزوار">
+  </div>
 
-<!-- مربع المعلومات -->
-<div class="device-box" id="deviceBox"></div>
+  <div class="feedback-box">
+    <h3>📩 الآراء</h3>
+    <input type="text" id="visitorName" placeholder="اسمك">
+    <textarea id="feedback" placeholder="اكتب رأيك هنا"></textarea>
+    <button onclick="sendFeedback()">إرسال الرأي</button>
+    <div class="note">عند الضغط على إرسال، يفتح تطبيق الإيميل عند الزائر ومعه الرسالة جاهزة.</div>
+  </div>
 
-<script>
-function showFord(){
-  document.getElementById("title").innerText="ساطي";
-  document.getElementById("image").src="0EFEB962-15E1-45E0-92F1-24455A40DDED.png";
-  document.getElementById("image").style.display="block";
-}
+  <button class="toggle-btn" onclick="toggleDevice()">📱 معلومات الجهاز</button>
 
-function showLexus(){
-  document.getElementById("title").innerText="لقى";
-  document.getElementById("image").src="IMG_4228.jpeg";
-  document.getElementById("image").style.display="block";
-}
+  <div class="device-box" id="deviceBox"></div>
 
-/* ساعة */
-setInterval(()=>{
-  document.getElementById("time").innerText =
-  new Date().toLocaleTimeString();
-},1000);
+  <script>
+    function showFord() {
+      document.getElementById("title").innerText = "ساطي";
+      document.getElementById("image").src = "0EFEB962-15E1-45E0-92F1-24455A40DDED.png";
+      document.getElementById("image").style.display = "block";
+    }
 
-/* معلومات الجهاز */
-const box = document.getElementById("deviceBox");
+    function showLexus() {
+      document.getElementById("title").innerText = "لقى";
+      document.getElementById("image").src = "IMG_4228.jpeg";
+      document.getElementById("image").style.display = "block";
+    }
 
-box.innerHTML = `
-<div><span>الجهاز:</span> ${navigator.userAgent}</div>
-<div><span>اللغة:</span> ${navigator.language}</div>
-<div><span>المنصة:</span> ${navigator.platform}</div>
-<div><span>الشاشة:</span> ${screen.width} × ${screen.height}</div>
-<div><span>اللمس:</span> ${navigator.maxTouchPoints > 0 ? "نعم" : "لا"}</div>
-`;
+    setInterval(() => {
+      document.getElementById("time").innerText = new Date().toLocaleTimeString("ar-KW");
+    }, 1000);
 
-/* فتح / إغلاق */
-function toggleDevice(){
-  box.style.display =
-  box.style.display === "block" ? "none" : "block";
-}
-</script>
+    const box = document.getElementById("deviceBox");
+
+    box.innerHTML = `
+      <div><span>الجهاز:</span> ${navigator.userAgent}</div>
+      <div><span>اللغة:</span> ${navigator.language}</div>
+      <div><span>المنصة:</span> ${navigator.platform}</div>
+      <div><span>الشاشة:</span> ${screen.width} × ${screen.height}</div>
+      <div><span>اللمس:</span> ${navigator.maxTouchPoints > 0 ? "نعم" : "لا"}</div>
+    `;
+
+    function toggleDevice() {
+      box.style.display = box.style.display === "block" ? "none" : "block";
+    }
+
+    function sendFeedback() {
+      const name = document.getElementById("visitorName").value.trim();
+      const feedback = document.getElementById("feedback").value.trim();
+
+      if (!feedback) {
+        alert("اكتب الرأي أول");
+        return;
+      }
+
+      const subject = "رأي جديد من موقع فيصل";
+      const body =
+        "الاسم: " + (name || "بدون اسم") + "\n\n" +
+        "الرأي:\n" + feedback + "\n\n" +
+        "معلومات المتصفح:\n" +
+        navigator.userAgent + "\n\n" +
+        "اللغة: " + navigator.language + "\n" +
+        "المنصة: " + navigator.platform + "\n" +
+        "الشاشة: " + screen.width + " × " + screen.height;
+
+      window.location.href =
+        "mailto:fessl5qq@gmail.com?subject=" +
+        encodeURIComponent(subject) +
+        "&body=" +
+        encodeURIComponent(body);
+    }
+  </script>
 
 </body>
 </html>
