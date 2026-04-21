@@ -1,7 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="ar">
 <head>
+  <meta charset="UTF-8">
   <title>Faisal Site</title>
+
   <style>
     body {
       background: black;
@@ -19,7 +21,7 @@
       background: #1a1a1a;
       margin: auto;
       padding: 20px;
-      width: 300px;
+      width: 320px;
       border-radius: 15px;
       box-shadow: 0 0 20px #00ffcc;
     }
@@ -44,35 +46,35 @@
 
     img {
       margin-top: 10px;
-      width: 250px;
+      width: 280px;
       border-radius: 15px;
       display: none;
     }
   </style>
 </head>
+
 <body>
 
   <h1>🔥 اختر 🔥</h1>
 
   <div class="box">
-    <button onclick="showFaisal()">فيصل</button>
-    <button onclick="showThamer()">ثامر</button>
+    <button onclick="showFord()">فيصل</button>
+    <button onclick="showLexus()">ثامر</button>
 
     <div id="title"></div>
-
     <img id="image" src="">
   </div>
 
   <script>
-    function showFaisal() {
+    function showFord() {
       document.getElementById("title").innerText = "ساطي";
-      document.getElementById("image").src = "69F6A81B-0CEB-4D20-9980-D14353C7E57A.png";
+      document.getElementById("image").src = "ford.jpg";
       document.getElementById("image").style.display = "block";
     }
 
-    function showThamer() {
+    function showLexus() {
       document.getElementById("title").innerText = "لقى";
-      document.getElementById("image").src = "69F6A81B-0CEB-4D20-9980-D14353C7E57A.png";
+      document.getElementById("image").src = "lexus.jpg";
       document.getElementById("image").style.display = "block";
     }
   </script>
