@@ -1,76 +1,81 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>موقع فيصل</title>
+  <title>Faisal Site</title>
   <style>
     body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #000, #1a1a1a);
+      background: black;
       color: white;
       text-align: center;
-      padding: 40px 20px;
-    }
-
-    .box {
-      max-width: 420px;
-      margin: auto;
-      background: #111;
-      padding: 25px;
-      border-radius: 18px;
-      box-shadow: 0 0 20px rgba(0,255,200,0.25);
+      font-family: Arial;
+      padding-top: 50px;
     }
 
     h1 {
       color: #00ffcc;
-      margin-bottom: 10px;
     }
 
-    p {
-      color: #ddd;
+    .box {
+      background: #1a1a1a;
+      margin: auto;
+      padding: 20px;
+      width: 300px;
+      border-radius: 15px;
+      box-shadow: 0 0 20px #00ffcc;
     }
 
-    input, textarea {
+    button {
       width: 100%;
       padding: 12px;
       margin-top: 10px;
       border: none;
       border-radius: 10px;
-      outline: none;
-      box-sizing: border-box;
-    }
-
-    button, .wa {
-      display: block;
-      width: 100%;
-      padding: 12px;
-      margin-top: 12px;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 16px;
-      text-decoration: none;
-    }
-
-    button {
       background: #00ffcc;
       color: black;
       font-weight: bold;
+      cursor: pointer;
     }
 
-    .wa {
-      background: #25D366;
-      color: white;
-    }
-
-    #msg {
-      margin-top: 12px;
+    #title {
+      margin-top: 20px;
+      font-size: 20px;
       color: #00ffcc;
+    }
+
+    img {
+      margin-top: 10px;
+      width: 250px;
+      border-radius: 15px;
+      display: none;
     }
   </style>
 </head>
 <body>
+
+  <h1>🔥 اختر 🔥</h1>
+
   <div class="box">
-    
+    <button onclick="showFaisal()">فيصل</button>
+    <button onclick="showThamer()">ثامر</button>
+
+    <div id="title"></div>
+
+    <img id="image" src="">
+  </div>
+
+  <script>
+    function showFaisal() {
+      document.getElementById("title").innerText = "ساطي";
+      document.getElementById("image").src = "69F6A81B-0CEB-4D20-9980-D14353C7E57A.png";
+      document.getElementById("image").style.display = "block";
+    }
+
+    function showThamer() {
+      document.getElementById("title").innerText = "لقى";
+      document.getElementById("image").src = "69F6A81B-0CEB-4D20-9980-D14353C7E57A.png";
+      document.getElementById("image").style.display = "block";
+    }
+  </script>
+
+</body>
+</html>
