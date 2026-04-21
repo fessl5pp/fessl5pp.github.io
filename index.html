@@ -2,6 +2,7 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Faisal Site</title>
 
   <style>
@@ -10,11 +11,13 @@
       color: white;
       text-align: center;
       font-family: Arial;
-      padding-top: 50px;
+      padding-top: 40px;
+      margin: 0;
     }
 
     h1 {
       color: #00ffcc;
+      margin-bottom: 10px;
     }
 
     .box {
@@ -36,23 +39,45 @@
       color: black;
       font-weight: bold;
       cursor: pointer;
+      font-size: 16px;
     }
 
     #title {
       margin-top: 20px;
-      font-size: 20px;
+      font-size: 22px;
       color: #00ffcc;
+      font-weight: bold;
     }
 
-    img {
+    img.car-image {
       margin-top: 10px;
       width: 280px;
       border-radius: 15px;
       display: none;
     }
+
+    .info-box {
+      margin-top: 20px;
+      text-align: right;
+      background: #111;
+      padding: 15px;
+      border-radius: 12px;
+      font-size: 14px;
+      line-height: 1.8;
+      word-break: break-word;
+    }
+
+    .counter {
+      margin-top: 15px;
+    }
+
+    .small-title {
+      color: #00ffcc;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
   </style>
 </head>
-
 <body>
 
   <h1>🔥 اختر 🔥</h1>
@@ -62,7 +87,19 @@
     <button onclick="showLexus()">ثامر</button>
 
     <div id="title"></div>
-    <img id="image" src="">
+    <img id="image" class="car-image" src="" alt="الصورة">
+
+    <div class="counter">
+      <div class="small-title">عدد الزوار</div>
+      <img
+        src="https://visitor-badge.laobi.icu/badge?page_id=fessl5pp.github.io"
+        alt="عداد الزوار">
+    </div>
+
+    <div class="info-box">
+      <div class="small-title">معلومات الجهاز الظاهرة</div>
+      <div id="deviceInfo">جاري التحميل...</div>
+    </div>
   </div>
 
   <script>
@@ -77,6 +114,18 @@
       document.getElementById("image").src = "IMG_4228.jpeg";
       document.getElementById("image").style.display = "block";
     }
+
+    const info = `
+نوع الجهاز / المتصفح: ${navigator.userAgent}<br>
+لغة الجهاز: ${navigator.language}<br>
+دقة الشاشة: ${screen.width} × ${screen.height}<br>
+عرض النافذة: ${window.innerWidth} × ${window.innerHeight}<br>
+المنصة: ${navigator.platform}<br>
+عدد أنوية المعالج التقريبي: ${navigator.hardwareConcurrency || "غير متوفر"}<br>
+اللمس: ${navigator.maxTouchPoints > 0 ? "نعم" : "لا"}
+    `;
+
+    document.getElementById("deviceInfo").innerHTML = info;
   </script>
 
 </body>
