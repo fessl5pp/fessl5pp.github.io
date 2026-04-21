@@ -1,132 +1,155 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Faisal Site</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Faisal Legendary</title>
 
-  <style>
-    body {
-      background: black;
-      color: white;
-      text-align: center;
-      font-family: Arial;
-      padding-top: 40px;
-      margin: 0;
-    }
+<style>
+body {
+  margin:0;
+  font-family:Arial;
+  background: radial-gradient(circle,#0a0a0a,#000);
+  color:white;
+  text-align:center;
+}
 
-    h1 {
-      color: #00ffcc;
-      margin-bottom: 10px;
-    }
+h1 {
+  color:#00ffcc;
+  margin-top:30px;
+}
 
-    .box {
-      background: #1a1a1a;
-      margin: auto;
-      padding: 20px;
-      width: 320px;
-      border-radius: 15px;
-      box-shadow: 0 0 20px #00ffcc;
-    }
+.box {
+  background:#111;
+  margin:auto;
+  padding:20px;
+  width:320px;
+  border-radius:20px;
+  box-shadow:0 0 20px #00ffcc33;
+}
 
-    button {
-      width: 100%;
-      padding: 12px;
-      margin-top: 10px;
-      border: none;
-      border-radius: 10px;
-      background: #00ffcc;
-      color: black;
-      font-weight: bold;
-      cursor: pointer;
-      font-size: 16px;
-    }
+button {
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border:none;
+  border-radius:10px;
+  background:#00ffcc;
+  color:black;
+  font-weight:bold;
+  cursor:pointer;
+}
 
-    #title {
-      margin-top: 20px;
-      font-size: 22px;
-      color: #00ffcc;
-      font-weight: bold;
-    }
+#title {
+  margin-top:15px;
+  font-size:20px;
+  color:#00ffcc;
+}
 
-    img.car-image {
-      margin-top: 10px;
-      width: 280px;
-      border-radius: 15px;
-      display: none;
-    }
+img {
+  width:100%;
+  margin-top:10px;
+  border-radius:15px;
+  display:none;
+}
 
-    .info-box {
-      margin-top: 20px;
-      text-align: right;
-      background: #111;
-      padding: 15px;
-      border-radius: 12px;
-      font-size: 14px;
-      line-height: 1.8;
-      word-break: break-word;
-    }
+/* مربع معلومات الجهاز */
+.device-box {
+  position: fixed;
+  bottom: 15px;
+  left: 15px;
+  width: 260px;
+  background: rgba(10,10,10,0.95);
+  border: 1px solid rgba(0,255,204,0.4);
+  border-radius: 15px;
+  padding: 12px;
+  font-size: 12px;
+  color: #ddd;
+  box-shadow: 0 0 15px rgba(0,255,204,0.2);
+  display: none;
+}
 
-    .counter {
-      margin-top: 15px;
-    }
+.device-box span {
+  color:#00ffcc;
+  font-weight:bold;
+}
 
-    .small-title {
-      color: #00ffcc;
-      margin-bottom: 8px;
-      font-weight: bold;
-    }
-  </style>
+/* زر التحكم */
+.toggle-btn {
+  position: fixed;
+  bottom: 15px;
+  left: 15px;
+  transform: translateY(-60px);
+  padding:10px;
+  border:none;
+  border-radius:10px;
+  background:#00ffcc;
+  color:black;
+  cursor:pointer;
+  font-size:12px;
+}
+</style>
 </head>
+
 <body>
 
-  <h1>🔥 اختر 🔥</h1>
+<h1>🔥 موقع فيصل 🔥</h1>
 
-  <div class="box">
-    <button onclick="showFord()">فيصل</button>
-    <button onclick="showLexus()">ثامر</button>
+<div class="box">
+  <button onclick="showFord()">فيصل</button>
+  <button onclick="showLexus()">ثامر</button>
 
-    <div id="title"></div>
-    <img id="image" class="car-image" src="" alt="الصورة">
+  <div id="title"></div>
+  <img id="image">
+  
+  <p id="time"></p>
 
-    <div class="counter">
-      <div class="small-title">عدد الزوار</div>
-      <img
-        src="https://visitor-badge.laobi.icu/badge?page_id=fessl5pp.github.io"
-        alt="عداد الزوار">
-    </div>
+  <!-- عداد الزوار -->
+  <img src="https://visitor-badge.laobi.icu/badge?page_id=fessl5pp.github.io">
+</div>
 
-    <div class="info-box">
-      <div class="small-title">معلومات الجهاز الظاهرة</div>
-      <div id="deviceInfo">جاري التحميل...</div>
-    </div>
-  </div>
+<!-- زر فتح/إغلاق -->
+<button class="toggle-btn" onclick="toggleDevice()">📱 معلومات الجهاز</button>
 
-  <script>
-    function showFord() {
-      document.getElementById("title").innerText = "ساطي";
-      document.getElementById("image").src = "0EFEB962-15E1-45E0-92F1-24455A40DDED.png";
-      document.getElementById("image").style.display = "block";
-    }
+<!-- مربع المعلومات -->
+<div class="device-box" id="deviceBox"></div>
 
-    function showLexus() {
-      document.getElementById("title").innerText = "لقى";
-      document.getElementById("image").src = "IMG_4228.jpeg";
-      document.getElementById("image").style.display = "block";
-    }
+<script>
+function showFord(){
+  document.getElementById("title").innerText="ساطي";
+  document.getElementById("image").src="0EFEB962-15E1-45E0-92F1-24455A40DDED.png";
+  document.getElementById("image").style.display="block";
+}
 
-    const info = `
-نوع الجهاز / المتصفح: ${navigator.userAgent}<br>
-لغة الجهاز: ${navigator.language}<br>
-دقة الشاشة: ${screen.width} × ${screen.height}<br>
-عرض النافذة: ${window.innerWidth} × ${window.innerHeight}<br>
-المنصة: ${navigator.platform}<br>
-عدد أنوية المعالج التقريبي: ${navigator.hardwareConcurrency || "غير متوفر"}<br>
-اللمس: ${navigator.maxTouchPoints > 0 ? "نعم" : "لا"}
-    `;
+function showLexus(){
+  document.getElementById("title").innerText="لقى";
+  document.getElementById("image").src="IMG_4228.jpeg";
+  document.getElementById("image").style.display="block";
+}
 
-    document.getElementById("deviceInfo").innerHTML = info;
-  </script>
+/* ساعة */
+setInterval(()=>{
+  document.getElementById("time").innerText =
+  new Date().toLocaleTimeString();
+},1000);
+
+/* معلومات الجهاز */
+const box = document.getElementById("deviceBox");
+
+box.innerHTML = `
+<div><span>الجهاز:</span> ${navigator.userAgent}</div>
+<div><span>اللغة:</span> ${navigator.language}</div>
+<div><span>المنصة:</span> ${navigator.platform}</div>
+<div><span>الشاشة:</span> ${screen.width} × ${screen.height}</div>
+<div><span>اللمس:</span> ${navigator.maxTouchPoints > 0 ? "نعم" : "لا"}</div>
+`;
+
+/* فتح / إغلاق */
+function toggleDevice(){
+  box.style.display =
+  box.style.display === "block" ? "none" : "block";
+}
+</script>
 
 </body>
 </html>
