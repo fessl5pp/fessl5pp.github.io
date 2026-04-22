@@ -11,25 +11,44 @@
       -webkit-tap-highlight-color: transparent;
     }
 
+    :root {
+      --bg1: #0b0b0d;
+      --bg2: #16171c;
+      --panel: rgba(25, 25, 28, 0.96);
+      --panel2: rgba(38, 38, 42, 0.95);
+      --user: #0a84ff;
+      --bot: #2c2c2e;
+      --text: #fff;
+      --muted: #b6b6c2;
+      --accent1: #0a84ff;
+      --accent2: #5e5ce6;
+      --accent3: #ff2d55;
+      --gold: #ffcc00;
+      --green: #34c759;
+    }
+
     body {
       margin: 0;
       min-height: 100vh;
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Arial, sans-serif;
-      background: linear-gradient(180deg, #0c0c0f, #17181d);
-      color: white;
+      background:
+        radial-gradient(circle at top, rgba(94,92,230,0.18), transparent 25%),
+        radial-gradient(circle at bottom, rgba(10,132,255,0.12), transparent 25%),
+        linear-gradient(180deg, var(--bg1), var(--bg2));
+      color: var(--text);
       text-align: center;
-      padding: 42px 14px 120px;
+      padding: 42px 14px 130px;
     }
 
     h1 {
       margin: 0;
-      font-size: 30px;
-      font-weight: 800;
+      font-size: 31px;
+      font-weight: 900;
     }
 
     .sub {
       margin-top: 8px;
-      color: #b6b6c2;
+      color: var(--muted);
       font-size: 14px;
     }
 
@@ -38,12 +57,12 @@
       border: none;
       border-radius: 999px;
       padding: 14px 24px;
-      background: linear-gradient(135deg, #0a84ff, #5e5ce6);
+      background: linear-gradient(135deg, var(--accent1), var(--accent2));
       color: white;
       font-size: 16px;
       font-weight: 800;
       cursor: pointer;
-      box-shadow: 0 12px 28px rgba(10,132,255,0.25);
+      box-shadow: 0 14px 30px rgba(10,132,255,0.28);
     }
 
     #chatBox {
@@ -51,23 +70,28 @@
       left: 50%;
       transform: translateX(-50%);
       bottom: 14px;
-      width: min(400px, calc(100% - 16px));
-      background: rgba(28, 28, 30, 0.96);
+      width: min(410px, calc(100% - 16px));
+      background: var(--panel);
       border: 1px solid rgba(255,255,255,0.06);
       border-radius: 28px;
       overflow: hidden;
       display: none;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+      box-shadow: 0 24px 50px rgba(0,0,0,0.42);
       z-index: 999;
+      backdrop-filter: blur(16px);
     }
 
     #chatHeader {
+      padding: 14px;
+      background: rgba(36,36,40,0.92);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .headerTop {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 14px;
-      background: rgba(36,36,39,0.92);
-      border-bottom: 1px solid rgba(255,255,255,0.05);
+      gap: 8px;
     }
 
     #botInfo {
@@ -77,8 +101,8 @@
     }
 
     #avatar {
-      width: 38px;
-      height: 38px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       background: linear-gradient(135deg, #ff7eb3, #7afcff);
       color: #111;
@@ -86,6 +110,7 @@
       align-items: center;
       justify-content: center;
       font-weight: 900;
+      font-size: 18px;
     }
 
     #botName {
@@ -105,6 +130,8 @@
     .topBtns {
       display: flex;
       gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
     }
 
     .topBtn {
@@ -118,7 +145,24 @@
       cursor: pointer;
     }
 
-    #moodBar, #quickBar {
+    .statsBar {
+      margin-top: 10px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: space-between;
+    }
+
+    .statChip {
+      background: rgba(255,255,255,0.06);
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 12px;
+      color: #e5e7eb;
+      font-weight: 700;
+    }
+
+    #moodBar, #quickBar, #toolsBar {
       display: flex;
       gap: 8px;
       overflow-x: auto;
@@ -128,11 +172,12 @@
     }
 
     #moodBar::-webkit-scrollbar,
-    #quickBar::-webkit-scrollbar {
+    #quickBar::-webkit-scrollbar,
+    #toolsBar::-webkit-scrollbar {
       display: none;
     }
 
-    .moodBtn, .quickBtn {
+    .moodBtn, .quickBtn, .toolBtn {
       border: none;
       border-radius: 999px;
       padding: 10px 14px;
@@ -145,15 +190,16 @@
     }
 
     .activeMood {
-      background: linear-gradient(135deg, #0a84ff, #5e5ce6);
+      background: linear-gradient(135deg, var(--accent1), var(--accent2));
     }
 
     #messages {
-      height: 355px;
+      height: 360px;
       overflow-y: auto;
       background: #000;
       padding: 12px;
       text-align: right;
+      scroll-behavior: smooth;
     }
 
     .msg {
@@ -163,22 +209,33 @@
       padding: 10px 14px;
       border-radius: 22px;
       font-size: 14px;
-      line-height: 1.6;
+      line-height: 1.65;
       word-break: break-word;
+      animation: fadeIn 0.18s ease;
     }
 
     .user {
       margin-right: auto;
-      background: #0a84ff;
+      background: var(--user);
       color: white;
       border-bottom-right-radius: 8px;
     }
 
     .bot {
       margin-left: auto;
-      background: #2c2c2e;
+      background: var(--bot);
       color: white;
       border-bottom-left-radius: 8px;
+    }
+
+    .system {
+      margin: 10px auto;
+      background: rgba(255,255,255,0.08);
+      color: #ddd;
+      font-size: 12px;
+      border-radius: 999px;
+      padding: 8px 12px;
+      max-width: 90%;
     }
 
     .typing {
@@ -210,7 +267,7 @@
     }
 
     .choiceMain {
-      background: #0a84ff;
+      background: var(--accent1);
       color: white;
     }
 
@@ -245,7 +302,7 @@
     #sendBtn {
       border: none;
       border-radius: 18px;
-      background: linear-gradient(135deg, #0a84ff, #5e5ce6);
+      background: linear-gradient(135deg, var(--accent1), var(--accent2));
       color: white;
       padding: 12px 14px;
       font-weight: 800;
@@ -265,7 +322,7 @@
     }
 
     #genderCard {
-      width: min(360px, 100%);
+      width: min(370px, 100%);
       background: #17181d;
       border: 1px solid rgba(255,255,255,0.08);
       border-radius: 24px;
@@ -280,7 +337,7 @@
 
     #genderCard p {
       margin: 0 0 18px;
-      color: #b6b6c2;
+      color: var(--muted);
       font-size: 14px;
     }
 
@@ -297,29 +354,33 @@
     }
 
     .maleBtn {
-      background: linear-gradient(135deg, #0a84ff, #5e5ce6);
+      background: linear-gradient(135deg, var(--accent1), var(--accent2));
     }
 
     .femaleBtn {
-      background: linear-gradient(135deg, #ff2d55, #ff7eb3);
+      background: linear-gradient(135deg, var(--accent3), #ff7eb3);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     @media (max-width: 420px) {
-      #messages {
-        height: 320px;
-      }
+      #messages { height: 325px; }
+      h1 { font-size: 28px; }
     }
   </style>
 </head>
 <body>
 
   <h1>أهلاً بكم بموقع فيصل</h1>
-  <div class="sub">Bella بنسخة كويتية أقوى 😎</div>
+  <div class="sub">Bella النسخة المطوّرة بالكامل 😎</div>
   <button id="openBtn" onclick="toggleChat()">افتح Bella 💬</button>
 
   <div id="genderBox">
     <div id="genderCard">
-      <h2>شلون تبين Bella تكلمج/ك؟</h2>
+      <h2>شلون تبين/تبي Bella تكلمج/ك؟</h2>
       <p>اختاري/اختر الصيغة من البداية</p>
       <button class="genderBtn maleBtn" onclick="setGender('male')">👨 كلّميني بصيغة ذكر</button>
       <button class="genderBtn femaleBtn" onclick="setGender('female')">👩 كلّميني بصيغة أنثى</button>
@@ -328,17 +389,26 @@
 
   <div id="chatBox">
     <div id="chatHeader">
-      <div id="botInfo">
-        <div id="avatar">B</div>
-        <div id="botName">
-          <b>Bella 💕</b>
-          <span id="statusText">موجودة</span>
+      <div class="headerTop">
+        <div id="botInfo">
+          <div id="avatar">B</div>
+          <div id="botName">
+            <b>Bella 💕</b>
+            <span id="statusText">موجودة</span>
+          </div>
+        </div>
+
+        <div class="topBtns">
+          <button class="topBtn" onclick="clearChat()">مسح</button>
+          <button class="topBtn" onclick="resetAll()">إعادة</button>
+          <button class="topBtn" onclick="toggleChat()">✕</button>
         </div>
       </div>
 
-      <div class="topBtns">
-        <button class="topBtn" onclick="clearChat()">مسح</button>
-        <button class="topBtn" onclick="toggleChat()">✕</button>
+      <div class="statsBar">
+        <div class="statChip" id="nameChip">الاسم: غير معروف</div>
+        <div class="statChip" id="pointsChip">النقاط: 0</div>
+        <div class="statChip" id="rankChip">الرتبة: مبتدئ</div>
       </div>
     </div>
 
@@ -347,6 +417,14 @@
       <button id="moodFun" class="moodBtn" onclick="setMood('fun')">😎 فلة</button>
       <button id="moodCalm" class="moodBtn" onclick="setMood('calm')">🤍 رايق</button>
       <button id="moodMad" class="moodBtn" onclick="setMood('mad')">😒 معصبة</button>
+    </div>
+
+    <div id="toolsBar">
+      <button class="toolBtn" onclick="showSuggestions()">اقتراحات</button>
+      <button class="toolBtn" onclick="quickSend('اسمي فيصل')">حفظ اسم</button>
+      <button class="toolBtn" onclick="quickSend('منو انا')">منو أنا</button>
+      <button class="toolBtn" onclick="quickSend('رتبتي')">رتبتي</button>
+      <button class="toolBtn" onclick="quickSend('نقاطي')">نقاطي</button>
     </div>
 
     <div id="quickBar">
@@ -360,6 +438,8 @@
       <button class="quickBtn" onclick="quickSend('زربه')">زربه</button>
       <button class="quickBtn" onclick="quickSend('انمحنت')">انمحنت</button>
       <button class="quickBtn" onclick="quickSend('نكت لكزس')">نكت لكزس</button>
+      <button class="quickBtn" onclick="quickSend('تزوجيني')">تزوجيني</button>
+      <button class="quickBtn" onclick="quickSend('احب اللكزس')">احب اللكزس</button>
     </div>
 
     <div id="messages"></div>
@@ -373,8 +453,14 @@
   <script>
     let bellaMood = "cute";
     let userGender = "male";
+    let userName = "";
+    let userPoints = 0;
+
     const messages = document.getElementById("messages");
     const statusText = document.getElementById("statusText");
+    const nameChip = document.getElementById("nameChip");
+    const pointsChip = document.getElementById("pointsChip");
+    const rankChip = document.getElementById("rankChip");
 
     function toggleChat() {
       const chatBox = document.getElementById("chatBox");
@@ -389,6 +475,10 @@
       userGender = g;
       localStorage.setItem("bella_gender", g);
       document.getElementById("genderBox").style.display = "none";
+      updateStats();
+      if (messages.innerHTML.trim() === "") {
+        addMessage(getWelcomeMessage(), "bot", true);
+      }
     }
 
     function setMood(mood) {
@@ -406,6 +496,32 @@
       if (mood === "mad") document.getElementById("moodMad").classList.add("activeMood");
     }
 
+    function addPoints(n) {
+      userPoints += n;
+      localStorage.setItem("bella_points", userPoints);
+      updateStats();
+    }
+
+    function getRank() {
+      if (userPoints >= 80) return "👑 ملك السوالف";
+      if (userPoints >= 50) return "🔥 خبير سوالف";
+      if (userPoints >= 25) return "😎 نشيط";
+      if (userPoints >= 10) return "🙂 متفاعل";
+      return "🌱 مبتدئ";
+    }
+
+    function updateStats() {
+      nameChip.innerText = "الاسم: " + (userName || "غير معروف");
+      pointsChip.innerText = "النقاط: " + userPoints;
+      rankChip.innerText = "الرتبة: " + getRank();
+    }
+
+    function saveName(name) {
+      userName = name;
+      localStorage.setItem("bella_name", name);
+      updateStats();
+    }
+
     function addMessage(text, type, skipSave = false) {
       const div = document.createElement("div");
       div.className = "msg " + type;
@@ -414,6 +530,14 @@
       messages.scrollTop = messages.scrollHeight;
 
       if (!skipSave) saveChatItem({ kind: "text", type, text });
+    }
+
+    function addSystem(text) {
+      const div = document.createElement("div");
+      div.className = "system";
+      div.innerText = text;
+      messages.appendChild(div);
+      messages.scrollTop = messages.scrollHeight;
     }
 
     function addTyping() {
@@ -448,6 +572,7 @@
       wrap.innerHTML = `
         <button class="choiceBtn choiceMain" onclick="chooseOption('اللكزس')">اللكزس</button>
         <button class="choiceBtn choiceDark" onclick="chooseOption('الهرش')">الهرش</button>
+        <button class="choiceBtn choiceDark" onclick="quickSend('نكت لكزس')">نكت لكزس</button>
       `;
 
       div.appendChild(txt);
@@ -462,12 +587,13 @@
 
     function chooseOption(choice) {
       addMessage(choice, "user");
+      addPoints(2);
 
       let reply = "";
       if (choice === "اللكزس") {
         reply = moodReply(
           "اختيارك فخم فخامة اللكزس 🔥",
-          "أييييه جذي الذوق ولا بلاش 😎",
+          "أيييه جذي الذوق ولا بلاش 😎",
           "اختيار مرتب وحلو 🤍",
           "إي زين اخترت شي عدل 😒"
         );
@@ -484,7 +610,11 @@
       setTimeout(() => {
         removeTyping();
         addMessage(reply, "bot");
-      }, 300);
+      }, 280);
+    }
+
+    function showSuggestions() {
+      addSystem("اقتراحات: قل اسمي ... | قل نور | قل ثامر | قل نكت لكزس | قل تزوجيني | قل نقاطي | قل رتبتي");
     }
 
     function quickSend(text) {
@@ -526,9 +656,45 @@
       return userGender === "female" ? femaleText : maleText;
     }
 
+    function extractName(msg) {
+      const patterns = ["اسمي ", "انا ", "أنا "];
+      for (let p of patterns) {
+        const i = msg.indexOf(p);
+        if (i !== -1) {
+          const val = msg.slice(i + p.length).trim();
+          if (val.length > 0 && val.length < 25) return val;
+        }
+      }
+      return "";
+    }
+
     function getBotReply(text) {
-      const raw = text.trim().toLowerCase();
+      const raw = text.trim();
       const msg = normalizeArabic(raw);
+
+      const maybeName = extractName(raw);
+      if (msg.startsWith("اسمي ") && maybeName) {
+        saveName(maybeName);
+        return moodReply(
+          "تم يا " + maybeName + "، حفظت اسمك عندي 💕",
+          "خلاص " + maybeName + "، انحفظ الاسم 😎",
+          "تم حفظ الاسم: " + maybeName + " 🤍",
+          "زين، حفظت اسمك " + maybeName + " 😒"
+        );
+      }
+
+      if (includesAny(msg, ["منو انا", "من انا"])) {
+        if (userName) return "إنت " + userName + "، لا تسوي نفسك ناسي 😏";
+        return himOrHer("إنت للحين ما قلت شسمك", "إنتي للحين ما قلتي شسمج");
+      }
+
+      if (includesAny(msg, ["نقاطي", "كم نقاطي"])) {
+        return "نقاطك الحين: " + userPoints + " 🔥";
+      }
+
+      if (includesAny(msg, ["رتبتي", "وش رتبتي", "شنو رتبتي"])) {
+        return "رتبتك الحين: " + getRank();
+      }
 
       if (msg.includes("نور")) {
         return "نور دنيايييي هوايييي ومايييي 🤍";
@@ -565,8 +731,8 @@
 
       if (includesAny(msg, ["هلا", "مرحبا", "السلام", "هلو"])) {
         return moodReply(
-          "هلا والله يا بعد قلبي 💕",
-          "هلاااا وغلااا 😎",
+          "هلا والله " + (userName ? userName : himOrHer("يا بعد قلبي", "يا بعد عمري")) + " 💕",
+          "هلااا وغلااا 😎",
           "هلا والله 🤍",
           "هلا، شتبي؟ 😒"
         );
@@ -574,9 +740,9 @@
 
       if (includesAny(msg, ["شلونك", "كيفك", "خبارك"])) {
         return moodReply(
-          "بخير دامك موجود " + himOrHer("🤍", "🤍"),
+          "بخير دامك موجود " + (userName ? userName : "") + " 🤍",
           "تمام دام السوالف موجودة 😎",
-          "الحمدلله، إنت/إنتي شلونك؟",
+          "الحمدلله، " + himOrHer("إنت شلونك؟", "إنتي شلونج؟"),
           "زينه، لا تطول/ين علي 😒"
         );
       }
@@ -832,6 +998,19 @@
         );
       }
 
+      if (includesAny(msg, ["ابي شي يونس", "ونسيني", "ونسي"])) {
+        return moodReply(
+          himOrHer("أبشر أونسك 💕", "أبشر أونسج 💕"),
+          "تم، بنرفع الجو 😎",
+          "إن شاء الله 🤍",
+          "إيه يلا 😒"
+        );
+      }
+
+      if (includesAny(msg, ["منو انا", "من انا"])) {
+        return userName ? "إنت " + userName : "للحين ما حفظت اسمك";
+      }
+
       return moodReply(
         getRandom([
           "يا بعد قلبي كمّل 💕",
@@ -863,6 +1042,7 @@
       if (!text) return;
 
       addMessage(text, "user");
+      addPoints(1);
       input.value = "";
 
       const reply = getBotReply(text);
@@ -873,6 +1053,7 @@
 
         if (reply === "__THAMER_SPECIAL__") {
           addImageMessage("IMG_4228.jpeg");
+          addPoints(2);
         } else {
           addMessage(reply, "bot");
         }
@@ -895,6 +1076,14 @@
       const savedMood = localStorage.getItem("bella_mood");
       if (savedMood) setMood(savedMood);
 
+      const savedName = localStorage.getItem("bella_name");
+      if (savedName) userName = savedName;
+
+      const savedPoints = parseInt(localStorage.getItem("bella_points") || "0", 10);
+      userPoints = isNaN(savedPoints) ? 0 : savedPoints;
+
+      updateStats();
+
       const old = JSON.parse(localStorage.getItem("bella_chat") || "[]");
       if (old.length === 0) {
         addMessage(getWelcomeMessage(), "bot", true);
@@ -916,11 +1105,29 @@
       addMessage(getWelcomeMessage(), "bot", true);
     }
 
+    function resetAll() {
+      localStorage.removeItem("bella_chat");
+      localStorage.removeItem("bella_name");
+      localStorage.removeItem("bella_points");
+      localStorage.removeItem("bella_mood");
+      localStorage.removeItem("bella_gender");
+      userName = "";
+      userPoints = 0;
+      bellaMood = "cute";
+      userGender = "male";
+      updateStats();
+      messages.innerHTML = "";
+      document.getElementById("genderBox").style.display = "flex";
+      setMood("cute");
+    }
+
     function getWelcomeMessage() {
       const hour = new Date().getHours();
-      if (hour < 12) return userGender === "female" ? "صباح الخير يا قلبي 💕" : "صباح الخير يا حلو 🤍";
-      if (hour < 18) return userGender === "female" ? "ياهلا والله، شلونج؟ 💕" : "ياهلا والله، شلونك؟ 🤍";
-      return userGender === "female" ? "مساء الخير يا بعد عمري 💕" : "مساء الخير يا بعد قلبي 🤍";
+      const namePart = userName ? " " + userName : "";
+
+      if (hour < 12) return userGender === "female" ? "صباح الخير" + namePart + " يا قلبي 💕" : "صباح الخير" + namePart + " يا حلو 🤍";
+      if (hour < 18) return userGender === "female" ? "ياهلا والله" + namePart + "، شلونج؟ 💕" : "ياهلا والله" + namePart + "، شلونك؟ 🤍";
+      return userGender === "female" ? "مساء الخير" + namePart + " يا بعد عمري 💕" : "مساء الخير" + namePart + " يا بعد قلبي 🤍";
     }
 
     loadChat();
