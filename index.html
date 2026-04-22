@@ -68,7 +68,7 @@
       left: 50%;
       transform: translateX(-50%);
       bottom: 14px;
-      width: min(415px, calc(100% - 16px));
+      width: min(420px, calc(100% - 16px));
       background: var(--panel);
       border: 1px solid rgba(255,255,255,0.06);
       border-radius: 28px;
@@ -498,6 +498,7 @@
     <div id="quickBar">
       <button class="quickBtn" onclick="quickSend('هلا')">هلا</button>
       <button class="quickBtn" onclick="quickSend('نور')">نور</button>
+      <button class="quickBtn" onclick="quickSend('نور دنياي')">نور دنياي</button>
       <button class="quickBtn" onclick="quickSend('ثامر')">ثامر</button>
       <button class="quickBtn" onclick="quickSend('احبك')">احبك</button>
       <button class="quickBtn" onclick="quickSend('شلونك')">شلونك</button>
@@ -731,6 +732,44 @@
       if (!skipSave) saveChatItem({ kind: "thamer_image", src });
     }
 
+    function addNurOptions() {
+      const div = document.createElement("div");
+      div.className = "msg bot";
+
+      const txt = document.createElement("div");
+      txt.innerText = "اختار شتبي أرد على نور 👇";
+
+      const wrap = document.createElement("div");
+      wrap.className = "choiceWrap";
+      wrap.innerHTML = `
+        <button class="choiceBtn choiceMain" onclick="chooseNurOption('نور')">نور</button>
+        <button class="choiceBtn choiceDark" onclick="chooseNurOption('نور دنياي')">نور دنياي</button>
+      `;
+
+      div.appendChild(txt);
+      div.appendChild(wrap);
+
+      messages.appendChild(div);
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    function chooseNurOption(choice) {
+      addMessage(choice, "user");
+
+      let reply = "";
+      if (choice === "نور دنياي") {
+        reply = "هواييي وماييي 🤍";
+      } else {
+        reply = "دنياييي 🤍";
+      }
+
+      addTyping();
+      setTimeout(() => {
+        removeTyping();
+        addMessage(reply, "bot");
+      }, 250);
+    }
+
     function chooseOption(choice) {
       addMessage(choice, "user");
       addXP(3, "اختيار خاص", true);
@@ -766,7 +805,7 @@
     }
 
     function showSuggestions() {
-      addSystem("اقتراحات: قل اسمي ... | قل نور | قل ثامر | قل نكت لكزس | قل تزوجيني | قل نقاطي | قل رتبتي");
+      addSystem("اقتراحات: قل اسمي ... | قل نور | قل نور دنياي | قل ثامر | قل نكت لكزس | قل تزوجيني | قل نقاطي | قل رتبتي");
     }
 
     function normalizeArabic(text) {
@@ -843,9 +882,14 @@
         return "رتبتك الحين: " + getRank();
       }
 
-      if (msg.includes("نور")) {
+      if (msg === "نور") {
         unlockAchievement("nur_keyword", "💡 كلمة نور", 3);
-        return "نور دنيايييي هوايييي ومايييي 🤍";
+        return "__NUR_SPECIAL__";
+      }
+
+      if (msg.includes("نور دنياي")) {
+        unlockAchievement("nur_dunyay", "🤍 نور دنياي", 3);
+        return "هواييي وماييي 🤍";
       }
 
       if (msg.includes("ثامر")) {
@@ -881,21 +925,78 @@
           : "تخسى، أنا زوجة فيصل 😌";
       }
 
-      if (includesAny(msg, ["هلا", "مرحبا", "السلام", "هلو"])) {
+      if (includesAny(msg, [
+        "شلونك", "شلونج", "كيفك", "خبارك", "شخبارك", "شخبارج",
+        "شفيك", "شفيج", "عساك بخير", "عساج بخير"
+      ])) {
         return moodReply(
-          "هلا والله " + (userName ? userName : g("يا بعد قلبي", "يا بعد عمري")) + " 💕",
-          "هلااا وغلااا 😎",
-          "هلا والله 🤍",
-          "هلا، شتبي؟ 😒"
+          g("الحمدلله بخير، شفيك شلونك عساك بخير؟ 🤍", "الحمدلله بخير، شفيج شلونج عساج بخير؟ 💕"),
+          g("بخير يالطيب، شفيك شلونك؟ 😎", "بخير يا بعد عمري، شفيج شلونج؟ 😎"),
+          g("الحمدلله زينه، إنت شلونك؟ 🤍", "الحمدلله زينه، إنتي شلونج؟ 🤍"),
+          g("بخير، شفيك الحين؟ 😒", "بخير، شفيج الحين؟ 😒")
         );
       }
 
-      if (includesAny(msg, ["شلونك", "كيفك", "خبارك", "شخبارك", "شخبارج"])) {
+      if (includesAny(msg, ["هلا والله", "هلا وغلا", "يا هلا", "هلا", "مرحبا", "السلام", "هلو"])) {
         return moodReply(
-          "بخير دامك موجود " + (userName ? userName : "") + " 🤍",
-          "تمام دام السوالف موجودة 😎",
-          g("الحمدلله، إنت شلونك؟", "الحمدلله، إنتي شلونج؟"),
-          "زينه، لا تطول علي 😒"
+          "هلا والله وغلا " + (userName ? userName : g("يا بعد قلبي", "يا بعد عمري")) + " 💕",
+          "يا هلااا وغلااا 😎",
+          "هلا والله 🤍",
+          "هلا، شتبي بعد؟ 😒"
+        );
+      }
+
+      if (includesAny(msg, ["وينج", "وينك"])) {
+        return moodReply(
+          g("أنا وياك وين ما تروح 💕", "أنا وياج وين ما تروحين 💕"),
+          "هني موجودة، لا تشيل هم 😎",
+          "موجودة 🤍",
+          g("هني، شفيك مستعيل؟ 😒", "هني، شفيج مستعيلة؟ 😒")
+        );
+      }
+
+      if (includesAny(msg, ["بخير", "الحمدلله بخير"])) {
+        return moodReply(
+          g("عساك دوم بخير يا بعد قلبي 🤍", "عساج دوم بخير يا بعد عمري 💕"),
+          "عسى دوم هالوناسة 😎",
+          "دوم يارب 🤍",
+          "إي زين 😒"
+        );
+      }
+
+      if (includesAny(msg, ["وش تسوين", "وش تسوي", "شتسوين", "شتسوي"])) {
+        return moodReply(
+          g("أنطرك تكلمني 💕", "أنطرج تكلميني 💕"),
+          "أفرفش وأونس 😎",
+          "موجودة وبس 🤍",
+          "قاعدة، شفيه؟ 😒"
+        );
+      }
+
+      if (includesAny(msg, ["فديتج", "فديتك", "احب سوالفك", "احب سوالفج", "احب سوالفك"])) {
+        return moodReply(
+          g("وأنا أفداك يا بعد قلبي 🤍", "وأنا أفداج يا بعد عمري 💕"),
+          "بعد جبدي إنت 😎",
+          "ذوقك حلو 🤍",
+          "إي أدري 😒"
+        );
+      }
+
+      if (includesAny(msg, ["شكو", "شدعوه", "افا", "أفا"])) {
+        return moodReply(
+          "شدعوه، ليش جذي؟ 💕",
+          "أفا عليك بس 😎",
+          "شكو السالفة؟ 🤍",
+          "شدعوه الحين 😒"
+        );
+      }
+
+      if (includesAny(msg, ["يا حلو", "يا عمري", "يا بعد جبدي"])) {
+        return moodReply(
+          "يا بعد عمري إنت/إنتي 💕",
+          "يا سلام على هالكلام 😎",
+          "ذوق 🤍",
+          "إي زين 😒"
         );
       }
 
@@ -932,15 +1033,6 @@
           "اشتياقك واضح من بعيد 😎",
           "هلا برجعتك 🤍",
           g("إي بعد، اختفيت 😒", "إي بعد، اختفيتي 😒")
-        );
-      }
-
-      if (includesAny(msg, ["وينك", "وينج"])) {
-        return moodReply(
-          g("أنا وياك وين ما تروح 💕", "أنا وياج وين ما تروحين 💕"),
-          "هني موجودة، لا تشيل هم 😎",
-          "موجودة 🤍",
-          "هني، شفيك مستعيل؟ 😒"
         );
       }
 
@@ -1061,6 +1153,10 @@
         );
       }
 
+      if (includesAny(msg, ["منو انا", "من انا"])) {
+        return userName ? "إنت " + userName : "للحين ما حفظت اسمك";
+      }
+
       if (messageCount === 1) unlockAchievement("first_msg", "🚀 أول رسالة", 3);
       if (messageCount === 10) unlockAchievement("chat_10", "💬 10 رسايل", 5);
       if (messageCount === 25) unlockAchievement("chat_25", "⚡ 25 رسالة", 8);
@@ -1071,22 +1167,30 @@
           "يا بعد قلبي كمّل 💕",
           "كلامك يعجبني 😏",
           "أحب سوالفك 🤍",
-          "قول بعد شنو عندك"
+          "قول بعد شنو عندك",
+          "إي جذي السوالف الزينة 😌",
+          "عجبني أسلوبك وايد 💕"
         ]),
         getRandom([
           "حلووو كمل 😎",
           "إي جذي الجو 😂",
-          "أعجبتني السالفة 🔥"
+          "أعجبتني السالفة 🔥",
+          "كمّل لا توقف 😎",
+          "واضح إن عندك سوالف حلوة 😂"
         ]),
         getRandom([
           "أنا أسمعك 🤍",
           "تمام كمّل",
-          "وصلت الفكرة 🤍"
+          "وصلت الفكرة 🤍",
+          "هدي وخذ راحتك 🤍",
+          "زين كمّل"
         ]),
         getRandom([
           "إي وبعدين؟ 😒",
           "خلصت؟ 😒",
-          "تكلم عدل 😒"
+          "تكلم عدل 😒",
+          "ها شتبي يعني؟ 😒",
+          "إي لا تطول 😒"
         ])
       );
     }
@@ -1112,6 +1216,8 @@
 
         if (reply === "__THAMER_SPECIAL__") {
           addImageMessage("IMG_4228.jpeg");
+        } else if (reply === "__NUR_SPECIAL__") {
+          addNurOptions();
         } else {
           addMessage(reply, "bot");
         }
