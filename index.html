@@ -1,226 +1,214 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Faisal Legendary</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Faisal Chat</title>
 
   <style>
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: radial-gradient(circle, #0a0a0a, #000);
+      background: #111;
       color: white;
+      font-family: Arial, sans-serif;
       text-align: center;
+      padding-top: 60px;
     }
 
     h1 {
       color: #00ffcc;
-      margin-top: 30px;
     }
 
-    .box {
-      background: #111;
-      margin: 20px auto;
-      padding: 20px;
-      width: 320px;
-      border-radius: 20px;
-      box-shadow: 0 0 20px rgba(0,255,204,0.2);
-    }
-
-    button {
-      width: 100%;
-      padding: 12px;
-      margin-top: 10px;
-      border: none;
-      border-radius: 10px;
+    #openBtn {
+      padding: 12px 22px;
       background: #00ffcc;
       color: black;
-      font-weight: bold;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
       cursor: pointer;
-      font-size: 15px;
-    }
-
-    #title {
-      margin-top: 15px;
-      font-size: 20px;
-      color: #00ffcc;
       font-weight: bold;
     }
 
-    img.car-image {
-      width: 100%;
-      margin-top: 10px;
-      border-radius: 15px;
+    #chatBox {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      width: 310px;
+      background: #1b1b1b;
+      border: 1px solid #333;
+      border-radius: 18px;
+      overflow: hidden;
       display: none;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
     }
 
-    .device-box {
-      position: fixed;
-      bottom: 15px;
-      left: 15px;
-      width: 260px;
-      background: rgba(10,10,10,0.95);
-      border: 1px solid rgba(0,255,204,0.4);
-      border-radius: 15px;
+    #chatHeader {
+      background: #00ffcc;
+      color: black;
       padding: 12px;
-      font-size: 12px;
-      color: #ddd;
-      box-shadow: 0 0 15px rgba(0,255,204,0.2);
-      display: none;
-      text-align: right;
-      line-height: 1.8;
-    }
-
-    .device-box span {
-      color: #00ffcc;
       font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
-    .toggle-btn {
-      position: fixed;
-      bottom: 85px;
-      left: 15px;
-      width: 170px;
+    #closeBtn {
+      background: transparent;
+      border: none;
+      font-size: 18px;
+      cursor: pointer;
+      font-weight: bold;
+      color: black;
+    }
+
+    #messages {
+      height: 280px;
+      overflow-y: auto;
+      padding: 10px;
+      text-align: left;
+      background: #161616;
+    }
+
+    .msg {
+      margin: 8px 0;
+      padding: 10px 12px;
+      border-radius: 12px;
+      max-width: 85%;
+      word-wrap: break-word;
+      line-height: 1.5;
+    }
+
+    .user {
+      background: #00ffcc;
+      color: black;
+      margin-left: auto;
+      text-align: right;
+    }
+
+    .bot {
+      background: #2a2a2a;
+      color: white;
+      margin-right: auto;
+      text-align: left;
+    }
+
+    #chatInputArea {
+      display: flex;
+      gap: 8px;
+      padding: 10px;
+      background: #1b1b1b;
+    }
+
+    #msg {
+      flex: 1;
       padding: 10px;
       border: none;
+      outline: none;
       border-radius: 10px;
+      font-size: 14px;
+    }
+
+    #sendBtn {
+      padding: 10px 14px;
       background: #00ffcc;
-      color: black;
-      cursor: pointer;
-      font-size: 12px;
-      font-weight: bold;
-    }
-
-    .feedback-box {
-      background: #111;
-      margin: 20px auto 40px;
-      padding: 20px;
-      width: 320px;
-      border-radius: 20px;
-      box-shadow: 0 0 20px rgba(0,255,204,0.2);
-    }
-
-    .feedback-box h3 {
-      color: #00ffcc;
-      margin-top: 0;
-    }
-
-    .feedback-box input,
-    .feedback-box textarea {
-      width: 100%;
-      margin-top: 10px;
-      padding: 12px;
-      border: 1px solid rgba(0,255,204,0.3);
+      border: none;
       border-radius: 10px;
-      background: #0d0d0d;
-      color: white;
-      box-sizing: border-box;
-      font-family: Arial, sans-serif;
-    }
-
-    .feedback-box textarea {
-      min-height: 120px;
-      resize: vertical;
-    }
-
-    #time {
-      color: #00ffcc;
-      margin-top: 15px;
-    }
-
-    .note {
-      font-size: 12px;
-      color: #aaa;
-      margin-top: 10px;
-      line-height: 1.7;
+      cursor: pointer;
+      font-weight: bold;
     }
   </style>
 </head>
-
 <body>
 
-  <h1>🔥 موقع فيصل 🔥</h1>
+  <h1>مرحبا فيصل 🔥</h1>
+  <button id="openBtn" onclick="toggleChat()">افتح المحادثة 💬</button>
 
-  <div class="box">
-    <button onclick="showFord()">فيصل</button>
-    <button onclick="showLexus()">ثامر</button>
+  <div id="chatBox">
+    <div id="chatHeader">
+      <span>بوت فيصل 🤖</span>
+      <button id="closeBtn" onclick="toggleChat()">✕</button>
+    </div>
 
-    <div id="title"></div>
-    <img id="image" class="car-image" src="" alt="الصورة">
+    <div id="messages">
+      <div class="msg bot">هلا والله، أنا موجود 😎</div>
+    </div>
 
-    <p id="time"></p>
-
-    <img src="https://visitor-badge.laobi.icu/badge?page_id=fessl5pp.github.io" alt="عداد الزوار">
+    <div id="chatInputArea">
+      <input id="msg" type="text" placeholder="اكتب رسالتك..." onkeydown="if(event.key==='Enter') sendMessage()">
+      <button id="sendBtn" onclick="sendMessage()">إرسال</button>
+    </div>
   </div>
-
-  <div class="feedback-box">
-    <h3>📩 الآراء</h3>
-    <input type="text" id="visitorName" placeholder="اسمك">
-    <textarea id="feedback" placeholder="اكتب رأيك هنا"></textarea>
-    <button onclick="sendFeedback()">إرسال الرأي</button>
-    <div class="note">عند الضغط على إرسال، يفتح تطبيق الإيميل عند الزائر ومعه الرسالة جاهزة.</div>
-  </div>
-
-  <button class="toggle-btn" onclick="toggleDevice()">📱 معلومات الجهاز</button>
-
-  <div class="device-box" id="deviceBox"></div>
 
   <script>
-    function showFord() {
-      document.getElementById("title").innerText = "ساطي";
-      document.getElementById("image").src = "0EFEB962-15E1-45E0-92F1-24455A40DDED.png";
-      document.getElementById("image").style.display = "block";
+    function toggleChat() {
+      const chatBox = document.getElementById("chatBox");
+      chatBox.style.display = chatBox.style.display === "block" ? "none" : "block";
     }
 
-    function showLexus() {
-      document.getElementById("title").innerText = "لقى";
-      document.getElementById("image").src = "IMG_4228.jpeg";
-      document.getElementById("image").style.display = "block";
+    function addMessage(text, type) {
+      const messages = document.getElementById("messages");
+      const div = document.createElement("div");
+      div.className = "msg " + type;
+      div.innerText = text;
+      messages.appendChild(div);
+      messages.scrollTop = messages.scrollHeight;
     }
 
-    setInterval(() => {
-      document.getElementById("time").innerText = new Date().toLocaleTimeString("ar-KW");
-    }, 1000);
+    function getBotReply(text) {
+      const msg = text.toLowerCase().trim();
 
-    const box = document.getElementById("deviceBox");
-
-    box.innerHTML = `
-      <div><span>الجهاز:</span> ${navigator.userAgent}</div>
-      <div><span>اللغة:</span> ${navigator.language}</div>
-      <div><span>المنصة:</span> ${navigator.platform}</div>
-      <div><span>الشاشة:</span> ${screen.width} × ${screen.height}</div>
-      <div><span>اللمس:</span> ${navigator.maxTouchPoints > 0 ? "نعم" : "لا"}</div>
-    `;
-
-    function toggleDevice() {
-      box.style.display = box.style.display === "block" ? "none" : "block";
-    }
-
-    function sendFeedback() {
-      const name = document.getElementById("visitorName").value.trim();
-      const feedback = document.getElementById("feedback").value.trim();
-
-      if (!feedback) {
-        alert("اكتب الرأي أول");
-        return;
+      if (msg.includes("نور")) {
+        return "نور دنيايييي هوايييي ومايييي 🤍";
+      } else if (msg.includes("هلا") || msg.includes("السلام") || msg.includes("مرحبا")) {
+        return "هلا والله يا بعدهم 🔥";
+      } else if (msg.includes("شلونك") || msg.includes("كيفك")) {
+        return "بخير دامك موجود 😌";
+      } else if (msg.includes("اسمك")) {
+        return "أنا بوت فيصل، بالخدمة 😎";
+      } else if (msg.includes("احبك")) {
+        return "وأنا أحبك أكثررر 🤍";
+      } else if (msg.includes("فديتك") || msg.includes("احب")) {
+        return "افداك الكون كله 😏";
+      } else if (msg.includes("منو فيصل") || msg.includes("من هو فيصل")) {
+        return "فيصل شخص رهيب وما عليه كلام 🔥";
+      } else if (msg.includes("باي") || msg.includes("مع السلامه")) {
+        return "مع السلامة يا الغالي 🤍";
+      } else if (msg.includes("وينك")) {
+        return "موجود هنا وأنت نادني بس 😎";
+      } else if (msg.includes("تمام")) {
+        return "دامك تمام أنا تمام 🔥";
+      } else if (msg.includes("زعلان")) {
+        return "لا تزعل، أنا هنا معك 🤍";
+      } else if (msg.includes("ضحكني")) {
+        return "أضحكك؟ يكفي إنك دخلت الشات وخليته أفخم شات 😎";
+      } else {
+        const randomReplies = [
+          "ههههه حلوو، كمل 😎",
+          "يا سلام عليك 🔥",
+          "أقولك الصدق؟ كلامك يعجبني 😏",
+          "كمّل أنا سامعك 🤍",
+          "مو فاهم 100% بس عاجبني جوك 😆"
+        ];
+        return randomReplies[Math.floor(Math.random() * randomReplies.length)];
       }
+    }
 
-      const subject = "رأي جديد من موقع فيصل";
-      const body =
-        "الاسم: " + (name || "بدون اسم") + "\n\n" +
-        "الرأي:\n" + feedback + "\n\n" +
-        "معلومات المتصفح:\n" +
-        navigator.userAgent + "\n\n" +
-        "اللغة: " + navigator.language + "\n" +
-        "المنصة: " + navigator.platform + "\n" +
-        "الشاشة: " + screen.width + " × " + screen.height;
+    function sendMessage() {
+      const input = document.getElementById("msg");
+      const text = input.value.trim();
 
-      window.location.href =
-        "mailto:fessl5qq@gmail.com?subject=" +
-        encodeURIComponent(subject) +
-        "&body=" +
-        encodeURIComponent(body);
+      if (text === "") return;
+
+      addMessage(text, "user");
+
+      const reply = getBotReply(text);
+
+      setTimeout(() => {
+        addMessage(reply, "bot");
+      }, 400);
+
+      input.value = "";
     }
   </script>
 
