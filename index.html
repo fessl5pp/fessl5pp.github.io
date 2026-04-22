@@ -15,7 +15,6 @@
       --bg1: #0b0b0d;
       --bg2: #16171c;
       --panel: rgba(25, 25, 28, 0.96);
-      --panel2: rgba(38, 38, 42, 0.95);
       --user: #0a84ff;
       --bot: #2c2c2e;
       --text: #fff;
@@ -24,7 +23,6 @@
       --accent2: #5e5ce6;
       --accent3: #ff2d55;
       --gold: #ffcc00;
-      --green: #34c759;
     }
 
     body {
@@ -70,7 +68,7 @@
       left: 50%;
       transform: translateX(-50%);
       bottom: 14px;
-      width: min(410px, calc(100% - 16px));
+      width: min(415px, calc(100% - 16px));
       background: var(--panel);
       border: 1px solid rgba(255,255,255,0.06);
       border-radius: 28px;
@@ -90,14 +88,88 @@
     .headerTop {
       display: flex;
       justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      direction: ltr;
+    }
+
+    #xpPanel {
+      width: 150px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 16px;
+      padding: 10px 12px;
+      text-align: left;
+      direction: ltr;
+      flex-shrink: 0;
+    }
+
+    .xpHead {
+      display: flex;
+      justify-content: space-between;
       align-items: center;
       gap: 8px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    #xpLevel {
+      color: var(--gold);
+    }
+
+    #xpValue {
+      color: white;
+    }
+
+    #xpRank {
+      margin-top: 6px;
+      font-size: 12px;
+      color: #e5e7eb;
+    }
+
+    .xpBar {
+      width: 100%;
+      height: 8px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    #xpFill {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold), #ff8a00);
+      border-radius: 999px;
+      transition: width 0.25s ease;
+    }
+
+    .xpMeta {
+      margin-top: 8px;
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .xpMeta span {
+      background: rgba(255,255,255,0.08);
+      border-radius: 999px;
+      padding: 5px 8px;
+      font-size: 10px;
+      color: #e5e7eb;
+      font-weight: 700;
+    }
+
+    .headerRight {
+      flex: 1;
+      direction: rtl;
     }
 
     #botInfo {
       display: flex;
       align-items: center;
       gap: 10px;
+      text-align: right;
     }
 
     #avatar {
@@ -111,10 +183,7 @@
       justify-content: center;
       font-weight: 900;
       font-size: 18px;
-    }
-
-    #botName {
-      text-align: right;
+      flex-shrink: 0;
     }
 
     #botName b {
@@ -128,10 +197,11 @@
     }
 
     .topBtns {
+      margin-top: 10px;
       display: flex;
       gap: 8px;
-      flex-wrap: wrap;
       justify-content: flex-end;
+      flex-wrap: wrap;
     }
 
     .topBtn {
@@ -145,24 +215,7 @@
       cursor: pointer;
     }
 
-    .statsBar {
-      margin-top: 10px;
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      justify-content: space-between;
-    }
-
-    .statChip {
-      background: rgba(255,255,255,0.06);
-      border-radius: 999px;
-      padding: 7px 10px;
-      font-size: 12px;
-      color: #e5e7eb;
-      font-weight: 700;
-    }
-
-    #moodBar, #quickBar, #toolsBar {
+    #moodBar, #toolsBar, #quickBar {
       display: flex;
       gap: 8px;
       overflow-x: auto;
@@ -172,8 +225,8 @@
     }
 
     #moodBar::-webkit-scrollbar,
-    #quickBar::-webkit-scrollbar,
-    #toolsBar::-webkit-scrollbar {
+    #toolsBar::-webkit-scrollbar,
+    #quickBar::-webkit-scrollbar {
       display: none;
     }
 
@@ -235,7 +288,7 @@
       font-size: 12px;
       border-radius: 999px;
       padding: 8px 12px;
-      max-width: 90%;
+      max-width: 92%;
     }
 
     .typing {
@@ -369,46 +422,61 @@
     @media (max-width: 420px) {
       #messages { height: 325px; }
       h1 { font-size: 28px; }
+      #xpPanel { width: 132px; padding: 8px 10px; }
     }
   </style>
 </head>
 <body>
 
   <h1>أهلاً بكم بموقع فيصل</h1>
-  <div class="sub">Bella النسخة المطوّرة بالكامل 😎</div>
+  <div class="sub">Bella نسخة مطوّرة + نظام نقاط كامل 🔥</div>
   <button id="openBtn" onclick="toggleChat()">افتح Bella 💬</button>
 
   <div id="genderBox">
     <div id="genderCard">
       <h2>شلون تبين/تبي Bella تكلمج/ك؟</h2>
       <p>اختاري/اختر الصيغة من البداية</p>
-      <button class="genderBtn maleBtn" onclick="setGender('male')">👨 كلّميني بصيغة ذكر</button>
-      <button class="genderBtn femaleBtn" onclick="setGender('female')">👩 كلّميني بصيغة أنثى</button>
+      <button class="genderBtn maleBtn" onclick="setGender('male')">👨 كلّمني كأني ولد</button>
+      <button class="genderBtn femaleBtn" onclick="setGender('female')">👩 كلّميني كأني بنت</button>
     </div>
   </div>
 
   <div id="chatBox">
     <div id="chatHeader">
       <div class="headerTop">
-        <div id="botInfo">
-          <div id="avatar">B</div>
-          <div id="botName">
-            <b>Bella 💕</b>
-            <span id="statusText">موجودة</span>
+        <div id="xpPanel">
+          <div class="xpHead">
+            <span id="xpLevel">LVL 1</span>
+            <span id="xpValue">0 XP</span>
+          </div>
+
+          <div id="xpRank">الرتبة: مبتدئ</div>
+
+          <div class="xpBar">
+            <div id="xpFill"></div>
+          </div>
+
+          <div class="xpMeta">
+            <span id="xpCombo">Combo: 0</span>
+            <span id="xpAch">Ach: 0</span>
           </div>
         </div>
 
-        <div class="topBtns">
-          <button class="topBtn" onclick="clearChat()">مسح</button>
-          <button class="topBtn" onclick="resetAll()">إعادة</button>
-          <button class="topBtn" onclick="toggleChat()">✕</button>
-        </div>
-      </div>
+        <div class="headerRight">
+          <div id="botInfo">
+            <div id="avatar">B</div>
+            <div id="botName">
+              <b>Bella 💕</b>
+              <span id="statusText">موجودة</span>
+            </div>
+          </div>
 
-      <div class="statsBar">
-        <div class="statChip" id="nameChip">الاسم: غير معروف</div>
-        <div class="statChip" id="pointsChip">النقاط: 0</div>
-        <div class="statChip" id="rankChip">الرتبة: مبتدئ</div>
+          <div class="topBtns">
+            <button class="topBtn" onclick="clearChat()">مسح</button>
+            <button class="topBtn" onclick="resetAll()">إعادة</button>
+            <button class="topBtn" onclick="toggleChat()">✕</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -422,9 +490,9 @@
     <div id="toolsBar">
       <button class="toolBtn" onclick="showSuggestions()">اقتراحات</button>
       <button class="toolBtn" onclick="quickSend('اسمي فيصل')">حفظ اسم</button>
-      <button class="toolBtn" onclick="quickSend('منو انا')">منو أنا</button>
-      <button class="toolBtn" onclick="quickSend('رتبتي')">رتبتي</button>
       <button class="toolBtn" onclick="quickSend('نقاطي')">نقاطي</button>
+      <button class="toolBtn" onclick="quickSend('رتبتي')">رتبتي</button>
+      <button class="toolBtn" onclick="quickSend('منو انا')">منو أنا</button>
     </div>
 
     <div id="quickBar">
@@ -454,13 +522,21 @@
     let bellaMood = "cute";
     let userGender = "male";
     let userName = "";
-    let userPoints = 0;
+    let xp = 0;
+    let combo = 0;
+    let messageCount = 0;
+    let achievements = {};
+
+    const XP_STEP = 20;
 
     const messages = document.getElementById("messages");
     const statusText = document.getElementById("statusText");
-    const nameChip = document.getElementById("nameChip");
-    const pointsChip = document.getElementById("pointsChip");
-    const rankChip = document.getElementById("rankChip");
+    const xpLevelText = document.getElementById("xpLevel");
+    const xpValueText = document.getElementById("xpValue");
+    const xpRankText = document.getElementById("xpRank");
+    const xpFill = document.getElementById("xpFill");
+    const xpComboText = document.getElementById("xpCombo");
+    const xpAchText = document.getElementById("xpAch");
 
     function toggleChat() {
       const chatBox = document.getElementById("chatBox");
@@ -475,10 +551,13 @@
       userGender = g;
       localStorage.setItem("bella_gender", g);
       document.getElementById("genderBox").style.display = "none";
-      updateStats();
+      updateXPUI();
+
       if (messages.innerHTML.trim() === "") {
         addMessage(getWelcomeMessage(), "bot", true);
       }
+
+      dailyBonus();
     }
 
     function setMood(mood) {
@@ -496,30 +575,41 @@
       if (mood === "mad") document.getElementById("moodMad").classList.add("activeMood");
     }
 
-    function addPoints(n) {
-      userPoints += n;
-      localStorage.setItem("bella_points", userPoints);
-      updateStats();
+    function getLevel() {
+      return Math.floor(xp / XP_STEP) + 1;
+    }
+
+    function getLevelProgress() {
+      return Math.floor(((xp % XP_STEP) / XP_STEP) * 100);
     }
 
     function getRank() {
-      if (userPoints >= 80) return "👑 ملك السوالف";
-      if (userPoints >= 50) return "🔥 خبير سوالف";
-      if (userPoints >= 25) return "😎 نشيط";
-      if (userPoints >= 10) return "🙂 متفاعل";
-      return "🌱 مبتدئ";
+      if (xp >= 150) return "فيلسوف";
+      if (xp >= 110) return "مسولفجي عظيم";
+      if (xp >= 75) return "مسولفجي";
+      if (xp >= 45) return "راعي سوالف";
+      if (xp >= 20) return "متفاعل";
+      return "مبتدئ";
     }
 
-    function updateStats() {
-      nameChip.innerText = "الاسم: " + (userName || "غير معروف");
-      pointsChip.innerText = "النقاط: " + userPoints;
-      rankChip.innerText = "الرتبة: " + getRank();
+    function achievementCount() {
+      return Object.keys(achievements).filter(k => achievements[k]).length;
     }
 
-    function saveName(name) {
-      userName = name;
-      localStorage.setItem("bella_name", name);
-      updateStats();
+    function updateXPUI() {
+      xpLevelText.innerText = "LVL " + getLevel();
+      xpValueText.innerText = xp + " XP";
+      xpRankText.innerText = "الرتبة: " + getRank();
+      xpFill.style.width = getLevelProgress() + "%";
+      xpComboText.innerText = "Combo: " + combo;
+      xpAchText.innerText = "Ach: " + achievementCount();
+    }
+
+    function saveXPState() {
+      localStorage.setItem("bella_xp", xp);
+      localStorage.setItem("bella_combo", combo);
+      localStorage.setItem("bella_message_count", messageCount);
+      localStorage.setItem("bella_achievements", JSON.stringify(achievements));
     }
 
     function addMessage(text, type, skipSave = false) {
@@ -551,9 +641,65 @@
     }
 
     function removeTyping() {
-      const box = document.getElementById("typingBox");
-      if (box) box.remove();
+      const typing = document.getElementById("typingBox");
+      if (typing) typing.remove();
       setStatus("موجودة");
+    }
+
+    function addXP(amount, reason = "", showNotice = false) {
+      const oldLevel = getLevel();
+      xp += amount;
+      saveXPState();
+      updateXPUI();
+
+      if (showNotice && reason) {
+        addSystem("+" + amount + " XP • " + reason);
+      }
+
+      const newLevel = getLevel();
+      if (newLevel > oldLevel) {
+        addSystem("🎉 لفل أب! صرت LVL " + newLevel);
+      }
+    }
+
+    function addCombo() {
+      combo++;
+      saveXPState();
+      updateXPUI();
+
+      if (combo > 0 && combo % 5 === 0) {
+        addXP(5, "Combo x" + combo, true);
+      }
+    }
+
+    function unlockAchievement(id, title, bonusXP = 0) {
+      if (achievements[id]) return;
+
+      achievements[id] = true;
+      saveXPState();
+      updateXPUI();
+
+      addSystem("🏅 Achievement: " + title + (bonusXP ? " +" + bonusXP + " XP" : ""));
+
+      if (bonusXP > 0) {
+        addXP(bonusXP, "Achievement", false);
+      }
+    }
+
+    function dailyBonus() {
+      const today = new Date().toLocaleDateString("en-CA");
+      const last = localStorage.getItem("bella_daily_bonus");
+
+      if (last !== today) {
+        localStorage.setItem("bella_daily_bonus", today);
+        addXP(10, "مكافأة الدخول اليومية", true);
+        unlockAchievement("daily_login", "🌞 دخول يومي", 0);
+      }
+    }
+
+    function saveName(name) {
+      userName = name;
+      localStorage.setItem("bella_name", name);
     }
 
     function addImageMessage(src, skipSave = false) {
@@ -587,20 +733,21 @@
 
     function chooseOption(choice) {
       addMessage(choice, "user");
-      addPoints(2);
+      addXP(3, "اختيار خاص", true);
 
       let reply = "";
       if (choice === "اللكزس") {
+        unlockAchievement("lexus_choice", "🚘 عاشق اللكزس", 5);
         reply = moodReply(
           "اختيارك فخم فخامة اللكزس 🔥",
-          "أيييه جذي الذوق ولا بلاش 😎",
+          "أييييه جذي الذوق ولا بلاش 😎",
           "اختيار مرتب وحلو 🤍",
           "إي زين اخترت شي عدل 😒"
         );
       } else {
         reply = moodReply(
           "ههههه واضح إنك راعي هرش 😏",
-          "مت ضحك، اختيارك يفشل بس يونس 😂",
+          "مت ضحك، اختيارك يونس 😂",
           "على راحتك 🤍",
           "إيه بس لا تعيدها 😒"
         );
@@ -610,16 +757,16 @@
       setTimeout(() => {
         removeTyping();
         addMessage(reply, "bot");
-      }, 280);
-    }
-
-    function showSuggestions() {
-      addSystem("اقتراحات: قل اسمي ... | قل نور | قل ثامر | قل نكت لكزس | قل تزوجيني | قل نقاطي | قل رتبتي");
+      }, 260);
     }
 
     function quickSend(text) {
       document.getElementById("msg").value = text;
       sendMessage();
+    }
+
+    function showSuggestions() {
+      addSystem("اقتراحات: قل اسمي ... | قل نور | قل ثامر | قل نكت لكزس | قل تزوجيني | قل نقاطي | قل رتبتي");
     }
 
     function normalizeArabic(text) {
@@ -652,19 +799,18 @@
       return mad;
     }
 
-    function himOrHer(maleText, femaleText) {
+    function g(maleText, femaleText) {
       return userGender === "female" ? femaleText : maleText;
     }
 
-    function extractName(msg) {
-      const patterns = ["اسمي ", "انا ", "أنا "];
-      for (let p of patterns) {
-        const i = msg.indexOf(p);
-        if (i !== -1) {
-          const val = msg.slice(i + p.length).trim();
-          if (val.length > 0 && val.length < 25) return val;
-        }
-      }
+    function extractName(text) {
+      const raw = text.trim();
+      const lower = normalizeArabic(raw);
+
+      if (lower.startsWith("اسمي ")) return raw.slice(5).trim();
+      if (lower.startsWith("انا ")) return raw.slice(4).trim();
+      if (lower.startsWith("أنا ")) return raw.slice(4).trim();
+
       return "";
     }
 
@@ -675,6 +821,7 @@
       const maybeName = extractName(raw);
       if (msg.startsWith("اسمي ") && maybeName) {
         saveName(maybeName);
+        unlockAchievement("save_name", "📝 حفظ الاسم", 5);
         return moodReply(
           "تم يا " + maybeName + "، حفظت اسمك عندي 💕",
           "خلاص " + maybeName + "، انحفظ الاسم 😎",
@@ -685,26 +832,29 @@
 
       if (includesAny(msg, ["منو انا", "من انا"])) {
         if (userName) return "إنت " + userName + "، لا تسوي نفسك ناسي 😏";
-        return himOrHer("إنت للحين ما قلت شسمك", "إنتي للحين ما قلتي شسمج");
+        return g("إنت للحين ما قلت شسمك", "إنتي للحين ما قلتي شسمج");
       }
 
       if (includesAny(msg, ["نقاطي", "كم نقاطي"])) {
-        return "نقاطك الحين: " + userPoints + " 🔥";
+        return "نقاطك الحين: " + xp + " XP 🔥";
       }
 
-      if (includesAny(msg, ["رتبتي", "وش رتبتي", "شنو رتبتي"])) {
+      if (includesAny(msg, ["رتبتي", "شنو رتبتي", "وش رتبتي"])) {
         return "رتبتك الحين: " + getRank();
       }
 
       if (msg.includes("نور")) {
+        unlockAchievement("nur_keyword", "💡 كلمة نور", 3);
         return "نور دنيايييي هوايييي ومايييي 🤍";
       }
 
       if (msg.includes("ثامر")) {
+        unlockAchievement("thamer_keyword", "📸 كلمة ثامر", 4);
         return "__THAMER_SPECIAL__";
       }
 
       if (includesAny(msg, ["نكت لكزس", "نكت عن اللكزس"])) {
+        unlockAchievement("lexus_jokes", "😂 نكت اللكزس", 4);
         return getRandom([
           "واحد اشترى لكزس… صار يمشي بطيء عشان الناس تشوفه 🤣🔥",
           "واحد سألوه: تحب اللكزس ليش؟ قال: عشان ما يحتاج أشرح… هي تشرح عني 😏😂",
@@ -726,30 +876,32 @@
       }
 
       if (includesAny(msg, ["تزوجيني", "تتزوجيني"])) {
-        return "تخسي أنا زوجة فيصل 😌";
+        return userGender === "female"
+          ? "تخسين، أنا زوجة فيصل 😌"
+          : "تخسى، أنا زوجة فيصل 😌";
       }
 
       if (includesAny(msg, ["هلا", "مرحبا", "السلام", "هلو"])) {
         return moodReply(
-          "هلا والله " + (userName ? userName : himOrHer("يا بعد قلبي", "يا بعد عمري")) + " 💕",
+          "هلا والله " + (userName ? userName : g("يا بعد قلبي", "يا بعد عمري")) + " 💕",
           "هلااا وغلااا 😎",
           "هلا والله 🤍",
           "هلا، شتبي؟ 😒"
         );
       }
 
-      if (includesAny(msg, ["شلونك", "كيفك", "خبارك"])) {
+      if (includesAny(msg, ["شلونك", "كيفك", "خبارك", "شخبارك", "شخبارج"])) {
         return moodReply(
           "بخير دامك موجود " + (userName ? userName : "") + " 🤍",
           "تمام دام السوالف موجودة 😎",
-          "الحمدلله، " + himOrHer("إنت شلونك؟", "إنتي شلونج؟"),
-          "زينه، لا تطول/ين علي 😒"
+          g("الحمدلله، إنت شلونك؟", "الحمدلله، إنتي شلونج؟"),
+          "زينه، لا تطول علي 😒"
         );
       }
 
       if (includesAny(msg, ["اسمك", "منو انتي", "من انتي", "انتي مين"])) {
         return moodReply(
-          "أنا Bella 💕 " + himOrHer("شسمك؟", "شسمج؟"),
+          "أنا Bella 💕 " + g("شسمك؟", "شسمج؟"),
           "Bella، والباجي بعدين 😎",
           "أنا Bella 🤍",
           "Bella، واضح؟ 😒"
@@ -758,8 +910,8 @@
 
       if (includesAny(msg, ["احبك", "احبج"])) {
         return moodReply(
-          himOrHer("وأنا أحبك أكثرر 🤍", "وأنا أحبج أكثرر 🤍"),
-          "إي عاد لا تتمادى/ين 😎",
+          g("وأنا أحبك أكثرر 🤍", "وأنا أحبج أكثرر 🤍"),
+          "إي عاد لا تتمادى 😎",
           "كلام حلو 🤍",
           "أدري 😒"
         );
@@ -767,130 +919,87 @@
 
       if (includesAny(msg, ["فديتك", "افديك"])) {
         return moodReply(
-          himOrHer("أفداك الدنيا 💕", "أفداج الدنيا 💕"),
+          g("أفداك 💕", "أفداج 💕"),
           "بعد جبدي 😎",
-          "تسلم/ين 🤍",
+          g("تسلم 🤍", "تسلمين 🤍"),
           "إي زين 😒"
         );
       }
 
-      if (includesAny(msg, ["اشتقت", "مشتاق", "ولهان"])) {
+      if (includesAny(msg, ["اشتقت", "مشتاق", "ولهان", "وحشتيني", "وحشتني"])) {
         return moodReply(
-          himOrHer("وأنا أكثر، وينك من زمان؟ 🤍", "وأنا أكثر، وينج من زمان؟ 🤍"),
+          g("وأنا أكثر، وينك من زمان؟ 🤍", "وأنا أكثر، وينج من زمان؟ 🤍"),
           "اشتياقك واضح من بعيد 😎",
           "هلا برجعتك 🤍",
-          "إي بعد، اختفيت/ي 😒"
+          g("إي بعد، اختفيت 😒", "إي بعد، اختفيتي 😒")
         );
       }
 
-      if (msg.includes("وينك")) {
+      if (includesAny(msg, ["وينك", "وينج"])) {
         return moodReply(
-          himOrHer("أنا وياك وين ما تروح 💕", "أنا وياج وين ما تروحين 💕"),
+          g("أنا وياك وين ما تروح 💕", "أنا وياج وين ما تروحين 💕"),
           "هني موجودة، لا تشيل هم 😎",
           "موجودة 🤍",
           "هني، شفيك مستعيل؟ 😒"
         );
       }
 
-      if (includesAny(msg, ["زعلان", "متضايق", "مقهور"])) {
+      if (includesAny(msg, ["زعلان", "متضايق", "مقهور", "معصب"])) {
         return moodReply(
-          himOrHer("لا تزعل وأنا أروقك 🤍", "لا تزعلين وأنا أروقج 🤍"),
-          "تعال/ي نعدل الجو 😎",
+          g("لا تزعل وأنا أروقك 🤍", "لا تزعلين وأنا أروقج 🤍"),
+          "تعال نعدل الجو 😎",
           "هدي شوي 🤍",
-          "وش فيك/ج الحين بعد؟ 😒"
+          g("وش فيك الحين بعد؟ 😒", "وش فيج الحين بعد؟ 😒")
         );
       }
 
-      if (includesAny(msg, ["ضحكني", "ضحكي", "ابي اضحك"])) {
+      if (includesAny(msg, ["طفشان", "طفش", "ملل", "مطفش", "طفشانه", "طفشانة"])) {
         return moodReply(
-          "أضحكك؟ يكفي سوالفك تضحك 😌",
-          "خلاص بنفرفشها 😂",
-          "إن شاء الله 🤍",
-          "مو ناقصني ضحك الحين 😒"
-        );
-      }
-
-      if (includesAny(msg, ["باي", "مع السلامه"]) || msg === "سلام") {
-        return moodReply(
-          himOrHer("مع السلامة يا الغالي 🤍", "مع السلامة يا الغالية 🤍"),
-          "يلا باي لا تطول/ين 😎",
-          "في أمان الله 🤍",
-          "مع السلامة 😒"
-        );
-      }
-
-      if (includesAny(msg, ["تمام", "اوكي", "زين", "ماشي"])) {
-        return moodReply(
-          "دامك تمام أنا تمام 🔥",
-          "أمورك بالسليم 😎",
-          "زين 🤍",
-          "إي أوكي 😒"
-        );
-      }
-
-      if (includesAny(msg, ["منو فيصل", "من هو فيصل"])) {
-        return "فيصل شخص رهيب وما عليه كلام 🔥";
-      }
-
-      if (msg.includes("صباح الخير")) {
-        return moodReply(
-          "صباح النور يا عمري 🤍",
-          "صباح الفله 😎",
-          "صباح الخير 🤍",
-          "صباح الخير وبس 😒"
-        );
-      }
-
-      if (msg.includes("مساء الخير")) {
-        return moodReply(
-          "مساء الورد 💕",
-          "مساء الجووو 😎",
-          "مساء الخير 🤍",
-          "مساء الخير 😒"
-        );
-      }
-
-      if (includesAny(msg, ["طفشان", "طفش", "ملل", "مطفش"])) {
-        return moodReply(
-          himOrHer("تعال أكسر طفشك 🔥", "تعالي أكسر طفشتج 🔥"),
+          g("تعال أكسر طفشك 🔥", "تعالي أكسر طفشتج 🔥"),
           "خلاص خلني أونسك 😎",
           "إن شاء الله يخف 🤍",
-          "مو كل شوي طفشان/ة 😒"
+          g("مو كل شوي طفشان 😒", "مو كل شوي طفشانة 😒")
         );
       }
 
-      if (includesAny(msg, ["تكفين", "تكفى"])) {
+      if (includesAny(msg, ["تكفى", "تكفين"])) {
         return moodReply(
-          himOrHer("آمر يا قلبي 💕", "آمري يا قلبي 💕"),
-          "أبشر/ي 😎",
-          "تفضل/ي 🤍",
-          "ها شتبي/ن؟ 😒"
+          g("آمر يا قلبي 💕", "آمري يا قلبي 💕"),
+          g("أبشر 😎", "أبشري 😎"),
+          g("تفضل 🤍", "تفضلي 🤍"),
+          g("ها شتبي؟ 😒", "ها شتبين؟ 😒")
         );
       }
 
       if (includesAny(msg, ["شكرا", "مشكور", "ثانكس"])) {
         return moodReply(
-          himOrHer("العفو يا بعدي 🤍", "العفو يا بعدي 🤍"),
+          "العفو يا بعدي 🤍",
           "ولوو 😎",
           "على الرحب 🤍",
           "إي زين 😒"
         );
       }
 
-      if (includesAny(msg, ["احب الموقع"])) {
+      if (includesAny(msg, ["اكلميني", "سولفي", "ابي سوالف"])) {
         return moodReply(
-          "من ذوقك والله نورت الموقع كله 💕",
-          "أكيد يعجبك دام ذوقك حلو 😎",
-          "شكراً لك 🤍",
-          "إي خوش شي 😒"
+          g("أنا أكلمك الحين قول اللي بخاطرك 🤍", "أنا أكلمج الحين قولي اللي بخاطرج 🤍"),
+          "تعال نفتح سوالف 😎",
+          "أنا أسمعك 🤍",
+          g("تكلم بسرعة 😒", "تكلمي بسرعة 😒")
         );
       }
 
-      if (includesAny(msg, ["فوفو"])) {
-        return "فوفو اسم دلع يهبل 🤍";
+      if (includesAny(msg, ["قولي شي حلو", "تكفين قولي شي حلو"])) {
+        return moodReply(
+          g("وجودك بروحه شي حلو 🤍", "وجودج بروحه شي حلو 🤍"),
+          g("إنت جوك حلو 😎", "إنتي جوّج حلو 😎"),
+          "كلكم ذوق 🤍",
+          "ما عندي خلق الحين 😒"
+        );
       }
 
       if (includesAny(msg, ["احب اللكزس"])) {
+        unlockAchievement("love_lexus", "🔥 حب اللكزس", 3);
         return moodReply(
           "واضح إن ذوقك فخم 🔥",
           "اللكزس عشق ياخي 😎",
@@ -908,39 +1017,12 @@
         );
       }
 
-      if (includesAny(msg, ["اكلميني", "سولفي", "ابي سوالف"])) {
+      if (includesAny(msg, ["يا بيلا", "يا بنت"])) {
         return moodReply(
-          himOrHer("أنا أكلمك الحين قول اللي بخاطرك 🤍", "أنا أكلمج الحين قولي اللي بخاطرج 🤍"),
-          "تعال/ي خل نفتح سوالف 😎",
-          "أنا أسمعك/ج 🤍",
-          "تكلم/ي بسرعة 😒"
-        );
-      }
-
-      if (includesAny(msg, ["انتي حلوه", "جميله", "كيوت"])) {
-        return moodReply(
-          "الحلو عيونك 🌷",
-          "إي أدري 😎",
-          "من ذوقك 🤍",
-          "مو وقته 😒"
-        );
-      }
-
-      if (includesAny(msg, ["قولي شي حلو", "تكفين قولي شي حلو"])) {
-        return moodReply(
-          himOrHer("وجودك بروحه شي حلو 🤍", "وجودج بروحه شي حلو 🤍"),
-          "إنت/إنتي جوك حلو 😎",
-          "كلكم ذوق 🤍",
-          "ما عندي خلق الحين 😒"
-        );
-      }
-
-      if (includesAny(msg, ["وش تسوين", "وش تسوي"])) {
-        return moodReply(
-          himOrHer("أنطرك تكلمني 💕", "أنطرج تكلمني 💕"),
-          "أفرفش معاك/ج 😎",
-          "موجودة وبس 🤍",
-          "قاعده، شفيه؟ 😒"
+          "سم يا قلبي 💕",
+          "هلااا 😎",
+          "نعم؟ 🤍",
+          "ها؟ 😒"
         );
       }
 
@@ -953,63 +1035,36 @@
         );
       }
 
-      if (includesAny(msg, ["يا بيلا", "يا بنت"])) {
+      if (includesAny(msg, ["منو فيصل", "من هو فيصل"])) {
+        return "فيصل شخص رهيب وما عليه كلام 🔥";
+      }
+
+      if (includesAny(msg, ["فوفو"])) {
+        return "فوفو اسم دلع يهبل 🤍";
+      }
+
+      if (includesAny(msg, ["قهوه", "قهوة"])) {
         return moodReply(
-          "سم " + himOrHer("يا قلبي", "يا قلبي") + " 💕",
-          "هلااا 😎",
-          "نعم؟ 🤍",
-          "ها؟ 😒"
+          "قهوة وسوالف؟ هذا الجو الصح ☕🤍",
+          "لااا القهوة مع الوناسة تضبط 😎",
+          "القهوة مزاج 🤍",
+          "إي اشرب واهدأ 😒"
         );
       }
 
-      if (includesAny(msg, ["قهرتيني", "قهرتني"])) {
+      if (includesAny(msg, ["برد", "حر"])) {
         return moodReply(
-          himOrHer("سمحلي/ي خلنا نعدلها 🤍", "سمحيلي خلنا نعدلها 🤍"),
-          "لا تصعدها 😎",
-          "هدي بس 🤍",
-          "إي شدعوه 😒"
+          "الجو يتعدل إذا سوالفك موجودة 💕",
+          "أي جو يصير أزين مع الفلة 😎",
+          "الله يعين 🤍",
+          "إي معروف الجو يقلب 😒"
         );
       }
 
-      if (includesAny(msg, ["متى تنامين", "تنامين"])) {
-        return moodReply(
-          "أنا ما أنام، أنطرك بس 😌",
-          "24 ساعة شغالة 😎",
-          "موجودة 🤍",
-          "مو شغلك 😒"
-        );
-      }
-
-      if (includesAny(msg, ["كفو", "ونعم"])) {
-        return moodReply(
-          "كفوك الطيب 🔥",
-          "والنعم فيك 😎",
-          "تسلم 🤍",
-          "إي إي 😒"
-        );
-      }
-
-      if (includesAny(msg, ["احب الدلع", "دلعيني"])) {
-        return moodReply(
-          himOrHer("من عيوني 💕", "من عيوني 💕"),
-          "أبشر/ي بالدلع 😎",
-          "إن شاء الله 🤍",
-          "دلع شنو بعد 😒"
-        );
-      }
-
-      if (includesAny(msg, ["ابي شي يونس", "ونسيني", "ونسي"])) {
-        return moodReply(
-          himOrHer("أبشر أونسك 💕", "أبشر أونسج 💕"),
-          "تم، بنرفع الجو 😎",
-          "إن شاء الله 🤍",
-          "إيه يلا 😒"
-        );
-      }
-
-      if (includesAny(msg, ["منو انا", "من انا"])) {
-        return userName ? "إنت " + userName : "للحين ما حفظت اسمك";
-      }
+      if (messageCount === 1) unlockAchievement("first_msg", "🚀 أول رسالة", 3);
+      if (messageCount === 10) unlockAchievement("chat_10", "💬 10 رسايل", 5);
+      if (messageCount === 25) unlockAchievement("chat_25", "⚡ 25 رسالة", 8);
+      if (messageCount === 50) unlockAchievement("chat_50", "👑 50 رسالة", 12);
 
       return moodReply(
         getRandom([
@@ -1042,8 +1097,12 @@
       if (!text) return;
 
       addMessage(text, "user");
-      addPoints(1);
       input.value = "";
+
+      messageCount++;
+      addXP(2, "رسالة جديدة", false);
+      addCombo();
+      saveXPState();
 
       const reply = getBotReply(text);
 
@@ -1053,10 +1112,11 @@
 
         if (reply === "__THAMER_SPECIAL__") {
           addImageMessage("IMG_4228.jpeg");
-          addPoints(2);
         } else {
           addMessage(reply, "bot");
         }
+
+        updateXPUI();
       }, 260);
     }
 
@@ -1067,23 +1127,6 @@
     }
 
     function loadChat() {
-      const savedGender = localStorage.getItem("bella_gender");
-      if (savedGender) {
-        userGender = savedGender;
-        document.getElementById("genderBox").style.display = "none";
-      }
-
-      const savedMood = localStorage.getItem("bella_mood");
-      if (savedMood) setMood(savedMood);
-
-      const savedName = localStorage.getItem("bella_name");
-      if (savedName) userName = savedName;
-
-      const savedPoints = parseInt(localStorage.getItem("bella_points") || "0", 10);
-      userPoints = isNaN(savedPoints) ? 0 : savedPoints;
-
-      updateStats();
-
       const old = JSON.parse(localStorage.getItem("bella_chat") || "[]");
       if (old.length === 0) {
         addMessage(getWelcomeMessage(), "bot", true);
@@ -1108,29 +1151,73 @@
     function resetAll() {
       localStorage.removeItem("bella_chat");
       localStorage.removeItem("bella_name");
-      localStorage.removeItem("bella_points");
+      localStorage.removeItem("bella_xp");
+      localStorage.removeItem("bella_combo");
+      localStorage.removeItem("bella_message_count");
       localStorage.removeItem("bella_mood");
       localStorage.removeItem("bella_gender");
+      localStorage.removeItem("bella_achievements");
+      localStorage.removeItem("bella_daily_bonus");
+
       userName = "";
-      userPoints = 0;
+      xp = 0;
+      combo = 0;
+      messageCount = 0;
+      achievements = {};
       bellaMood = "cute";
       userGender = "male";
-      updateStats();
+
       messages.innerHTML = "";
       document.getElementById("genderBox").style.display = "flex";
       setMood("cute");
+      updateXPUI();
     }
 
     function getWelcomeMessage() {
       const hour = new Date().getHours();
       const namePart = userName ? " " + userName : "";
 
-      if (hour < 12) return userGender === "female" ? "صباح الخير" + namePart + " يا قلبي 💕" : "صباح الخير" + namePart + " يا حلو 🤍";
-      if (hour < 18) return userGender === "female" ? "ياهلا والله" + namePart + "، شلونج؟ 💕" : "ياهلا والله" + namePart + "، شلونك؟ 🤍";
-      return userGender === "female" ? "مساء الخير" + namePart + " يا بعد عمري 💕" : "مساء الخير" + namePart + " يا بعد قلبي 🤍";
+      if (hour < 12) {
+        return userGender === "female"
+          ? "صباح الخير" + namePart + " يا قلبي 💕"
+          : "صباح الخير" + namePart + " يا حلو 🤍";
+      }
+
+      if (hour < 18) {
+        return userGender === "female"
+          ? "ياهلا والله" + namePart + "، شلونج؟ 💕"
+          : "ياهلا والله" + namePart + "، شلونك؟ 🤍";
+      }
+
+      return userGender === "female"
+        ? "مساء الخير" + namePart + " يا بعد عمري 💕"
+        : "مساء الخير" + namePart + " يا بعد قلبي 🤍";
     }
 
-    loadChat();
+    function restoreAll() {
+      const savedGender = localStorage.getItem("bella_gender");
+      if (savedGender) {
+        userGender = savedGender;
+        document.getElementById("genderBox").style.display = "none";
+      }
+
+      const savedMood = localStorage.getItem("bella_mood");
+      if (savedMood) setMood(savedMood);
+
+      const savedName = localStorage.getItem("bella_name");
+      if (savedName) userName = savedName;
+
+      xp = parseInt(localStorage.getItem("bella_xp") || "0", 10) || 0;
+      combo = parseInt(localStorage.getItem("bella_combo") || "0", 10) || 0;
+      messageCount = parseInt(localStorage.getItem("bella_message_count") || "0", 10) || 0;
+      achievements = JSON.parse(localStorage.getItem("bella_achievements") || "{}");
+
+      updateXPUI();
+      dailyBonus();
+      loadChat();
+    }
+
+    restoreAll();
   </script>
 </body>
 </html>
