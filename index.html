@@ -15,7 +15,7 @@
       --bg1: #0b0b0d;
       --bg2: #17181d;
       --panel: rgba(24, 24, 27, 0.96);
-      --panel-2: rgba(36, 36, 40, 0.92);
+      --panel2: rgba(36, 36, 40, 0.92);
       --user: #0a84ff;
       --bot: #2c2c2e;
       --text: #ffffff;
@@ -24,7 +24,6 @@
       --accent2: #5e5ce6;
       --accent3: #ff2d55;
       --gold: #ffcc00;
-      --green: #34c759;
       --orange: #ff9f0a;
     }
 
@@ -133,7 +132,7 @@
 
     #chatHeader {
       padding: 14px;
-      background: var(--panel-2);
+      background: var(--panel2);
       border-bottom: 1px solid rgba(255,255,255,0.05);
     }
 
@@ -483,14 +482,14 @@
 <body>
 
   <h1>أهلاً بكم بموقع فيصل</h1>
-  <div class="sub">Bella نسخة مطوّرة + أوتو مود + مفردات أكثر 🔥</div>
+  <div class="sub">Bella نسخة مطوّرة + أوتو مود + اقتراحات حسب الجنس 🔥</div>
 
   <div class="heroCard">
     <div class="heroTop">
       <div class="heroAvatar">B</div>
       <div class="heroText">
         <b>Bella 💕</b>
-        <span>لهجة كويتية + مودات + نقاط + اقتراحات أكثر</span>
+        <span>لهجة كويتية + مودات + نقاط + اقتراحات ذكية</span>
       </div>
     </div>
     <button id="openBtn" onclick="toggleChat()">افتح Bella 💬</button>
@@ -554,37 +553,14 @@
     </div>
 
     <div id="toolsBar">
-      <button class="toolBtn" onclick="quickSend('اسمي فيصل')">حفظ اسم</button>
+      <button class="toolBtn" onclick="quickSend(userGender === 'female' ? 'اسمي فاطمه' : 'اسمي فيصل')">حفظ اسم</button>
       <button class="toolBtn" onclick="quickSend('منو انا')">منو أنا</button>
       <button class="toolBtn" onclick="quickSend('نقاطي')">نقاطي</button>
       <button class="toolBtn" onclick="quickSend('رتبتي')">رتبتي</button>
-      <button class="toolBtn" onclick="quickSend('شفيك شلونك عساك بخير')">سؤال عام</button>
+      <button class="toolBtn" onclick="quickSend(userGender === 'female' ? 'شفيج شلونج عساج بخير' : 'شفيك شلونك عساك بخير')">سؤال عام</button>
     </div>
 
-    <div id="quickBar">
-      <button class="quickBtn" onclick="quickSend('هلا')">هلا</button>
-      <button class="quickBtn" onclick="quickSend('هلا والله')">هلا والله</button>
-      <button class="quickBtn" onclick="quickSend('شلونك')">شلونك</button>
-      <button class="quickBtn" onclick="quickSend('شفيك شلونك عساك بخير')">شفيك شلونك</button>
-      <button class="quickBtn" onclick="quickSend('شفيج شلونج عساج بخير')">شفيج شلونج</button>
-      <button class="quickBtn" onclick="quickSend('نور')">نور</button>
-      <button class="quickBtn" onclick="quickSend('نور دنياي')">نور دنياي</button>
-      <button class="quickBtn" onclick="quickSend('ثامر')">ثامر</button>
-      <button class="quickBtn" onclick="quickSend('نكت لكزس')">نكت لكزس</button>
-      <button class="quickBtn" onclick="quickSend('احبك')">احبك</button>
-      <button class="quickBtn" onclick="quickSend('فديتك')">فديتك</button>
-      <button class="quickBtn" onclick="quickSend('طفشان')">طفشان</button>
-      <button class="quickBtn" onclick="quickSend('شكو')">شكو</button>
-      <button class="quickBtn" onclick="quickSend('شدعوه')">شدعوه</button>
-      <button class="quickBtn" onclick="quickSend('أفا')">أفا</button>
-      <button class="quickBtn" onclick="quickSend('قهوة')">قهوة</button>
-      <button class="quickBtn" onclick="quickSend('احب اللكزس')">احب اللكزس</button>
-      <button class="quickBtn" onclick="quickSend('ابي سوالف')">ابي سوالف</button>
-      <button class="quickBtn" onclick="quickSend('زوط')">زوط</button>
-      <button class="quickBtn" onclick="quickSend('زربه')">زربه</button>
-      <button class="quickBtn" onclick="quickSend('انمحنت')">انمحنت</button>
-      <button class="quickBtn" onclick="quickSend('تزوجيني')">تزوجيني</button>
-    </div>
+    <div id="quickBar"></div>
 
     <div id="messages"></div>
 
@@ -605,6 +581,54 @@
 
     const XP_STEP = 20;
 
+    const maleSuggestions = [
+      "هلا",
+      "هلا والله",
+      "شلونك",
+      "شفيك شلونك عساك بخير",
+      "نور",
+      "نور دنياي",
+      "ثامر",
+      "نكت لكزس",
+      "احبك",
+      "فديتك",
+      "وينك",
+      "ابي سوالف",
+      "شمسوي",
+      "اشتقت لك",
+      "تكفى",
+      "يا بعد قلبي",
+      "شكو",
+      "شدعوه",
+      "أفا",
+      "قهوة",
+      "احب اللكزس"
+    ];
+
+    const femaleSuggestions = [
+      "هلا",
+      "هلا والله",
+      "شلونج",
+      "شفيج شلونج عساج بخير",
+      "نور",
+      "نور دنياي",
+      "ثامر",
+      "نكت لكزس",
+      "احبج",
+      "فديتج",
+      "وينج",
+      "ابي سوالف",
+      "شمسوية",
+      "اشتقتلج",
+      "تكفين",
+      "يا بعد روحي",
+      "شكو",
+      "شدعوه",
+      "أفا",
+      "قهوة",
+      "احب اللكزس"
+    ];
+
     const messages = document.getElementById("messages");
     const statusText = document.getElementById("statusText");
     const xpLevelText = document.getElementById("xpLevel");
@@ -623,10 +647,29 @@
       statusText.innerText = text;
     }
 
+    function getGenderSuggestions() {
+      return userGender === "female" ? femaleSuggestions : maleSuggestions;
+    }
+
+    function renderQuickBar() {
+      const quickBar = document.getElementById("quickBar");
+      const items = getGenderSuggestions();
+      quickBar.innerHTML = "";
+
+      items.forEach(item => {
+        const btn = document.createElement("button");
+        btn.className = "quickBtn";
+        btn.innerText = item;
+        btn.onclick = () => quickSend(item);
+        quickBar.appendChild(btn);
+      });
+    }
+
     function setGender(g) {
       userGender = g;
       localStorage.setItem("bella_gender", g);
       document.getElementById("genderBox").style.display = "none";
+      renderQuickBar();
       updateXPUI();
 
       if (messages.innerHTML.trim() === "") {
@@ -663,18 +706,13 @@
         calm: "رايق",
         mad: "معصبة"
       };
-
-      if (mode === "auto") {
-        setStatus("موجودة • مود: أوتو");
-      } else {
-        setStatus("موجودة • مود: " + map[mode]);
-      }
+      setStatus("موجودة • مود: " + map[mode]);
     }
 
     function detectAutoMode(msg) {
       if (includesAny(msg, [
         "احبك", "احبج", "فديتك", "فديتج", "نور", "نور دنياي",
-        "يا عمري", "يا حلو", "يا بعد جبدي", "يا بعد عمري"
+        "يا عمري", "يا حلو", "يا بعد جبدي", "يا بعد عمري", "يا بعد روحي"
       ])) return "cute";
 
       if (includesAny(msg, [
@@ -698,6 +736,17 @@
     function resolvedMode(msg = "") {
       if (currentMode !== "auto") return currentMode;
       return detectAutoMode(msg);
+    }
+
+    function modeLabel(mode) {
+      const map = {
+        auto: "أوتو",
+        cute: "دلع",
+        fun: "فلة",
+        calm: "رايق",
+        mad: "معصبة"
+      };
+      return map[mode] || "أوتو";
     }
 
     function getLevel() {
@@ -756,7 +805,7 @@
     }
 
     function addTyping(mode = "auto") {
-      setStatus(mode === "auto" ? "تكتب..." : "تكتب • " + modeLabel(mode));
+      setStatus("تكتب • " + modeLabel(mode));
       const div = document.createElement("div");
       div.className = "msg bot typing";
       div.id = "typingBox";
@@ -769,17 +818,6 @@
       const typing = document.getElementById("typingBox");
       if (typing) typing.remove();
       updateModeStatus(currentMode);
-    }
-
-    function modeLabel(mode) {
-      const map = {
-        cute: "دلع",
-        fun: "فلة",
-        calm: "رايق",
-        mad: "معصبة",
-        auto: "أوتو"
-      };
-      return map[mode] || "أوتو";
     }
 
     function addXP(amount, reason = "", showNotice = false) {
@@ -942,14 +980,7 @@
     }
 
     function showSuggestions() {
-      const suggest = [
-        "هلا", "هلا والله", "شلونك", "شفيك شلونك عساك بخير",
-        "شفيج شلونج عساج بخير", "نور", "نور دنياي", "ثامر",
-        "نكت لكزس", "احبك", "فديتك", "طفشان", "شكو", "شدعوه",
-        "أفا", "قهوة", "احب اللكزس", "ابي سوالف", "زوط", "زربه",
-        "انمحنت", "تزوجيني", "اسمي فيصل", "منو انا", "نقاطي", "رتبتي"
-      ];
-      addSystem("جرب: " + suggest.join(" • "));
+      addSystem("اقتراحات: " + getGenderSuggestions().join(" • "));
     }
 
     function normalizeArabic(text) {
@@ -1071,15 +1102,13 @@
       }
 
       if (includesAny(msg, [
-        "شلونك", "شلونج", "كيفك", "خبارك", "شخبارك", "شخبارج",
-        "شفيك", "شفيج", "عساك بخير", "عساج بخير"
+        "شلونك", "شلونج",
+        "شفيك شلونك عساك بخير",
+        "شفيج شلونج عساج بخير",
+        "عساك بخير", "عساج بخير",
+        "شفيك", "شفيج"
       ])) {
-        return byMode(msg,
-          g("الحمدلله بخير، شفيك شلونك عساك بخير؟ 🤍", "الحمدلله بخير، شفيج شلونج عساج بخير؟ 💕"),
-          g("بخير يالطيب، شفيك شلونك؟ 😎", "بخير يا بعد عمري، شفيج شلونج؟ 😎"),
-          g("الحمدلله زينه، إنت شلونك؟ 🤍", "الحمدلله زينه، إنتي شلونج؟ 🤍"),
-          g("بخير، شفيك الحين؟ 😒", "بخير، شفيج الحين؟ 😒")
-        );
+        return "بخير يا بعد روحي 🤍";
       }
 
       if (includesAny(msg, ["هلا والله", "هلا وغلا", "يا هلا", "هلا", "مرحبا", "السلام", "هلو"])) {
@@ -1091,12 +1120,30 @@
         );
       }
 
-      if (includesAny(msg, ["وينج", "وينك"])) {
+      if (includesAny(msg, ["وينك", "وينج"])) {
         return byMode(msg,
-          g("أنا وياك وين ما تروح 💕", "أنا وياج وين ما تروحين 💕"),
+          g("أنا وياك وين ما تروح 🤍", "أنا وياج وين ما تروحين 💕"),
           "هني موجودة، لا تشيل هم 😎",
           "موجودة 🤍",
           g("هني، شفيك مستعيل؟ 😒", "هني، شفيج مستعيلة؟ 😒")
+        );
+      }
+
+      if (includesAny(msg, ["شمسوي", "وش تسوي"])) {
+        return byMode(msg,
+          "أنطرك تكلمني وأونس معاك 😎",
+          "أقعد أفلها وأنتظر سوالفك 😎",
+          "موجودة وبس 🤍",
+          "قاعده، شفيه؟ 😒"
+        );
+      }
+
+      if (includesAny(msg, ["شمسوية", "وش تسوين"])) {
+        return byMode(msg,
+          "أنطرج تكلميني وأونس معاج 💕",
+          "أونس وأستانس مع سوالفج 😎",
+          "موجودة وبس 🤍",
+          "قاعده، شفيج؟ 😒"
         );
       }
 
@@ -1109,48 +1156,12 @@
         );
       }
 
-      if (includesAny(msg, ["وش تسوين", "وش تسوي", "شتسوين", "شتسوي"])) {
+      if (includesAny(msg, ["فديتك", "فديتج"])) {
         return byMode(msg,
-          g("أنطرك تكلمني 💕", "أنطرج تكلميني 💕"),
-          "أفرفش وأونس 😎",
-          "موجودة وبس 🤍",
-          "قاعدة، شفيه؟ 😒"
-        );
-      }
-
-      if (includesAny(msg, ["فديتج", "فديتك", "احب سوالفك", "احب سوالفج"])) {
-        return byMode(msg,
-          g("وأنا أفداك يا بعد قلبي 🤍", "وأنا أفداج يا بعد عمري 💕"),
-          "بعد جبدي إنت 😎",
+          g("وأنا أفداك يا بعد قلبي 🤍", "وأنا أفداج يا بعد روحي 💕"),
+          "بعد جبدي إنت/إنتي 😎",
           "ذوقك حلو 🤍",
           "إي أدري 😒"
-        );
-      }
-
-      if (includesAny(msg, ["شكو", "شدعوه", "افا", "أفا"])) {
-        return byMode(msg,
-          "شدعوه، ليش جذي؟ 💕",
-          "أفا عليك بس 😎",
-          "شكو السالفة؟ 🤍",
-          "شدعوه الحين 😒"
-        );
-      }
-
-      if (includesAny(msg, ["يا حلو", "يا عمري", "يا بعد جبدي"])) {
-        return byMode(msg,
-          "يا بعد عمري إنت/إنتي 💕",
-          "يا سلام على هالكلام 😎",
-          "ذوق 🤍",
-          "إي زين 😒"
-        );
-      }
-
-      if (includesAny(msg, ["اسمك", "منو انتي", "من انتي", "انتي مين"])) {
-        return byMode(msg,
-          "أنا Bella 💕 " + g("شسمك؟", "شسمج؟"),
-          "Bella، والباجي بعدين 😎",
-          "أنا Bella 🤍",
-          "Bella، واضح؟ 😒"
         );
       }
 
@@ -1163,61 +1174,58 @@
         );
       }
 
-      if (includesAny(msg, ["فديتك", "افديك"])) {
+      if (includesAny(msg, ["اشتقت لك", "مشتاق لك"])) {
+        return "وأنا أكثر يا بعد قلبي 🤍";
+      }
+
+      if (includesAny(msg, ["اشتقتلج", "مشتاقتلك"])) {
+        return "وأنا أكثر يا بعد روحي 💕";
+      }
+
+      if (includesAny(msg, ["تكفى"])) {
+        return "أبشر يا بعد قلبي 🤍";
+      }
+
+      if (includesAny(msg, ["تكفين"])) {
+        return "آمري يا بعد روحي 💕";
+      }
+
+      if (includesAny(msg, ["يا بعد قلبي"])) {
+        return "يا بعد قلبي إنت 🤍";
+      }
+
+      if (includesAny(msg, ["يا بعد روحي"])) {
+        return "يا بعد روحي إنتي 💕";
+      }
+
+      if (includesAny(msg, ["شكو"])) {
         return byMode(msg,
-          g("أفداك 💕", "أفداج 💕"),
-          "بعد جبدي 😎",
-          g("تسلم 🤍", "تسلمين 🤍"),
-          "إي زين 😒"
+          "شكو؟ خير إن شاء الله 🤍",
+          "شكو السالفة خل نعرف 😎",
+          "خير إن شاء الله 🤍",
+          "شكو الحين؟ 😒"
         );
       }
 
-      if (includesAny(msg, ["اشتقت", "مشتاق", "ولهان", "وحشتيني", "وحشتني"])) {
+      if (includesAny(msg, ["شدعوه"])) {
         return byMode(msg,
-          g("وأنا أكثر، وينك من زمان؟ 🤍", "وأنا أكثر، وينج من زمان؟ 🤍"),
-          "اشتياقك واضح من بعيد 😎",
-          "هلا برجعتك 🤍",
-          g("إي بعد، اختفيت 😒", "إي بعد، اختفيتي 😒")
+          "شدعوه ليش جذي 😌",
+          "شدعوه خلها سهلة 😎",
+          "شدعوه 🤍",
+          "إي شدعوه 😒"
         );
       }
 
-      if (includesAny(msg, ["زعلان", "متضايق", "مقهور", "معصب"])) {
+      if (includesAny(msg, ["أفا", "افا"])) {
         return byMode(msg,
-          g("لا تزعل وأنا أروقك 🤍", "لا تزعلين وأنا أروقج 🤍"),
-          "تعال نعدل الجو 😎",
-          "هدي شوي 🤍",
-          g("وش فيك الحين بعد؟ 😒", "وش فيج الحين بعد؟ 😒")
+          "أفا عليك/ج بس 💕",
+          "أفااا لا عاد 😎",
+          "أفا 🤍",
+          "إي أفا 😒"
         );
       }
 
-      if (includesAny(msg, ["طفشان", "طفش", "ملل", "مطفش", "طفشانه", "طفشانة"])) {
-        return byMode(msg,
-          g("تعال أكسر طفشك 🔥", "تعالي أكسر طفشتج 🔥"),
-          "خلاص خلني أونسك 😎",
-          "إن شاء الله يخف 🤍",
-          g("مو كل شوي طفشان 😒", "مو كل شوي طفشانة 😒")
-        );
-      }
-
-      if (includesAny(msg, ["تكفى", "تكفين"])) {
-        return byMode(msg,
-          g("آمر يا قلبي 💕", "آمري يا قلبي 💕"),
-          g("أبشر 😎", "أبشري 😎"),
-          g("تفضل 🤍", "تفضلي 🤍"),
-          g("ها شتبي؟ 😒", "ها شتبين؟ 😒")
-        );
-      }
-
-      if (includesAny(msg, ["شكرا", "مشكور", "ثانكس"])) {
-        return byMode(msg,
-          "العفو يا بعدي 🤍",
-          "ولوو 😎",
-          "على الرحب 🤍",
-          "إي زين 😒"
-        );
-      }
-
-      if (includesAny(msg, ["اكلميني", "سولفي", "ابي سوالف"])) {
+      if (includesAny(msg, ["ابي سوالف", "اكلميني", "سولفي"])) {
         return byMode(msg,
           g("أنا أكلمك الحين قول اللي بخاطرك 🤍", "أنا أكلمج الحين قولي اللي بخاطرج 🤍"),
           "تعال نفتح سوالف 😎",
@@ -1298,8 +1306,13 @@
         );
       }
 
-      if (includesAny(msg, ["منو انا", "من انا"])) {
-        return userName ? "إنت " + userName : "للحين ما حفظت اسمك";
+      if (includesAny(msg, ["شكرا", "مشكور", "ثانكس"])) {
+        return byMode(msg,
+          "العفو يا بعدي 🤍",
+          "ولوو 😎",
+          "على الرحب 🤍",
+          "إي زين 😒"
+        );
       }
 
       if (messageCount === 1) unlockAchievement("first_msg", "🚀 أول رسالة", 3);
@@ -1314,28 +1327,32 @@
           "أحب سوالفك 🤍",
           "قول بعد شنو عندك",
           "إي جذي السوالف الزينة 😌",
-          "عجبني أسلوبك وايد 💕"
+          "عجبني أسلوبك وايد 💕",
+          "خوش سوالف والله 🤍"
         ]),
         getRandom([
           "حلووو كمل 😎",
           "إي جذي الجو 😂",
           "أعجبتني السالفة 🔥",
           "كمّل لا توقف 😎",
-          "واضح إن عندك سوالف حلوة 😂"
+          "واضح إن عندك سوالف حلوة 😂",
+          "يلا زيدنا بعد 😎"
         ]),
         getRandom([
           "أنا أسمعك 🤍",
           "تمام كمّل",
           "وصلت الفكرة 🤍",
           "هدي وخذ راحتك 🤍",
-          "زين كمّل"
+          "زين كمّل",
+          "واضح عليك هدوء جميل 🤍"
         ]),
         getRandom([
           "إي وبعدين؟ 😒",
           "خلصت؟ 😒",
           "تكلم عدل 😒",
           "ها شتبي يعني؟ 😒",
-          "إي لا تطول 😒"
+          "إي لا تطول 😒",
+          "قول الزبدة 😒"
         ])
       );
     }
@@ -1353,8 +1370,8 @@
       addCombo();
       saveXPState();
 
-      const msgNormalized = normalizeArabic(text);
-      const mode = resolvedMode(msgNormalized);
+      const normalized = normalizeArabic(text);
+      const mode = resolvedMode(normalized);
       const reply = getBotReply(text);
 
       addTyping(mode);
@@ -1422,6 +1439,7 @@
 
       messages.innerHTML = "";
       document.getElementById("genderBox").style.display = "flex";
+      document.getElementById("quickBar").innerHTML = "";
       setMode("auto");
       updateXPUI();
     }
@@ -1469,6 +1487,7 @@
       messageCount = parseInt(localStorage.getItem("bella_message_count") || "0", 10) || 0;
       achievements = JSON.parse(localStorage.getItem("bella_achievements") || "{}");
 
+      renderQuickBar();
       updateXPUI();
       dailyBonus();
       loadChat();
