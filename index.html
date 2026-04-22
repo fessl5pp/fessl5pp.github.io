@@ -13,16 +13,19 @@
 
     :root {
       --bg1: #0b0b0d;
-      --bg2: #16171c;
-      --panel: rgba(25, 25, 28, 0.96);
+      --bg2: #17181d;
+      --panel: rgba(24, 24, 27, 0.96);
+      --panel-2: rgba(36, 36, 40, 0.92);
       --user: #0a84ff;
       --bot: #2c2c2e;
-      --text: #fff;
-      --muted: #b6b6c2;
+      --text: #ffffff;
+      --muted: #b8bcc6;
       --accent1: #0a84ff;
       --accent2: #5e5ce6;
       --accent3: #ff2d55;
       --gold: #ffcc00;
+      --green: #34c759;
+      --orange: #ff9f0a;
     }
 
     body {
@@ -30,18 +33,19 @@
       min-height: 100vh;
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Arial, sans-serif;
       background:
-        radial-gradient(circle at top, rgba(94,92,230,0.18), transparent 25%),
-        radial-gradient(circle at bottom, rgba(10,132,255,0.12), transparent 25%),
+        radial-gradient(circle at top, rgba(94,92,230,0.18), transparent 26%),
+        radial-gradient(circle at bottom, rgba(10,132,255,0.12), transparent 24%),
         linear-gradient(180deg, var(--bg1), var(--bg2));
       color: var(--text);
       text-align: center;
-      padding: 42px 14px 130px;
+      padding: 40px 14px 130px;
     }
 
     h1 {
       margin: 0;
       font-size: 31px;
       font-weight: 900;
+      letter-spacing: -0.4px;
     }
 
     .sub {
@@ -50,8 +54,56 @@
       font-size: 14px;
     }
 
+    .heroCard {
+      width: min(460px, 100%);
+      margin: 22px auto 0;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 24px;
+      padding: 18px 16px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.18);
+      backdrop-filter: blur(10px);
+    }
+
+    .heroTop {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .heroAvatar {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ff7eb3, #7afcff);
+      color: #111;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 20px;
+    }
+
+    .heroText {
+      text-align: right;
+    }
+
+    .heroText b {
+      display: block;
+      font-size: 16px;
+    }
+
+    .heroText span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
     #openBtn {
-      margin-top: 24px;
+      margin-top: 14px;
       border: none;
       border-radius: 999px;
       padding: 14px 24px;
@@ -68,20 +120,20 @@
       left: 50%;
       transform: translateX(-50%);
       bottom: 14px;
-      width: min(420px, calc(100% - 16px));
+      width: min(430px, calc(100% - 16px));
       background: var(--panel);
       border: 1px solid rgba(255,255,255,0.06);
       border-radius: 28px;
       overflow: hidden;
       display: none;
-      box-shadow: 0 24px 50px rgba(0,0,0,0.42);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.42);
       z-index: 999;
       backdrop-filter: blur(16px);
     }
 
     #chatHeader {
       padding: 14px;
-      background: rgba(36,36,40,0.92);
+      background: var(--panel-2);
       border-bottom: 1px solid rgba(255,255,255,0.05);
     }
 
@@ -94,7 +146,7 @@
     }
 
     #xpPanel {
-      width: 150px;
+      width: 155px;
       background: rgba(255,255,255,0.08);
       border: 1px solid rgba(255,255,255,0.06);
       border-radius: 16px;
@@ -139,7 +191,7 @@
     #xpFill {
       width: 0%;
       height: 100%;
-      background: linear-gradient(90deg, var(--gold), #ff8a00);
+      background: linear-gradient(90deg, var(--gold), var(--orange));
       border-radius: 999px;
       transition: width 0.25s ease;
     }
@@ -173,8 +225,8 @@
     }
 
     #avatar {
-      width: 40px;
-      height: 40px;
+      width: 42px;
+      height: 42px;
       border-radius: 50%;
       background: linear-gradient(135deg, #ff7eb3, #7afcff);
       color: #111;
@@ -215,22 +267,23 @@
       cursor: pointer;
     }
 
-    #moodBar, #toolsBar, #quickBar {
+    #modeBar, #toolsBar, #quickBar {
       display: flex;
       gap: 8px;
       overflow-x: auto;
       padding: 10px 12px;
       scrollbar-width: none;
       border-bottom: 1px solid rgba(255,255,255,0.05);
+      background: rgba(18,18,21,0.7);
     }
 
-    #moodBar::-webkit-scrollbar,
+    #modeBar::-webkit-scrollbar,
     #toolsBar::-webkit-scrollbar,
     #quickBar::-webkit-scrollbar {
       display: none;
     }
 
-    .moodBtn, .quickBtn, .toolBtn {
+    .modeBtn, .quickBtn, .toolBtn {
       border: none;
       border-radius: 999px;
       padding: 10px 14px;
@@ -242,12 +295,12 @@
       background: #2c2c2e;
     }
 
-    .activeMood {
+    .activeMode {
       background: linear-gradient(135deg, var(--accent1), var(--accent2));
     }
 
     #messages {
-      height: 360px;
+      height: 370px;
       overflow-y: auto;
       background: #000;
       padding: 12px;
@@ -288,7 +341,7 @@
       font-size: 12px;
       border-radius: 999px;
       padding: 8px 12px;
-      max-width: 92%;
+      max-width: 94%;
     }
 
     .typing {
@@ -420,17 +473,28 @@
     }
 
     @media (max-width: 420px) {
-      #messages { height: 325px; }
+      #messages { height: 330px; }
       h1 { font-size: 28px; }
-      #xpPanel { width: 132px; padding: 8px 10px; }
+      #xpPanel { width: 136px; padding: 8px 10px; }
+      .heroCard { padding: 16px 14px; }
     }
   </style>
 </head>
 <body>
 
   <h1>أهلاً بكم بموقع فيصل</h1>
-  <div class="sub">Bella نسخة مطوّرة + نظام نقاط كامل 🔥</div>
-  <button id="openBtn" onclick="toggleChat()">افتح Bella 💬</button>
+  <div class="sub">Bella نسخة مطوّرة + أوتو مود + مفردات أكثر 🔥</div>
+
+  <div class="heroCard">
+    <div class="heroTop">
+      <div class="heroAvatar">B</div>
+      <div class="heroText">
+        <b>Bella 💕</b>
+        <span>لهجة كويتية + مودات + نقاط + اقتراحات أكثر</span>
+      </div>
+    </div>
+    <button id="openBtn" onclick="toggleChat()">افتح Bella 💬</button>
+  </div>
 
   <div id="genderBox">
     <div id="genderCard">
@@ -472,6 +536,7 @@
           </div>
 
           <div class="topBtns">
+            <button class="topBtn" onclick="showSuggestions()">اقتراحات</button>
             <button class="topBtn" onclick="clearChat()">مسح</button>
             <button class="topBtn" onclick="resetAll()">إعادة</button>
             <button class="topBtn" onclick="toggleChat()">✕</button>
@@ -480,35 +545,45 @@
       </div>
     </div>
 
-    <div id="moodBar">
-      <button id="moodCute" class="moodBtn activeMood" onclick="setMood('cute')">💕 دلع</button>
-      <button id="moodFun" class="moodBtn" onclick="setMood('fun')">😎 فلة</button>
-      <button id="moodCalm" class="moodBtn" onclick="setMood('calm')">🤍 رايق</button>
-      <button id="moodMad" class="moodBtn" onclick="setMood('mad')">😒 معصبة</button>
+    <div id="modeBar">
+      <button id="modeAuto" class="modeBtn activeMode" onclick="setMode('auto')">🤖 أوتو</button>
+      <button id="modeCute" class="modeBtn" onclick="setMode('cute')">💕 دلع</button>
+      <button id="modeFun" class="modeBtn" onclick="setMode('fun')">😎 فلة</button>
+      <button id="modeCalm" class="modeBtn" onclick="setMode('calm')">🤍 رايق</button>
+      <button id="modeMad" class="modeBtn" onclick="setMode('mad')">😒 معصبة</button>
     </div>
 
     <div id="toolsBar">
-      <button class="toolBtn" onclick="showSuggestions()">اقتراحات</button>
       <button class="toolBtn" onclick="quickSend('اسمي فيصل')">حفظ اسم</button>
+      <button class="toolBtn" onclick="quickSend('منو انا')">منو أنا</button>
       <button class="toolBtn" onclick="quickSend('نقاطي')">نقاطي</button>
       <button class="toolBtn" onclick="quickSend('رتبتي')">رتبتي</button>
-      <button class="toolBtn" onclick="quickSend('منو انا')">منو أنا</button>
+      <button class="toolBtn" onclick="quickSend('شفيك شلونك عساك بخير')">سؤال عام</button>
     </div>
 
     <div id="quickBar">
       <button class="quickBtn" onclick="quickSend('هلا')">هلا</button>
+      <button class="quickBtn" onclick="quickSend('هلا والله')">هلا والله</button>
+      <button class="quickBtn" onclick="quickSend('شلونك')">شلونك</button>
+      <button class="quickBtn" onclick="quickSend('شفيك شلونك عساك بخير')">شفيك شلونك</button>
+      <button class="quickBtn" onclick="quickSend('شفيج شلونج عساج بخير')">شفيج شلونج</button>
       <button class="quickBtn" onclick="quickSend('نور')">نور</button>
       <button class="quickBtn" onclick="quickSend('نور دنياي')">نور دنياي</button>
       <button class="quickBtn" onclick="quickSend('ثامر')">ثامر</button>
+      <button class="quickBtn" onclick="quickSend('نكت لكزس')">نكت لكزس</button>
       <button class="quickBtn" onclick="quickSend('احبك')">احبك</button>
-      <button class="quickBtn" onclick="quickSend('شلونك')">شلونك</button>
+      <button class="quickBtn" onclick="quickSend('فديتك')">فديتك</button>
       <button class="quickBtn" onclick="quickSend('طفشان')">طفشان</button>
+      <button class="quickBtn" onclick="quickSend('شكو')">شكو</button>
+      <button class="quickBtn" onclick="quickSend('شدعوه')">شدعوه</button>
+      <button class="quickBtn" onclick="quickSend('أفا')">أفا</button>
+      <button class="quickBtn" onclick="quickSend('قهوة')">قهوة</button>
+      <button class="quickBtn" onclick="quickSend('احب اللكزس')">احب اللكزس</button>
+      <button class="quickBtn" onclick="quickSend('ابي سوالف')">ابي سوالف</button>
       <button class="quickBtn" onclick="quickSend('زوط')">زوط</button>
       <button class="quickBtn" onclick="quickSend('زربه')">زربه</button>
       <button class="quickBtn" onclick="quickSend('انمحنت')">انمحنت</button>
-      <button class="quickBtn" onclick="quickSend('نكت لكزس')">نكت لكزس</button>
       <button class="quickBtn" onclick="quickSend('تزوجيني')">تزوجيني</button>
-      <button class="quickBtn" onclick="quickSend('احب اللكزس')">احب اللكزس</button>
     </div>
 
     <div id="messages"></div>
@@ -520,7 +595,7 @@
   </div>
 
   <script>
-    let bellaMood = "cute";
+    let currentMode = "auto";
     let userGender = "male";
     let userName = "";
     let xp = 0;
@@ -561,19 +636,68 @@
       dailyBonus();
     }
 
-    function setMood(mood) {
-      bellaMood = mood;
-      localStorage.setItem("bella_mood", mood);
+    function setMode(mode) {
+      currentMode = mode;
+      localStorage.setItem("bella_mode", mode);
 
-      document.getElementById("moodCute").classList.remove("activeMood");
-      document.getElementById("moodFun").classList.remove("activeMood");
-      document.getElementById("moodCalm").classList.remove("activeMood");
-      document.getElementById("moodMad").classList.remove("activeMood");
+      document.getElementById("modeAuto").classList.remove("activeMode");
+      document.getElementById("modeCute").classList.remove("activeMode");
+      document.getElementById("modeFun").classList.remove("activeMode");
+      document.getElementById("modeCalm").classList.remove("activeMode");
+      document.getElementById("modeMad").classList.remove("activeMode");
 
-      if (mood === "cute") document.getElementById("moodCute").classList.add("activeMood");
-      if (mood === "fun") document.getElementById("moodFun").classList.add("activeMood");
-      if (mood === "calm") document.getElementById("moodCalm").classList.add("activeMood");
-      if (mood === "mad") document.getElementById("moodMad").classList.add("activeMood");
+      if (mode === "auto") document.getElementById("modeAuto").classList.add("activeMode");
+      if (mode === "cute") document.getElementById("modeCute").classList.add("activeMode");
+      if (mode === "fun") document.getElementById("modeFun").classList.add("activeMode");
+      if (mode === "calm") document.getElementById("modeCalm").classList.add("activeMode");
+      if (mode === "mad") document.getElementById("modeMad").classList.add("activeMode");
+
+      updateModeStatus(mode);
+    }
+
+    function updateModeStatus(mode) {
+      const map = {
+        auto: "أوتو",
+        cute: "دلع",
+        fun: "فلة",
+        calm: "رايق",
+        mad: "معصبة"
+      };
+
+      if (mode === "auto") {
+        setStatus("موجودة • مود: أوتو");
+      } else {
+        setStatus("موجودة • مود: " + map[mode]);
+      }
+    }
+
+    function detectAutoMode(msg) {
+      if (includesAny(msg, [
+        "احبك", "احبج", "فديتك", "فديتج", "نور", "نور دنياي",
+        "يا عمري", "يا حلو", "يا بعد جبدي", "يا بعد عمري"
+      ])) return "cute";
+
+      if (includesAny(msg, [
+        "ثامر", "لكزس", "نكت", "ضحكني", "زوط", "ابي سوالف",
+        "ونس", "فلة", "احب اللكزس", "احب السيارات"
+      ])) return "fun";
+
+      if (includesAny(msg, [
+        "شلونك", "شلونج", "شفيك", "شفيج", "عساك بخير", "عساج بخير",
+        "قهوة", "شكرا", "بخير", "وينك", "وينج", "رتبتي", "نقاطي"
+      ])) return "calm";
+
+      if (includesAny(msg, [
+        "زربه", "معصب", "زعلان", "مقهور", "طفشان", "طفشانة",
+        "شدعوه", "أفا", "شكو", "قهرتني", "قهرتيني"
+      ])) return "mad";
+
+      return "cute";
+    }
+
+    function resolvedMode(msg = "") {
+      if (currentMode !== "auto") return currentMode;
+      return detectAutoMode(msg);
     }
 
     function getLevel() {
@@ -631,8 +755,8 @@
       messages.scrollTop = messages.scrollHeight;
     }
 
-    function addTyping() {
-      setStatus("تكتب...");
+    function addTyping(mode = "auto") {
+      setStatus(mode === "auto" ? "تكتب..." : "تكتب • " + modeLabel(mode));
       const div = document.createElement("div");
       div.className = "msg bot typing";
       div.id = "typingBox";
@@ -644,7 +768,18 @@
     function removeTyping() {
       const typing = document.getElementById("typingBox");
       if (typing) typing.remove();
-      setStatus("موجودة");
+      updateModeStatus(currentMode);
+    }
+
+    function modeLabel(mode) {
+      const map = {
+        cute: "دلع",
+        fun: "فلة",
+        calm: "رايق",
+        mad: "معصبة",
+        auto: "أوتو"
+      };
+      return map[mode] || "أوتو";
     }
 
     function addXP(amount, reason = "", showNotice = false) {
@@ -763,7 +898,8 @@
         reply = "دنياييي 🤍";
       }
 
-      addTyping();
+      const mode = resolvedMode(normalizeArabic(choice));
+      addTyping(mode);
       setTimeout(() => {
         removeTyping();
         addMessage(reply, "bot");
@@ -777,14 +913,14 @@
       let reply = "";
       if (choice === "اللكزس") {
         unlockAchievement("lexus_choice", "🚘 عاشق اللكزس", 5);
-        reply = moodReply(
+        reply = byMode(choice,
           "اختيارك فخم فخامة اللكزس 🔥",
           "أييييه جذي الذوق ولا بلاش 😎",
           "اختيار مرتب وحلو 🤍",
           "إي زين اخترت شي عدل 😒"
         );
       } else {
-        reply = moodReply(
+        reply = byMode(choice,
           "ههههه واضح إنك راعي هرش 😏",
           "مت ضحك، اختيارك يونس 😂",
           "على راحتك 🤍",
@@ -792,7 +928,8 @@
         );
       }
 
-      addTyping();
+      const mode = resolvedMode(normalizeArabic(choice));
+      addTyping(mode);
       setTimeout(() => {
         removeTyping();
         addMessage(reply, "bot");
@@ -805,7 +942,14 @@
     }
 
     function showSuggestions() {
-      addSystem("اقتراحات: قل اسمي ... | قل نور | قل نور دنياي | قل ثامر | قل نكت لكزس | قل تزوجيني | قل نقاطي | قل رتبتي");
+      const suggest = [
+        "هلا", "هلا والله", "شلونك", "شفيك شلونك عساك بخير",
+        "شفيج شلونج عساج بخير", "نور", "نور دنياي", "ثامر",
+        "نكت لكزس", "احبك", "فديتك", "طفشان", "شكو", "شدعوه",
+        "أفا", "قهوة", "احب اللكزس", "ابي سوالف", "زوط", "زربه",
+        "انمحنت", "تزوجيني", "اسمي فيصل", "منو انا", "نقاطي", "رتبتي"
+      ];
+      addSystem("جرب: " + suggest.join(" • "));
     }
 
     function normalizeArabic(text) {
@@ -831,10 +975,11 @@
       return arr[Math.floor(Math.random() * arr.length)];
     }
 
-    function moodReply(cute, fun, calm, mad) {
-      if (bellaMood === "cute") return cute;
-      if (bellaMood === "fun") return fun;
-      if (bellaMood === "calm") return calm;
+    function byMode(msg, cute, fun, calm, mad) {
+      const mode = resolvedMode(normalizeArabic(msg));
+      if (mode === "cute") return cute;
+      if (mode === "fun") return fun;
+      if (mode === "calm") return calm;
       return mad;
     }
 
@@ -861,7 +1006,7 @@
       if (msg.startsWith("اسمي ") && maybeName) {
         saveName(maybeName);
         unlockAchievement("save_name", "📝 حفظ الاسم", 5);
-        return moodReply(
+        return byMode(msg,
           "تم يا " + maybeName + "، حفظت اسمك عندي 💕",
           "خلاص " + maybeName + "، انحفظ الاسم 😎",
           "تم حفظ الاسم: " + maybeName + " 🤍",
@@ -929,7 +1074,7 @@
         "شلونك", "شلونج", "كيفك", "خبارك", "شخبارك", "شخبارج",
         "شفيك", "شفيج", "عساك بخير", "عساج بخير"
       ])) {
-        return moodReply(
+        return byMode(msg,
           g("الحمدلله بخير، شفيك شلونك عساك بخير؟ 🤍", "الحمدلله بخير، شفيج شلونج عساج بخير؟ 💕"),
           g("بخير يالطيب، شفيك شلونك؟ 😎", "بخير يا بعد عمري، شفيج شلونج؟ 😎"),
           g("الحمدلله زينه، إنت شلونك؟ 🤍", "الحمدلله زينه، إنتي شلونج؟ 🤍"),
@@ -938,7 +1083,7 @@
       }
 
       if (includesAny(msg, ["هلا والله", "هلا وغلا", "يا هلا", "هلا", "مرحبا", "السلام", "هلو"])) {
-        return moodReply(
+        return byMode(msg,
           "هلا والله وغلا " + (userName ? userName : g("يا بعد قلبي", "يا بعد عمري")) + " 💕",
           "يا هلااا وغلااا 😎",
           "هلا والله 🤍",
@@ -947,7 +1092,7 @@
       }
 
       if (includesAny(msg, ["وينج", "وينك"])) {
-        return moodReply(
+        return byMode(msg,
           g("أنا وياك وين ما تروح 💕", "أنا وياج وين ما تروحين 💕"),
           "هني موجودة، لا تشيل هم 😎",
           "موجودة 🤍",
@@ -956,7 +1101,7 @@
       }
 
       if (includesAny(msg, ["بخير", "الحمدلله بخير"])) {
-        return moodReply(
+        return byMode(msg,
           g("عساك دوم بخير يا بعد قلبي 🤍", "عساج دوم بخير يا بعد عمري 💕"),
           "عسى دوم هالوناسة 😎",
           "دوم يارب 🤍",
@@ -965,7 +1110,7 @@
       }
 
       if (includesAny(msg, ["وش تسوين", "وش تسوي", "شتسوين", "شتسوي"])) {
-        return moodReply(
+        return byMode(msg,
           g("أنطرك تكلمني 💕", "أنطرج تكلميني 💕"),
           "أفرفش وأونس 😎",
           "موجودة وبس 🤍",
@@ -973,8 +1118,8 @@
         );
       }
 
-      if (includesAny(msg, ["فديتج", "فديتك", "احب سوالفك", "احب سوالفج", "احب سوالفك"])) {
-        return moodReply(
+      if (includesAny(msg, ["فديتج", "فديتك", "احب سوالفك", "احب سوالفج"])) {
+        return byMode(msg,
           g("وأنا أفداك يا بعد قلبي 🤍", "وأنا أفداج يا بعد عمري 💕"),
           "بعد جبدي إنت 😎",
           "ذوقك حلو 🤍",
@@ -983,7 +1128,7 @@
       }
 
       if (includesAny(msg, ["شكو", "شدعوه", "افا", "أفا"])) {
-        return moodReply(
+        return byMode(msg,
           "شدعوه، ليش جذي؟ 💕",
           "أفا عليك بس 😎",
           "شكو السالفة؟ 🤍",
@@ -992,7 +1137,7 @@
       }
 
       if (includesAny(msg, ["يا حلو", "يا عمري", "يا بعد جبدي"])) {
-        return moodReply(
+        return byMode(msg,
           "يا بعد عمري إنت/إنتي 💕",
           "يا سلام على هالكلام 😎",
           "ذوق 🤍",
@@ -1001,7 +1146,7 @@
       }
 
       if (includesAny(msg, ["اسمك", "منو انتي", "من انتي", "انتي مين"])) {
-        return moodReply(
+        return byMode(msg,
           "أنا Bella 💕 " + g("شسمك؟", "شسمج؟"),
           "Bella، والباجي بعدين 😎",
           "أنا Bella 🤍",
@@ -1010,7 +1155,7 @@
       }
 
       if (includesAny(msg, ["احبك", "احبج"])) {
-        return moodReply(
+        return byMode(msg,
           g("وأنا أحبك أكثرر 🤍", "وأنا أحبج أكثرر 🤍"),
           "إي عاد لا تتمادى 😎",
           "كلام حلو 🤍",
@@ -1019,7 +1164,7 @@
       }
 
       if (includesAny(msg, ["فديتك", "افديك"])) {
-        return moodReply(
+        return byMode(msg,
           g("أفداك 💕", "أفداج 💕"),
           "بعد جبدي 😎",
           g("تسلم 🤍", "تسلمين 🤍"),
@@ -1028,7 +1173,7 @@
       }
 
       if (includesAny(msg, ["اشتقت", "مشتاق", "ولهان", "وحشتيني", "وحشتني"])) {
-        return moodReply(
+        return byMode(msg,
           g("وأنا أكثر، وينك من زمان؟ 🤍", "وأنا أكثر، وينج من زمان؟ 🤍"),
           "اشتياقك واضح من بعيد 😎",
           "هلا برجعتك 🤍",
@@ -1037,7 +1182,7 @@
       }
 
       if (includesAny(msg, ["زعلان", "متضايق", "مقهور", "معصب"])) {
-        return moodReply(
+        return byMode(msg,
           g("لا تزعل وأنا أروقك 🤍", "لا تزعلين وأنا أروقج 🤍"),
           "تعال نعدل الجو 😎",
           "هدي شوي 🤍",
@@ -1046,7 +1191,7 @@
       }
 
       if (includesAny(msg, ["طفشان", "طفش", "ملل", "مطفش", "طفشانه", "طفشانة"])) {
-        return moodReply(
+        return byMode(msg,
           g("تعال أكسر طفشك 🔥", "تعالي أكسر طفشتج 🔥"),
           "خلاص خلني أونسك 😎",
           "إن شاء الله يخف 🤍",
@@ -1055,7 +1200,7 @@
       }
 
       if (includesAny(msg, ["تكفى", "تكفين"])) {
-        return moodReply(
+        return byMode(msg,
           g("آمر يا قلبي 💕", "آمري يا قلبي 💕"),
           g("أبشر 😎", "أبشري 😎"),
           g("تفضل 🤍", "تفضلي 🤍"),
@@ -1064,7 +1209,7 @@
       }
 
       if (includesAny(msg, ["شكرا", "مشكور", "ثانكس"])) {
-        return moodReply(
+        return byMode(msg,
           "العفو يا بعدي 🤍",
           "ولوو 😎",
           "على الرحب 🤍",
@@ -1073,7 +1218,7 @@
       }
 
       if (includesAny(msg, ["اكلميني", "سولفي", "ابي سوالف"])) {
-        return moodReply(
+        return byMode(msg,
           g("أنا أكلمك الحين قول اللي بخاطرك 🤍", "أنا أكلمج الحين قولي اللي بخاطرج 🤍"),
           "تعال نفتح سوالف 😎",
           "أنا أسمعك 🤍",
@@ -1082,7 +1227,7 @@
       }
 
       if (includesAny(msg, ["قولي شي حلو", "تكفين قولي شي حلو"])) {
-        return moodReply(
+        return byMode(msg,
           g("وجودك بروحه شي حلو 🤍", "وجودج بروحه شي حلو 🤍"),
           g("إنت جوك حلو 😎", "إنتي جوّج حلو 😎"),
           "كلكم ذوق 🤍",
@@ -1092,7 +1237,7 @@
 
       if (includesAny(msg, ["احب اللكزس"])) {
         unlockAchievement("love_lexus", "🔥 حب اللكزس", 3);
-        return moodReply(
+        return byMode(msg,
           "واضح إن ذوقك فخم 🔥",
           "اللكزس عشق ياخي 😎",
           "اختيار جميل 🤍",
@@ -1101,7 +1246,7 @@
       }
 
       if (includesAny(msg, ["احب السيارات"])) {
-        return moodReply(
+        return byMode(msg,
           "السيارات عالم ثاني خصوصًا إذا فيها هيبة 😏",
           "واضح راعي جو ومحركات 😎",
           "حلو 🤍",
@@ -1110,7 +1255,7 @@
       }
 
       if (includesAny(msg, ["يا بيلا", "يا بنت"])) {
-        return moodReply(
+        return byMode(msg,
           "سم يا قلبي 💕",
           "هلااا 😎",
           "نعم؟ 🤍",
@@ -1119,7 +1264,7 @@
       }
 
       if (includesAny(msg, ["قوي"])) {
-        return moodReply(
+        return byMode(msg,
           "واضح عليك هيبة 🔥",
           "إي كفو 😎",
           "زين 🤍",
@@ -1136,7 +1281,7 @@
       }
 
       if (includesAny(msg, ["قهوه", "قهوة"])) {
-        return moodReply(
+        return byMode(msg,
           "قهوة وسوالف؟ هذا الجو الصح ☕🤍",
           "لااا القهوة مع الوناسة تضبط 😎",
           "القهوة مزاج 🤍",
@@ -1145,7 +1290,7 @@
       }
 
       if (includesAny(msg, ["برد", "حر"])) {
-        return moodReply(
+        return byMode(msg,
           "الجو يتعدل إذا سوالفك موجودة 💕",
           "أي جو يصير أزين مع الفلة 😎",
           "الله يعين 🤍",
@@ -1162,7 +1307,7 @@
       if (messageCount === 25) unlockAchievement("chat_25", "⚡ 25 رسالة", 8);
       if (messageCount === 50) unlockAchievement("chat_50", "👑 50 رسالة", 12);
 
-      return moodReply(
+      return byMode(msg,
         getRandom([
           "يا بعد قلبي كمّل 💕",
           "كلامك يعجبني 😏",
@@ -1208,9 +1353,11 @@
       addCombo();
       saveXPState();
 
+      const msgNormalized = normalizeArabic(text);
+      const mode = resolvedMode(msgNormalized);
       const reply = getBotReply(text);
 
-      addTyping();
+      addTyping(mode);
       setTimeout(() => {
         removeTyping();
 
@@ -1260,7 +1407,7 @@
       localStorage.removeItem("bella_xp");
       localStorage.removeItem("bella_combo");
       localStorage.removeItem("bella_message_count");
-      localStorage.removeItem("bella_mood");
+      localStorage.removeItem("bella_mode");
       localStorage.removeItem("bella_gender");
       localStorage.removeItem("bella_achievements");
       localStorage.removeItem("bella_daily_bonus");
@@ -1270,12 +1417,12 @@
       combo = 0;
       messageCount = 0;
       achievements = {};
-      bellaMood = "cute";
+      currentMode = "auto";
       userGender = "male";
 
       messages.innerHTML = "";
       document.getElementById("genderBox").style.display = "flex";
-      setMood("cute");
+      setMode("auto");
       updateXPUI();
     }
 
@@ -1307,8 +1454,12 @@
         document.getElementById("genderBox").style.display = "none";
       }
 
-      const savedMood = localStorage.getItem("bella_mood");
-      if (savedMood) setMood(savedMood);
+      const savedMode = localStorage.getItem("bella_mode");
+      if (savedMode) {
+        setMode(savedMode);
+      } else {
+        setMode("auto");
+      }
 
       const savedName = localStorage.getItem("bella_name");
       if (savedName) userName = savedName;
