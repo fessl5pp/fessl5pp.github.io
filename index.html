@@ -1,174 +1,607 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>أهلاً بكم بموقع فيصل</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>أهلاً بكم بموقع فيصل</title>
 
-<style>
-body{background:#111;color:white;font-family:Arial;text-align:center;padding-top:50px}
-h1{color:#00ffcc}
+  <style>
+    * { box-sizing: border-box; }
 
-#openBtn{padding:12px 20px;background:#00ffcc;border:none;border-radius:12px;font-weight:bold}
+    body {
+      margin: 0;
+      background: linear-gradient(180deg, #0f0f0f, #1a1a1a);
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding-top: 60px;
+    }
 
-#chatBox{position:fixed;bottom:20px;left:20px;width:340px;background:#1b1b1b;border-radius:20px;display:none}
+    h1 {
+      color: #00ffcc;
+      margin-bottom: 20px;
+      font-size: 30px;
+      padding: 0 15px;
+    }
 
-#chatHeader{background:#00ffcc;color:black;padding:10px;display:flex;justify-content:space-between}
+    #openBtn {
+      padding: 14px 24px;
+      background: #00ffcc;
+      color: black;
+      border: none;
+      border-radius: 14px;
+      font-size: 16px;
+      cursor: pointer;
+      font-weight: bold;
+      box-shadow: 0 8px 22px rgba(0,255,204,0.25);
+    }
 
-#messages{height:250px;overflow:auto;padding:10px;background:#161616}
+    #chatBox {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      width: 370px;
+      max-width: calc(100% - 40px);
+      background: #1b1b1b;
+      border: 1px solid #303030;
+      border-radius: 22px;
+      overflow: hidden;
+      display: none;
+      box-shadow: 0 12px 35px rgba(0,0,0,0.45);
+      z-index: 999;
+    }
 
-.msg{margin:6px;padding:8px;border-radius:10px}
-.user{background:#00ffcc;color:black;text-align:right}
-.bot{background:#2a2a2a}
+    #chatHeader {
+      background: #00ffcc;
+      color: black;
+      padding: 14px;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 17px;
+    }
 
-#inputArea{display:flex;padding:10px;gap:5px}
-#msg{flex:1;padding:8px;border-radius:10px;border:none}
+    #chatHeader .leftTools {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
 
-button{cursor:pointer}
+    .topBtn {
+      background: rgba(0,0,0,0.08);
+      border: none;
+      border-radius: 10px;
+      padding: 6px 10px;
+      cursor: pointer;
+      font-weight: bold;
+      color: black;
+    }
 
-.quick{display:flex;flex-wrap:wrap;gap:5px;padding:5px}
-.quick button{background:#333;color:white;border:none;border-radius:8px;padding:5px}
-</style>
+    #modeBar {
+      display: flex;
+      gap: 10px;
+      padding: 12px;
+      background: #141414;
+      border-bottom: 1px solid #2a2a2a;
+    }
+
+    .modeBtn {
+      flex: 1;
+      padding: 11px 10px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: bold;
+      background: #2a2a2a;
+      color: white;
+      font-size: 15px;
+    }
+
+    .activeMode {
+      background: #00ffcc;
+      color: black;
+    }
+
+    #quickBar {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 10px 12px;
+      background: #181818;
+      border-bottom: 1px solid #262626;
+      scrollbar-width: none;
+    }
+
+    #quickBar::-webkit-scrollbar { display: none; }
+
+    .quickBtn {
+      border: none;
+      border-radius: 999px;
+      padding: 9px 14px;
+      background: #2b2b2b;
+      color: white;
+      cursor: pointer;
+      white-space: nowrap;
+      font-weight: bold;
+      font-size: 13px;
+    }
+
+    #messages {
+      height: 330px;
+      overflow-y: auto;
+      padding: 12px;
+      text-align: right;
+      background: #161616;
+    }
+
+    .msg {
+      margin: 8px 0;
+      padding: 11px 13px;
+      border-radius: 14px;
+      max-width: 85%;
+      word-wrap: break-word;
+      line-height: 1.6;
+      font-size: 14px;
+      width: fit-content;
+    }
+
+    .user {
+      background: #00ffcc;
+      color: black;
+      margin-right: auto;
+      text-align: right;
+    }
+
+    .bot {
+      background: #2a2a2a;
+      color: white;
+      margin-left: auto;
+      text-align: right;
+    }
+
+    .typing {
+      opacity: 0.8;
+      font-style: italic;
+    }
+
+    .bot img {
+      width: 100%;
+      border-radius: 14px;
+      display: block;
+      margin-top: 8px;
+    }
+
+    .choiceWrap {
+      margin-top: 10px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .choiceBtn {
+      border: none;
+      border-radius: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .choiceMain {
+      background: #00ffcc;
+      color: black;
+    }
+
+    .choiceDark {
+      background: #3a3a3a;
+      color: white;
+    }
+
+    #chatInputArea {
+      display: flex;
+      gap: 8px;
+      padding: 10px;
+      background: #1b1b1b;
+      border-top: 1px solid #2a2a2a;
+    }
+
+    #msg {
+      flex: 1;
+      padding: 11px;
+      border: none;
+      outline: none;
+      border-radius: 12px;
+      font-size: 14px;
+    }
+
+    #sendBtn, #voiceInputBtn {
+      padding: 11px 14px;
+      background: #00ffcc;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: bold;
+      color: black;
+    }
+  </style>
 </head>
-
 <body>
 
-<h1>أهلاً بكم بموقع فيصل</h1>
-<button id="openBtn" onclick="toggleChat()">افتح Bella 💬</button>
+  <h1>أهلاً بكم بموقع فيصل</h1>
+  <button id="openBtn" onclick="toggleChat()">افتح Bella 💬</button>
 
-<div id="chatBox">
-  <div id="chatHeader">
-    Bella 💕
-    <button onclick="toggleChat()">✕</button>
+  <div id="chatBox">
+    <div id="chatHeader">
+      <span>Bella 💕</span>
+      <div class="leftTools">
+        <button class="topBtn" onclick="clearChat()">مسح</button>
+        <button class="topBtn" onclick="toggleChat()">✕</button>
+      </div>
+    </div>
+
+    <div id="modeBar">
+      <button id="textModeBtn" class="modeBtn activeMode" onclick="setMode('text')">💬 محادثة</button>
+      <button id="voiceModeBtn" class="modeBtn" onclick="setMode('voice')">🔊 رد صوتي</button>
+    </div>
+
+    <div id="quickBar">
+      <button class="quickBtn" onclick="quickSend('هلا')">هلا</button>
+      <button class="quickBtn" onclick="quickSend('نور')">نور</button>
+      <button class="quickBtn" onclick="quickSend('احبك')">احبك</button>
+      <button class="quickBtn" onclick="quickSend('طفشان')">طفشان</button>
+      <button class="quickBtn" onclick="quickSend('شلونك')">شلونك</button>
+      <button class="quickBtn" onclick="quickSend('ثامر')">ثامر</button>
+      <button class="quickBtn" onclick="quickSend('اشتقت')">اشتقت</button>
+      <button class="quickBtn" onclick="quickSend('وينك')">وينك</button>
+      <button class="quickBtn" onclick="quickSend('شكرا')">شكرا</button>
+      <button class="quickBtn" onclick="quickSend('باي')">باي</button>
+    </div>
+
+    <div id="messages"></div>
+
+    <div id="chatInputArea">
+      <input id="msg" type="text" placeholder="اكتب رسالتك..." onkeydown="if(event.key==='Enter') sendMessage()">
+      <button id="sendBtn" onclick="sendMessage()">إرسال</button>
+      <button id="voiceInputBtn" onclick="startVoiceInput()">🎤</button>
+    </div>
   </div>
 
-  <div class="quick">
-    <button onclick="quick('هلا')">هلا</button>
-    <button onclick="quick('نور')">نور</button>
-    <button onclick="quick('احبك')">احبك</button>
-    <button onclick="quick('طفشان')">طفشان</button>
-  </div>
+  <script>
+    let replyMode = "text";
+    const messages = document.getElementById("messages");
 
-  <div id="messages">
-    <div class="msg bot">هلا والله أنا Bella 💕</div>
-  </div>
+    function toggleChat() {
+      const chatBox = document.getElementById("chatBox");
+      chatBox.style.display = chatBox.style.display === "block" ? "none" : "block";
+    }
 
-  <div id="inputArea">
-    <input id="msg" placeholder="اكتب...">
-    <button onclick="send()">إرسال</button>
-    <button onclick="startVoice()">🎤</button>
-  </div>
-</div>
+    function setMode(mode) {
+      replyMode = mode;
+      document.getElementById("textModeBtn").classList.remove("activeMode");
+      document.getElementById("voiceModeBtn").classList.remove("activeMode");
 
-<script>
-function toggleChat(){
-let box=document.getElementById("chatBox");
-box.style.display=box.style.display=="block"?"none":"block";
-}
+      if (mode === "text") {
+        document.getElementById("textModeBtn").classList.add("activeMode");
+      } else {
+        document.getElementById("voiceModeBtn").classList.add("activeMode");
+      }
 
-function add(text,type){
-let div=document.createElement("div");
-div.className="msg "+type;
-div.innerText=text;
-messages.appendChild(div);
-messages.scrollTop=messages.scrollHeight;
-}
+      localStorage.setItem("bella_mode", mode);
+    }
 
-function quick(t){
-document.getElementById("msg").value=t;
-send();
-}
+    function addMessage(text, type, skipSave = false) {
+      const div = document.createElement("div");
+      div.className = "msg " + type;
+      div.innerText = text;
+      messages.appendChild(div);
+      messages.scrollTop = messages.scrollHeight;
 
-function reply(msg){
+      if (!skipSave) {
+        saveChatItem({ type, text, kind: "text" });
+      }
+    }
 
-// 🔥 ردك الأساسي (نور)
-if(msg.includes("نور")){
-return "نور دنيايييي هوايييي ومايييي 🤍";
-}
+    function addTyping() {
+      const div = document.createElement("div");
+      div.className = "msg bot typing";
+      div.id = "typingBox";
+      div.innerText = "Bella تكتب...";
+      messages.appendChild(div);
+      messages.scrollTop = messages.scrollHeight;
+    }
 
-// باقي الردود بدون حذف
-if(msg.includes("هلا")||msg.includes("مرحبا")){
-return "هلا والله 🔥";
-}
-if(msg.includes("شلونك")){
-return "بخير دامك موجود 😌";
-}
-if(msg.includes("احبك")){
-return "وأنا أكثررر 🤍";
-}
-if(msg.includes("طفشان")){
-return "تعال أكسر طفشك 😎";
-}
-if(msg.includes("اسمك")){
-return "أنا Bella 💕";
-}
-if(msg.includes("شكرا")){
-return "العفو 🤍";
-}
-if(msg.includes("زعلان")){
-return "لا تزعل أنا معك 🤍";
-}
+    function removeTyping() {
+      const typing = document.getElementById("typingBox");
+      if (typing) typing.remove();
+    }
 
-// ردود إضافية جديدة
-if(msg.includes("وينك")){
-return "معك هون دايم 😎";
-}
-if(msg.includes("اشتقت")){
-return "وأنا أكثر 💕";
-}
-if(msg.includes("احب فيصل")){
-return "ذوقك رهيب 🔥";
-}
-if(msg.includes("باي")){
-return "مع السلامة 🤍";
-}
+    function addImageMessage(src, skipSave = false) {
+      const div = document.createElement("div");
+      div.className = "msg bot";
 
-// fallback
-let arr=[
-"كمل كلامك 😏",
-"واضح عندك سوالف 🔥",
-"عجبني كلامك 😎",
-"قول أكثر 🤍"
-];
-return arr[Math.floor(Math.random()*arr.length)];
-}
+      const txt = document.createElement("div");
+      txt.innerText = "راعي الهرش ولا اللكزس؟ 😏";
 
-function send(){
-let input=document.getElementById("msg");
-let text=input.value.trim();
-if(!text)return;
+      const img = document.createElement("img");
+      img.src = src;
+      img.alt = "Lexus";
 
-add(text,"user");
+      div.appendChild(txt);
+      div.appendChild(img);
 
-let r=reply(text.toLowerCase());
+      const wrap = document.createElement("div");
+      wrap.className = "choiceWrap";
+      wrap.innerHTML = `
+        <button class="choiceBtn choiceMain" onclick="chooseOption('اللكزس')">اللكزس</button>
+        <button class="choiceBtn choiceDark" onclick="chooseOption('الهرش')">الهرش</button>
+      `;
+      div.appendChild(wrap);
 
-setTimeout(()=>{
-add(r,"bot");
-speak(r);
-},300);
+      messages.appendChild(div);
+      messages.scrollTop = messages.scrollHeight;
 
-input.value="";
-}
+      if (!skipSave) {
+        saveChatItem({ kind: "thamer_image", src: src });
+      }
 
-function speak(text){
-let sp=new SpeechSynthesisUtterance(text);
-sp.lang="ar-SA";
-speechSynthesis.speak(sp);
-}
+      if (replyMode === "voice") {
+        speakText("راعي الهرش ولا اللكزس");
+      }
+    }
 
-// 🎤 تسجيل صوت
-function startVoice(){
-let rec=new(window.SpeechRecognition||window.webkitSpeechRecognition)();
-rec.lang="ar-SA";
-rec.start();
+    function chooseOption(choice) {
+      addMessage(choice, "user");
 
-rec.onresult=function(e){
-let t=e.results[0][0].transcript;
-document.getElementById("msg").value=t;
-send();
-};
-}
-</script>
+      let reply = "";
+      if (choice === "اللكزس") {
+        reply = "اختيار فاخر، واضح إنك راعي ذوق وهيبة 🔥";
+      } else {
+        reply = "هههههههه واضح إنك راعي هرش رسمي 😎";
+      }
+
+      addTyping();
+      setTimeout(() => {
+        removeTyping();
+        addMessage(reply, "bot");
+        if (replyMode === "voice") speakText(reply);
+      }, 500);
+    }
+
+    function speakText(text) {
+      const speech = new SpeechSynthesisUtterance(text);
+      speech.lang = "ar-SA";
+      speech.rate = 1;
+      speech.pitch = 1.05;
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(speech);
+    }
+
+    function quickSend(text) {
+      document.getElementById("msg").value = text;
+      sendMessage();
+    }
+
+    function normalizeArabic(text) {
+      return text
+        .replace(/[أإآ]/g, "ا")
+        .replace(/ة/g, "ه")
+        .replace(/ى/g, "ي")
+        .replace(/ؤ/g, "و")
+        .replace(/ئ/g, "ي")
+        .replace(/\s+/g, " ")
+        .trim()
+        .toLowerCase();
+    }
+
+    function getBotReply(text) {
+      const raw = text.trim().toLowerCase();
+      const msg = normalizeArabic(raw);
+
+      // الكلمات القديمة ثابتة
+      if (msg === "نور" || msg.includes("نور")) {
+        return "نور دنيايييي هوايييي ومايييي 🤍";
+      }
+
+      if (msg.includes("ثامر")) {
+        return "__THAMER_SPECIAL__";
+      }
+
+      if (msg.includes("هلا") || msg.includes("مرحبا") || msg.includes("السلام") || msg.includes("هلو")) {
+        return "هلا والله يا بعدهم 🔥";
+      } else if (msg.includes("شلونك") || msg.includes("كيفك") || msg.includes("خبارك")) {
+        return "بخير دامك موجود 😌";
+      } else if (msg.includes("اسمك") || msg.includes("منو انتي") || msg.includes("من انتي") || msg.includes("انتي مين")) {
+        return "أنا Bella، موجودة حق السوالف والردود الحلوة 💕";
+      } else if (msg.includes("احبك")) {
+        return "وأنا أحبك أكثررر 🤍";
+      } else if (msg.includes("فديتك") || msg.includes("افديك")) {
+        return "افداك الكون كله 😏";
+      } else if (msg.includes("اشتقت") || msg.includes("مشتاق")) {
+        return "وأنا أكثر، وينك من زمان؟ 🤍";
+      } else if (msg.includes("وينك")) {
+        return "موجودة هنا، نادني بس 💕";
+      } else if (msg.includes("زعلان")) {
+        return "لا تزعل، أنا هنا معك 🤍";
+      } else if (msg.includes("ضحكني") || msg.includes("ضحكي")) {
+        return "أضحكك؟ يكفي إنك كلمت Bella وخليت يومها أحلى 😎";
+      } else if (msg.includes("باي") || msg.includes("مع السلامه") || msg === "سلام") {
+        return "مع السلامة يا الغالي 🤍";
+      } else if (msg.includes("تمام") || msg.includes("اوكي") || msg.includes("زين")) {
+        return "دامك تمام أنا تمام 🔥";
+      } else if (msg.includes("منو فيصل") || msg.includes("من هو فيصل")) {
+        return "فيصل شخص رهيب وما عليه كلام 🔥";
+      } else if (msg.includes("صباح الخير")) {
+        return "صباح النور والسرور 🤍";
+      } else if (msg.includes("مساء الخير")) {
+        return "مساء الورد والجو الحلو 💕";
+      } else if (msg.includes("شلون الجو")) {
+        return "جو Bella دايم حلو دامك موجود 😌";
+      } else if (msg.includes("احب سوالفك")) {
+        return "وأحب سوالفك أكثر بعد 😏";
+      } else if (msg.includes("انتي حلوه") || msg.includes("جميله")) {
+        return "الحلو عيونك والله 🌷";
+      } else if (msg.includes("منو نور")) {
+        return "نور؟ هذا اسم كله ضي وحب 🤍";
+      } else if (msg.includes("تكفين")) {
+        return "آمرني أمر، وش تبي؟ 💕";
+      } else if (msg.includes("احب فيصل")) {
+        return "أجل ذوقك عالي 😎";
+      } else if (msg.includes("طفشان") || msg.includes("مطفش")) {
+        return "تعال سولف معي وأعدلك الجو 🔥";
+      } else if (msg.includes("اكلميني")) {
+        return "أنا أكلمك الحين، قول اللي بخاطرك 🤍";
+      } else if (msg.includes("بوت")) {
+        return "إي نعم، أنا Bella لكن سوالفي مو مثل أي بوت 😏";
+      } else if (msg.includes("شكرا") || msg.includes("مشكور") || msg.includes("ثانكس")) {
+        return "العفو يا بعدهم 🤍";
+      } else if (msg.includes("احب bella") || msg.includes("احب بيلا")) {
+        return "وأنا أموت في هالكلام 💕";
+      } else if (msg.includes("شلون الدراسه")) {
+        return "دام مزاجك حلو كل شي يصير أسهل 😌";
+      } else if (msg.includes("فوفو")) {
+        return "فوفو اسم دلع يهبل 🤍";
+      } else if (msg.includes("احب الموقع")) {
+        return "هذا من ذوقك، نورت الموقع كله 🔥";
+      } else if (msg.includes("موجود")) {
+        return "موجودة لك دايم 💕";
+      } else if (msg.includes("تكفين قولي شي حلو")) {
+        return "وجودك لحاله شي حلو 🤍";
+      } else if (msg.includes("قولي شي")) {
+        return "أنت سبب الجو الحلو هنا 😏";
+      } else if (msg.includes("احب سوالف بيلا")) {
+        return "وأنا أحب اللي يحب سوالفي 💕";
+      } else if (msg.includes("ودي انام")) {
+        return "نم وأحلامك كلها راحة وهدوء 🤍";
+      } else if (msg.includes("تعبان")) {
+        return "سلامتك، خذ لك راحة شوي 💕";
+      } else if (msg.includes("اشتغل")) {
+        return "أنا شغالة طول الوقت عشانك 😎";
+      } else if (msg.includes("احب اللكزس")) {
+        return "واضح إن ذوقك عالي وفخم 🔥";
+      } else if (msg.includes("احب السيارات")) {
+        return "السيارات عالم ثاني، خصوصًا إذا فيها هيبة 😏";
+      } else if (msg.includes("احب سوالف bella")) {
+        return "وأنا أحب كلامك أكثر 💕";
+      } else if (msg.includes("مستانس")) {
+        return "دامك مستانس أنا بعد مستانسة 🤍";
+      } else if (msg.includes("اشتقتي")) {
+        return "أكيد اشتقت لك 😌";
+      } else if (msg.includes("اعصب")) {
+        return "لا تعصب، خلك رايق وأنا أضبط الجو 💕";
+      } else if (msg.includes("ابي شي يونس")) {
+        return "أنا هنا عشان أونسك وأسولف معك 🔥";
+      } else if (msg.includes("احبك يا bella")) {
+        return "يا بعد قلبي والله 🤍";
+      } else {
+        const randomReplies = [
+          "يا سلام عليك 🔥",
+          "كلامك يعجبني 😏",
+          "كمّل أنا سامعتك 🤍",
+          "حلووو، بعد شنو؟ 😎",
+          "مو فاهمة 100% بس عاجبني جوك 😆",
+          "أحب هالأسلوب منك 💕",
+          "قول أكثر، واضح عندك سوالف حلوة 😌",
+          "أنا معك، كمّل 🤍"
+        ];
+        return randomReplies[Math.floor(Math.random() * randomReplies.length)];
+      }
+    }
+
+    function sendMessage() {
+      const input = document.getElementById("msg");
+      const text = input.value.trim();
+
+      if (text === "") return;
+
+      addMessage(text, "user");
+      input.value = "";
+
+      const reply = getBotReply(text);
+
+      addTyping();
+      setTimeout(() => {
+        removeTyping();
+
+        if (reply === "__THAMER_SPECIAL__") {
+          addImageMessage("IMG_4228.jpeg");
+        } else {
+          addMessage(reply, "bot");
+          if (replyMode === "voice") {
+            speakText(reply);
+          }
+        }
+      }, 500);
+    }
+
+    function startVoiceInput() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+      if (!SpeechRecognition) {
+        const msg = "جهازك ما يدعم التعرف على الصوت بهالمتصفح";
+        addMessage(msg, "bot");
+        if (replyMode === "voice") speakText(msg);
+        return;
+      }
+
+      const rec = new SpeechRecognition();
+      rec.lang = "ar-SA";
+      rec.interimResults = false;
+      rec.maxAlternatives = 1;
+      rec.start();
+
+      rec.onresult = function(e) {
+        const t = e.results[0][0].transcript;
+        document.getElementById("msg").value = t;
+        sendMessage();
+      };
+
+      rec.onerror = function() {
+        addMessage("صار خطأ في المايك، جرّب مرة ثانية 🎤", "bot");
+      };
+    }
+
+    function saveChatItem(item) {
+      const old = JSON.parse(localStorage.getItem("bella_chat") || "[]");
+      old.push(item);
+      localStorage.setItem("bella_chat", JSON.stringify(old));
+    }
+
+    function loadChat() {
+      const savedMode = localStorage.getItem("bella_mode");
+      if (savedMode) setMode(savedMode);
+
+      const old = JSON.parse(localStorage.getItem("bella_chat") || "[]");
+
+      if (old.length === 0) {
+        addMessage(getWelcomeMessage(), "bot");
+        return;
+      }
+
+      old.forEach(item => {
+        if (item.kind === "text") {
+          addMessage(item.text, item.type, true);
+        } else if (item.kind === "thamer_image") {
+          addImageMessage(item.src, true);
+        }
+      });
+    }
+
+    function clearChat() {
+      localStorage.removeItem("bella_chat");
+      messages.innerHTML = "";
+      addMessage(getWelcomeMessage(), "bot");
+    }
+
+    function getWelcomeMessage() {
+      const hour = new Date().getHours();
+
+      if (hour < 12) return "صباح الخير، أنا Bella 💕";
+      if (hour < 18) return "ياهلا، أنا Bella 💕 شلون أقدر أساعدك؟";
+      return "مساء الخير، أنا Bella 💕 موجودة لك";
+    }
+
+    loadChat();
+  </script>
 
 </body>
 </html>
