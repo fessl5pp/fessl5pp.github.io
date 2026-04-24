@@ -1,4 +1,3 @@
-
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{
   --bg:#05070b;--bg2:#0d1118;--panel:rgba(20,24,32,.86);
@@ -30,7 +29,12 @@ body{
 .mini{text-align:center;min-width:62px}
 .mini b{display:block;color:var(--accent);font-size:15px}
 .mini span,.sub,.title span{color:var(--muted);font-size:12px}
-.mood-pill{padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.06);font-weight:800}
+.mood-pill{
+  padding:8px 12px;border-radius:999px;
+  background:linear-gradient(135deg,rgba(10,132,255,.22),rgba(103,91,255,.14));
+  border:1px solid rgba(255,255,255,.12);
+  font-weight:900
+}
 
 .hero{
   width:min(620px,100%);margin:0 auto;border-radius:30px;
@@ -94,7 +98,10 @@ button{font-family:inherit;cursor:pointer;border:none;color:#fff}
 }
 .m.bot{align-self:flex-start;background:var(--bot);border-bottom-left-radius:6px}
 .m.user{align-self:flex-end;background:var(--user);border-bottom-right-radius:6px}
-.m.system{align-self:center;background:rgba(255,255,255,.08);font-size:12px;border-radius:999px}
+.m.system{
+  align-self:center;background:rgba(255,255,255,.08);
+  font-size:12px;border-radius:999px;border:1px solid rgba(255,255,255,.10)
+}
 .input-area{
   padding:12px;background:var(--panel);border-top:1px solid var(--line);
   display:flex;gap:10px;align-items:center
@@ -104,6 +111,116 @@ button{font-family:inherit;cursor:pointer;border:none;color:#fff}
   padding:13px 14px;border-radius:16px;color:#fff;outline:none;font-size:14px
 }
 .send{padding:12px 18px;min-width:68px}
+
+.mode-panel{
+  margin:0 12px 10px;
+  padding:12px;
+  border-radius:24px;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.035)),
+    rgba(10,12,18,.72);
+  border:1px solid rgba(255,255,255,.12);
+  box-shadow:0 18px 44px rgba(0,0,0,.28);
+  backdrop-filter:blur(18px);
+}
+
+.mode-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:10px;
+  color:var(--muted);
+  font-size:12px;
+  font-weight:900;
+}
+
+.mode-head b{
+  color:#fff;
+  padding:7px 11px;
+  border-radius:999px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.10);
+}
+
+.mode-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:8px;
+}
+
+.mode-card{
+  position:relative;
+  overflow:hidden;
+  min-height:86px;
+  padding:10px 8px;
+  border-radius:20px;
+  color:#fff;
+  background:rgba(255,255,255,.055);
+  border:1px solid rgba(255,255,255,.10);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+  transition:transform .18s ease, border-color .18s ease, background .18s ease, box-shadow .18s ease;
+}
+
+.mode-card::before{
+  content:"";
+  position:absolute;
+  inset:-40%;
+  opacity:0;
+  background:radial-gradient(circle,rgba(255,255,255,.22),transparent 45%);
+  transition:opacity .18s ease;
+}
+
+.mode-card:active{
+  transform:scale(.96);
+}
+
+.mode-card.active{
+  transform:translateY(-2px);
+  border-color:rgba(255,255,255,.34);
+  background:linear-gradient(135deg,rgba(10,132,255,.28),rgba(103,91,255,.18));
+  box-shadow:0 12px 28px rgba(10,132,255,.18), inset 0 1px 0 rgba(255,255,255,.18);
+}
+
+.mode-card.active::before{
+  opacity:1;
+}
+
+.mode-card .mode-icon{
+  display:block;
+  font-size:24px;
+  line-height:1;
+  margin-bottom:7px;
+}
+
+.mode-card .mode-name{
+  display:block;
+  font-weight:1000;
+  font-size:13px;
+  margin-bottom:4px;
+}
+
+.mode-card small{
+  display:block;
+  color:rgba(255,255,255,.62);
+  font-size:10px;
+  line-height:1.35;
+}
+
+#mode-angry.active{
+  background:linear-gradient(135deg,rgba(255,59,48,.35),rgba(255,149,0,.18));
+  box-shadow:0 12px 28px rgba(255,59,48,.18), inset 0 1px 0 rgba(255,255,255,.18);
+}
+
+#mode-cute.active{
+  background:linear-gradient(135deg,rgba(255,77,141,.35),rgba(255,141,183,.18));
+  box-shadow:0 12px 28px rgba(255,77,141,.18), inset 0 1px 0 rgba(255,255,255,.18);
+}
+
+#mode-chill.active{
+  background:linear-gradient(135deg,rgba(48,209,88,.28),rgba(100,210,255,.16));
+  box-shadow:0 12px 28px rgba(48,209,88,.14), inset 0 1px 0 rgba(255,255,255,.18);
+}
 
 .modal{
   position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:2000;
@@ -126,4 +243,6 @@ button{font-family:inherit;cursor:pointer;border:none;color:#fff}
   .badges{grid-template-columns:repeat(2,1fr)}
   .top-island{padding:9px 10px}
   .mini{min-width:54px}
+  .mode-grid{grid-template-columns:repeat(2,1fr)}
+  .mode-card{min-height:76px}
 }
