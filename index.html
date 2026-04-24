@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bella Kuwaiti Pro</title>
+  <title>Bella Pro - Ultimate Edition</title>
   <style>
-    /* التنسيقات الأساسية للحفاظ على شكل الموقع الاحترافي */
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
     :root{
       --bg:#09090b;--bg2:#121317;--panel:rgba(23,24,29,.92);--panel2:rgba(34,36,44,.95);
@@ -15,108 +14,210 @@
     }
     body.theme-pink{--accent:#ff4d8d;--accent2:#ff8db7;--user:#ff4d8d}
     body.theme-blue{--accent:#0a84ff;--accent2:#6d5efc;--user:#0a84ff}
-    body.theme-gold{--accent:#ff9f0a;--accent2:#ffcc00;--user:#ff9f0a}
     body{margin:0;min-height:100vh;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",Arial,sans-serif;
       background:radial-gradient(circle at top, rgba(109,94,252,.16), transparent 24%),linear-gradient(180deg,var(--bg),var(--bg2));
       padding:24px 14px 120px;text-align:center}
     
     .hero{width:min(560px,100%);margin:0 auto 18px;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:30px;padding:22px 18px;backdrop-filter:blur(14px)}
-    .btn{border-radius:999px;padding:14px 22px;font-size:15px;font-weight:900;border:none;cursor:pointer;color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent2))}
-    .btnGhost{background:rgba(255,255,255,.07);border:1px solid var(--line)}
-
+    .logo{width:56px;height:56px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:24px;color:#111;background:linear-gradient(135deg,#ff93be,#7afcff);margin-bottom:10px}
+    
     .statsGrid{width:min(720px,100%);margin:0 auto 18px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
     .stat{background:rgba(255,255,255,.045);border:1px solid var(--line);border-radius:20px;padding:12px 10px}
     .stat b{display:block;font-size:18px}.stat span{display:block;color:var(--muted);font-size:12px}
 
-    .chatShell{width:min(470px,calc(100% - 12px));position:fixed;left:50%;transform:translateX(-50%);bottom:12px;background:var(--panel);border:1px solid var(--line);border-radius:30px;overflow:hidden;display:none;z-index:1000}
+    .ach-shelf {display:flex;justify-content:center;gap:8px;margin-top:10px}
+    .badge {width:35px;height:35px;background:rgba(255,255,255,0.05);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;filter:grayscale(1);transition:0.3s;border:1px solid transparent}
+    .badge.unlocked {filter:grayscale(0);background:rgba(255,215,0,0.1);border-color:var(--gold)}
+
+    .chatShell{width:min(470px,calc(100% - 12px));position:fixed;left:50%;transform:translateX(-50%);bottom:12px;background:var(--panel);border:1px solid var(--line);border-radius:30px;overflow:hidden;display:none;z-index:1000;box-shadow:var(--shadow);backdrop-filter:blur(18px)}
     .chatShell.open{display:block}
     .chatHeader{padding:14px;background:var(--panel2);border-bottom:1px solid var(--line)}
     
-    .messages{height:390px;overflow-y:auto;background:#000;padding:12px;text-align:right}
-    .msg{max-width:86%;margin:8px 0;border-radius:24px;padding:10px 14px;font-size:14px;animation:fadeIn .18s ease}
-    .msg.user{margin-right:auto;background:var(--user);border-bottom-right-radius:8px}
-    .msg.bot{margin-left:auto;background:var(--bot);border-bottom-left-radius:8px}
+    .modeBar {display:flex;gap:8px;padding:10px;overflow-x:auto;background:rgba(0,0,0,0.3);scrollbar-width:none}
+    .pill {border:none;padding:8px 16px;border-radius:20px;background:rgba(255,255,255,0.06);color:white;cursor:pointer;font-size:12px;white-space:nowrap}
+    .pill.active {background:var(--accent);font-weight:bold}
 
-    .inputArea{display:flex;gap:8px;padding:12px;background:rgba(20,21,25,.96)}
-    .inputArea input{flex:1;border:none;border-radius:18px;background:var(--bubble);color:#fff;padding:12px 14px}
-    .miniBtn{background:rgba(255,255,255,.08);border:none;border-radius:999px;padding:8px 11px;font-size:12px;color:#fff;cursor:pointer}
+    .messages{height:350px;overflow-y:auto;background:#000;padding:15px;display:flex;flex-direction:column;gap:12px}
+    .msg{max-width:85%;padding:12px 16px;border-radius:22px;font-size:14px;line-height:1.6;animation:pop 0.2s ease-out}
+    .msg.bot{align-self:flex-start;background:var(--bot);border-bottom-left-radius:4px}
+    .msg.user{align-self:flex-end;background:var(--user);border-bottom-right-radius:4px}
 
-    @keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
-    @media (max-width:760px){.statsGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    .inputArea{display:flex;gap:8px;padding:12px;background:var(--panel2)}
+    input{flex:1;background:var(--bubble);border:1px solid var(--line);padding:12px;border-radius:18px;color:white;outline:none}
+    .sendBtn{background:var(--accent);border:none;padding:0 20px;border-radius:18px;color:white;font-weight:bold;cursor:pointer}
+
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,0.9);display:none;align-items:center;justify-content:center;z-index:2000;backdrop-filter:blur(5px)}
+    .modal.show{display:flex}
+    .card{background:#1c1d22;padding:25px;border-radius:30px;width:90%;max-width:400px;border:1px solid var(--line)}
+
+    @keyframes pop { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
   </style>
 </head>
 <body class="theme-blue">
+
   <div class="page">
     <section class="hero">
-      <h1>Bella Pro 🇰🇼</h1>
-      <p>بوت سوالف كويتي ذكي</p>
-      <div class="heroActions">
-        <button class="btn" onclick="openChat()">افتح المحادثة 💬</button>
+      <div class="logo">B</div>
+      <h1 id="heroWelcome">Bella Pro 🇰🇼</h1>
+      <div class="ach-shelf">
+        <div class="badge" id="ach-1" title="صديق جديد">🌱</div>
+        <div class="badge" id="ach-2" title="كويتي أصلي">🇰🇼</div>
+        <div class="badge" id="ach-3" title="الثرثار">💬</div>
+        <div class="badge" id="ach-4" title="المستكشف">📍</div>
       </div>
+      <button class="sendBtn" style="padding:15px 30px; margin-top:20px" onclick="openChat()">ابدأ السوالف 💬</button>
     </section>
 
     <section class="statsGrid">
-      <div class="stat"><b id="heroLevel">LVL 1</b><span>مستواك</span></div>
-      <div class="stat"><b id="heroRank">مبتدئ</b><span>رتبتك</span></div>
-      <div class="stat"><b id="heroStreak">0</b><span>الأيام</span></div>
-      <div class="stat"><b id="heroXP">0 XP</b><span>نقاطك</span></div>
+      <div class="stat"><b id="s-msgs">0</b><span>رسائل</span></div>
+      <div class="stat"><b id="s-lvl">1</b><span>المستوى</span></div>
+      <div class="stat"><b id="s-xp">0 XP</b><span>نقاطك</span></div>
+      <div class="stat"><b id="s-rank">مبتدئ</b><span>الرتبة</span></div>
     </section>
   </div>
 
   <div class="chatShell" id="chatShell">
     <div class="chatHeader">
       <div style="display:flex; justify-content:space-between; align-items:center;">
-        <b>Bella Pro</b>
-        <button class="miniBtn" onclick="closeChat()">✕ إغلاق</button>
+        <div style="text-align:right">
+          <b style="font-size:16px">Bella Pro</b>
+          <div id="statusTxt" style="font-size:10px;color:var(--muted)">متصلة • مود التلقائي</div>
+        </div>
+        <button class="pill" style="background:rgba(255,0,0,0.2)" onclick="closeChat()">✕ إغلاق</button>
       </div>
     </div>
-    <div class="messages" id="messages"></div>
+    
+    <div class="modeBar">
+      <button class="pill active" onclick="setMode('auto', this)">🤖 أوتو</button>
+      <button class="pill" onclick="setMode('cute', this)">💕 دلوعة</button>
+      <button class="pill" onclick="setMode('calm', this)">🤍 مروقة</button>
+      <button class="pill" onclick="setMode('mad', this)">💢 معصبة</button>
+    </div>
+
+    <div class="messages" id="chatBox"></div>
+
     <div class="inputArea">
-      <input id="msgInput" type="text" placeholder="اكتب شي..." onkeydown="if(event.key==='Enter') sendMessage()">
-      <button class="btn" style="padding:8px 15px" onclick="sendMessage()">إرسال</button>
+      <input type="text" id="userInput" placeholder="شنو بخاطرك؟" onkeypress="if(event.key==='Enter') send()">
+      <button class="sendBtn" onclick="send()">إرسال</button>
+    </div>
+  </div>
+
+  <div class="modal show" id="startModal">
+    <div class="card">
+      <h2>نورتنا يالغالي! 🇰🇼</h2>
+      <p>اكتب اسمك عشان Bella تضبط اللهجة معاك</p>
+      <input type="text" id="userNameInput" style="width:100%;padding:15px;margin-bottom:15px;background:#000;border:1px solid var(--line);border-radius:15px;color:white;text-align:center" placeholder="اسمك هنا..">
+      <div style="display:flex;gap:10px">
+        <button class="sendBtn" style="flex:1" onclick="initApp('male')">👨 ولد</button>
+        <button class="sendBtn" style="flex:1;background:var(--pink)" onclick="initApp('female')">👩 بنت</button>
+      </div>
     </div>
   </div>
 
   <script>
-    const state = { xp: 0, msgs: 0, streak: 1 };
+    const state = {
+      name: 'صديقي', gender: 'male', mode: 'auto',
+      xp: 0, msgs: 0, lvl: 1, favTeam: '', unlockedAch: []
+    };
 
-    function openChat() { document.getElementById('chatShell').style.display = 'block'; }
-    function closeChat() { document.getElementById('chatShell').style.display = 'none'; }
+    const GUIDE = {
+      "قهوة": "جرب 'بون كافيه' بالشويخ، الجو هناك خيال ☕",
+      "عشا": "أنصحك بـ 'فريج صويلح' إذا تبي أكل كويتي أصلي 🥘",
+      "تمشى": "روح 'حديقة الشهيد' أو 'المباركـية' العصر، وناسة 📍"
+    };
 
-    function sendMessage() {
-      const inp = document.getElementById('msgInput');
-      const text = inp.value.trim();
-      if (!text) return;
+    const SMALL_TALK = {
+      "هلا": { m: "يا هلا بـ [الاسم]! نورت يالحبيب", f: "أهلين بـ [الاسم]! نورتي يا قلبي" },
+      "شلونك": { m: "بخير يا [الاسم]، أنت شلونك؟", f: "تمام يا [الاسم]، أنتي شلونج؟" },
+      "ضحكني": { m: "مرة واحد ضيع محفظته لقاها بمكانها، انصدم قال عيل أنا منو؟ 😂", f: "وحدة سألت ريلها تحبني؟ قال أنتي حياتي، قالت عيل ليش ما تشتري لي جنطة؟ 😂" }
+    };
 
-      addMessage('user', text);
+    function initApp(g) {
+      const n = document.getElementById('userNameInput').value.trim();
+      if(n) state.name = n;
+      state.gender = g;
+      document.body.className = g === 'female' ? 'theme-pink' : 'theme-blue';
+      document.getElementById('startModal').classList.remove('show');
+      document.getElementById('heroWelcome').innerText = `هلا بـ ${state.name}!`;
+      unlockAch(1);
+      openChat();
+      addMessage('bot', `يا هلا بـ ${state.name}، آمرني شنو بخاطرك اليوم؟ 🇰🇼`);
+    }
+
+    function send() {
+      const inp = document.getElementById('userInput');
+      const val = inp.value.trim();
+      if(!val) return;
+
+      addMessage('user', val);
       inp.value = '';
       
-      state.xp += 5;
+      state.xp += 15;
       state.msgs += 1;
       updateStats();
 
-      // رد البوت التلقائي
       setTimeout(() => {
-        const reply = "هلا والله، آمرني شنو بخاطرك؟";
+        let reply = processResponse(val);
+        reply = reply.replace(/\[الاسم\]/g, state.name);
         addMessage('bot', reply);
-      }, 500);
+      }, 700);
+    }
+
+    function processResponse(txt) {
+      // الذاكرة العميقة
+      if(txt.includes("أحب فريق") || txt.includes("نادي")) {
+        state.favTeam = txt.split("نادي")[1] || txt.split("فريق")[1];
+        return `تم! حفظت إنك تشجع ${state.favTeam}.. كفو يا [الاسم]!`;
+      }
+      if(txt.includes("شنو فريقي")) return state.favTeam ? `فريقك هو ${state.favTeam} ⚽` : "للحين ما قلت لي شنو تشجع!";
+
+      // رادار الأماكن
+      for(let key in GUIDE) { if(txt.includes(key)) { unlockAch(4); return GUIDE[key]; } }
+
+      // القاموس والمودات
+      for(let key in SMALL_TALK) { if(txt.includes(key)) return state.gender === 'female' ? SMALL_TALK[key].f : SMALL_TALK[key].m; }
+
+      if(state.mode === 'cute') return state.gender === 'female' ? "يا بعد عمري يا [الاسم] تدللي 💕" : "يا بعد قلبي يا [الاسم] آمر 💕";
+      if(state.mode === 'mad') return "خلصني يا [الاسم] مالي خلقك! 💢";
+      
+      return state.gender === 'female' ? "سولفي يا [الاسم] أسمعج" : "آمر يا [الاسم] شنو عندك؟";
+    }
+
+    function updateStats() {
+      state.lvl = Math.floor(state.xp / 100) + 1;
+      document.getElementById('s-msgs').innerText = state.msgs;
+      document.getElementById('s-xp').innerText = state.xp + " XP";
+      document.getElementById('s-lvl').innerText = state.lvl;
+      
+      const ranks = ["مبتدئ", "برونزي", "فضي", "ذهبي", "أسطوري"];
+      document.getElementById('s-rank').innerText = ranks[Math.min(state.lvl-1, 4)];
+      if(state.msgs >= 10) unlockAch(3);
+    }
+
+    function unlockAch(id) {
+      if(!state.unlockedAch.includes(id)) {
+        state.unlockedAch.push(id);
+        document.getElementById(`ach-${id}`).classList.add('unlocked');
+      }
+    }
+
+    function setMode(m, btn) {
+      state.mode = m;
+      document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
     }
 
     function addMessage(type, text) {
-      const box = document.getElementById('messages');
+      const box = document.getElementById('chatBox');
       const div = document.createElement('div');
-      div.className = 'msg ' + type;
-      div.textContent = text;
+      div.className = `msg ${type}`;
+      div.innerText = text;
       box.appendChild(div);
       box.scrollTop = box.scrollHeight;
     }
 
-    function updateStats() {
-      const lvl = Math.floor(state.xp / 25) + 1;
-      document.getElementById('heroLevel').textContent = "LVL " + lvl;
-      document.getElementById('heroXP').textContent = state.xp + " XP";
-      if(state.xp > 50) document.getElementById('heroRank').textContent = "متفاعل";
-    }
+    function openChat() { document.getElementById('chatShell').style.display = 'block'; }
+    function closeChat() { document.getElementById('chatShell').style.display = 'none'; }
   </script>
 </body>
 </html>
