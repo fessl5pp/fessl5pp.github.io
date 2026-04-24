@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bella Kuwaiti Pro - AI Enhanced</title>
+  <title>Bella Kuwaiti Pro - AI v3</title>
   <style>
-    /* الحفاظ على التصميم الأصلي الفخم مع تحسينات بسيطة */
+    /* الحفاظ على هوية التصميم الفخم الخاصة بك */
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
     :root{
       --bg:#09090b;--bg2:#121317;--panel:rgba(23,24,29,.92);--panel2:rgba(34,36,44,.95);
@@ -15,46 +15,38 @@
     }
     body.theme-pink{--accent:#ff4d8d;--accent2:#ff8db7;--user:#ff4d8d}
     body.theme-blue{--accent:#0a84ff;--accent2:#6d5efc;--user:#0a84ff}
-    body{margin:0;min-height:100vh;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    body{margin:0;min-height:100vh;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",Arial,sans-serif;
       background:radial-gradient(circle at top, rgba(109,94,252,.16), transparent 24%),linear-gradient(180deg,var(--bg),var(--bg2));
       padding:24px 14px 120px;text-align:center}
     
-    .page{width:min(980px,100%);margin:0 auto}
     .hero{width:min(560px,100%);margin:0 auto 18px;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:30px;padding:22px 18px;backdrop-filter:blur(14px)}
     .logo{width:56px;height:56px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:24px;color:#111;background:linear-gradient(135deg,#ff93be,#7afcff);margin-bottom:10px}
-    h1{margin:8px 0;font-size:32px;line-height:1.2}
     
-    /* نظام المودات الجديد في الواجهة */
+    /* واجهة الدردشة والمودات */
     .chatShell{width:min(480px,calc(100% - 12px));position:fixed;left:50%;transform:translateX(-50%);bottom:12px;background:var(--panel);border:1px solid var(--line);border-radius:30px;overflow:hidden;box-shadow:var(--shadow);backdrop-filter:blur(18px);display:none;z-index:1000}
     .chatShell.open{display:block}
-    .chatHeader{padding:14px;background:var(--panel2);border-bottom:1px solid var(--line)}
+    .chatHeader{padding:14px;background:var(--panel2);border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
     
-    .xpCard{background:rgba(255,255,255,.07);border-radius:18px;padding:10px;margin-bottom:10px;text-align:right}
-    .xpBar{width:100%;height:6px;background:rgba(255,255,255,.1);border-radius:10px;margin-top:5px;overflow:hidden}
-    .xpFill{height:100%;background:var(--gold);width:0%;transition:0.3s}
-
-    /* شريط اختيار المود المطور */
-    .modeBar {display:flex;gap:8px;padding:10px;overflow-x:auto;background:rgba(0,0,0,0.3);scrollbar-width:none}
+    .modeBar {display:flex;gap:8px;padding:10px;overflow-x:auto;background:rgba(0,0,0,0.3);scrollbar-width:none;border-bottom:1px solid var(--line)}
     .modeBar::-webkit-scrollbar {display:none}
-    .pill {border:none;padding:8px 16px;border-radius:20px;background:rgba(255,255,255,0.1);color:white;cursor:pointer;white-space:nowrap;font-size:13px}
-    .pill.active {background:var(--accent);font-weight:bold}
+    .pill {border:none;padding:8px 16px;border-radius:20px;background:rgba(255,255,255,0.06);color:white;cursor:pointer;white-space:nowrap;font-size:12px;transition:0.3s}
+    .pill.active {background:var(--accent);font-weight:bold;box-shadow:0 0 15px var(--accent)}
 
-    .messages{height:380px;overflow-y:auto;padding:15px;display:flex;flex-direction:column;gap:12px;background:rgba(0,0,0,0.2)}
-    .msg{max-width:85%;padding:12px 16px;border-radius:20px;font-size:14px;line-height:1.6;position:relative;animation:pop 0.2s ease-out}
+    .messages{height:360px;overflow-y:auto;padding:15px;display:flex;flex-direction:column;gap:12px;background:#000}
+    .msg{max-width:85%;padding:12px 16px;border-radius:22px;font-size:14px;line-height:1.6;animation:pop 0.2s ease-out}
     .msg.bot{align-self:flex-start;background:var(--bot);border-bottom-left-radius:4px}
     .msg.user{align-self:flex-end;background:var(--user);border-bottom-right-radius:4px}
     
     .inputArea{display:flex;gap:8px;padding:12px;background:var(--panel2)}
-    input{flex:1;background:var(--bubble);border:none;padding:12px;border-radius:15px;color:white;outline:none}
-    .sendBtn{background:var(--accent);border:none;padding:0 20px;border-radius:15px;color:white;font-weight:bold;cursor:pointer}
+    input{flex:1;background:var(--bubble);border:1px solid var(--line);padding:12px;border-radius:18px;color:white;outline:none}
+    .sendBtn{background:var(--accent);border:none;padding:0 22px;border-radius:18px;color:white;font-weight:bold;cursor:pointer}
 
-    @keyframes pop { from{opacity:0;transform:scale(0.95)} to{opacity:1;transform:scale(1)} }
-    
-    /* الستايليات المفقودة من الملف الأصلي */
-    .modal{position:fixed;inset:0;background:rgba(0,0,0,0.8);display:none;align-items:center;justify-content:center;z-index:2000}
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,0.85);display:none;align-items:center;justify-content:center;z-index:2000;backdrop-filter:blur(5px)}
     .modal.show{display:flex}
-    .card{background:#1c1d22;padding:25px;border-radius:25px;width:90%;max-width:400px;text-align:center}
-    .btn{padding:12px 25px;border-radius:15px;border:none;background:var(--accent);color:white;font-weight:bold;cursor:pointer;margin-top:10px}
+    .card{background:#1c1d22;padding:25px;border-radius:30px;width:90%;max-width:400px;text-align:center;border:1px solid var(--line)}
+    input.nameInput{width:100%;padding:15px;margin:15px 0;background:#000;border:1px solid var(--line);border-radius:15px;color:white;text-align:center}
+
+    @keyframes pop { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
   </style>
 </head>
 <body class="theme-blue">
@@ -62,151 +54,129 @@
   <div class="page">
     <section class="hero">
       <div class="logo">B</div>
-      <h1>Bella Pro AI</h1>
-      <p>بوت السوالف الكويتي المطور بالمودات الذكية</p>
-      <button class="btn" onclick="openChat()">ابدأ السوالف 💬</button>
+      <h1>Bella Pro <span style="font-size:14px; color:var(--accent)">AI Intelligence</span></h1>
+      <p id="heroWelcome">نورتنا يا بطل!</p>
+      <button class="sendBtn" style="padding:15px 30px" onclick="openChat()">سولف مع بيلا 💬</button>
     </section>
   </div>
 
   <div class="chatShell" id="chatShell">
     <div class="chatHeader">
-      <div class="xpCard">
-        <div style="display:flex;justify-content:space-between;font-size:12px">
-          <span id="xpLevel">LVL 1</span>
-          <span id="xpValue">0 XP</span>
-        </div>
-        <div class="xpBar"><div class="xpFill" id="xpFill"></div></div>
+       <div style="text-align:right">
+        <b style="font-size:15px">Bella AI 🇰🇼</b>
+        <div id="status" style="font-size:10px;color:var(--muted)">متصلة • مود التلقائي</div>
       </div>
-      <div style="text-align:right">
-        <b style="font-size:16px">Bella AI 🇰🇼</b>
-        <div id="statusText" style="font-size:11px;color:var(--muted)">المود: تلقائي</div>
-      </div>
+      <button onclick="closeChat()" style="background:none;border:none;color:white;cursor:pointer">✕</button>
     </div>
 
     <div class="modeBar">
-      <button class="pill active" onclick="changeMode('auto', this)">🤖 تلقائي</button>
-      <button class="pill" onclick="changeMode('cute', this)">💕 دلوعة</button>
-      <button class="pill" onclick="changeMode('calm', this)">🤍 مروقة</button>
-      <button class="pill" onclick="changeMode('mad', this)">💢 معصبة</button>
+      <button class="pill active" onclick="setMode('auto', this)">🤖 أوتو</button>
+      <button class="pill" onclick="setMode('cute', this)">💕 دلوعة</button>
+      <button class="pill" onclick="setMode('calm', this)">🤍 مروقة</button>
+      <button class="pill" onclick="setMode('mad', this)">💢 معصبة</button>
     </div>
 
-    <div class="messages" id="messages"></div>
+    <div class="messages" id="chatBox"></div>
 
     <div class="inputArea">
-      <input type="text" id="msgInput" placeholder="شنو بخاطرك تقول؟" onkeypress="if(event.key==='Enter') send()">
-      <button class="sendBtn" onclick="send()">إرسال</button>
+      <input type="text" id="userInput" placeholder="اكتب شي..." onkeypress="if(event.key==='Enter') send()">
+      <button class="sendBtn" onclick="send()">ارسل</button>
     </div>
   </div>
 
-  <div class="modal show" id="genderModal">
+  <div class="modal show" id="startModal">
     <div class="card">
-      <h2>هلا بيك! شلون أكلمك؟</h2>
-      <p>اختار عشان Bella تعرف تضبط اللهجة معاك</p>
-      <button class="btn" style="width:100%;background:#0a84ff" onclick="setGender('male')">👨 أكلمك كولد</button>
-      <button class="btn" style="width:100%;background:#ff4d8d" onclick="setGender('female')">👩 أكلمج كبنت</button>
+      <h2 id="modalTitle">يا هلا بيك!</h2>
+      <p>عشان Bella تعرفك وتناديك باسمك..</p>
+      <input type="text" id="userName" class="nameInput" placeholder="اكتب اسمك هنا..">
+      <div style="display:flex;gap:10px">
+        <button class="sendBtn" style="flex:1;background:var(--accent)" onclick="initApp('male')">👨 ولد</button>
+        <button class="sendBtn" style="flex:1;background:var(--pink)" onclick="initApp('female')">👩 بنت</button>
+      </div>
     </div>
   </div>
 
   <script>
-    // --- النظام الأساسي (Data) ---
     const state = {
+      name: 'صديقي',
       gender: 'male',
       mode: 'auto',
-      xp: 0,
-      name: 'مستخدم',
-      history: []
+      xp: 0
     };
 
-    // قاعدة بيانات الردود الكويتية المطورة
-    const KUWAITI_DB = {
-      keywords: {
-        "شلونك": { m: "بخير الله يسلمك، أنت شلونك؟", f: "بخير يا بعد روحي، أنتي شلونج؟" },
-        "هلا": { m: "هلا بالزين، نور المكان!", f: "أهلين وغلا، نورتي يا قلبي" },
-        "قهوه": { m: "صب قند راسك، تبيها مع هيل؟ ☕", f: "تفضلي أحلى فنجال لج ☕" },
-        "شكو ماكو": { m: "صافية وافية، ماكو إلا الخير", f: "كل خير يالغالية، الأمور طيبة" }
+    const DB = {
+      auto: {
+        m: ["يا هلا [الاسم]، شلون أقدر أساعدك اليوم؟", "هلا بالزين [الاسم]، آمرني تدلل", "منور يا [الاسم]، شنو بخاطرك نسولف عنه؟"],
+        f: ["أهلين [الاسم]، شلون أقدر أساعدج؟", "هلا يالغالية [الاسم]، نورتي المكان", "يا هلا بـ [الاسم]، قولي لي شنو بخاطرج؟"]
       },
-      modes: {
-        cute: {
-          m: ["يا بعد قلبي والله.. آمري تدلل 💕", "فديت قلبك، قولي اللي بخاطرك ✨"],
-          f: ["يا بعد روحي أنتي.. تدللي 💕", "يا عيوني، كل شي لعيونج يهون ✨"]
-        },
-        calm: {
-          m: ["يا هلا.. روق وقولي شعندك 🤍", "خذ راحتك، أنا أسمعك بكل هدوء.."],
-          f: ["هلا يالغالية.. روقي وقولي اللي تبينه 🤍", "على اهونج، قولي كل اللي بخاطرج.."]
-        },
-        mad: {
-          m: ["خلصني شتبي؟ ماني فاضية حق الحنة 💢", "ترى واصلة معاي، قول بسرعة 😒"],
-          f: ["أوف.. وبعدين؟ شتبي الحين؟ 💢", "لا تغثيني، قولي اللي عندج وخلصيني 😒"]
-        }
+      cute: {
+        m: ["يا بعد قلبي يا [الاسم].. تدلل 💕", "فديتك يا [الاسم]، قولي اللي تبيه يا عيوني ✨", "يا روحي أنت يا [الاسم]، كلي أذان صاغية"],
+        f: ["يا بعد روحي يا [الاسم].. آمري 💕", "فديت قلبج يا [الاسم]، أنتي بس تطلبي ✨", "يا عيوني يا [الاسم]، قولي اللي تبينه يا قلبي"]
+      },
+      calm: {
+        m: ["روق يا [الاسم].. الدنيا ما تسوى 🤍", "هلا يا [الاسم].. خذ راحتك وسولف على اهونك", "سمّ يا [الاسم].. أنا معاك وبسمعك بكل هدوء"],
+        f: ["روقي يا [الاسم].. كل شي بصير تمام 🤍", "أهلين [الاسم].. قولي اللي بخاطرج، أنا أسمعج", "سمّي يا [الاسم].. خذي راحتج بالكلام"]
+      },
+      mad: {
+        m: ["خلصني يا [الاسم] شتبي؟ ماني فاضية 💢", "أوف يا [الاسم].. قول اللي عندك وخلصني 😒", "لا تغثني يا [الاسم]، ترى واصلة معاي!"],
+        f: ["وبعدين معاج يا [الاسم]؟ شتبين؟ 💢", "أوف.. ترى مالي خلق حنة يا [الاسم] 😒", "لا تغثيني يا [الاسم]، قولي اللي عندج بسرعة!"]
       }
     };
 
-    // --- الوظائف (Functions) ---
-
-    function openChat() { document.getElementById('chatShell').classList.add('open'); }
-
-    function setGender(g) {
-      state.gender = g;
-      document.body.className = g === 'female' ? 'theme-pink' : 'theme-blue';
-      document.getElementById('genderModal').classList.remove('show');
+    function initApp(gender) {
+      const name = document.getElementById('userName').value.trim();
+      if(name) state.name = name;
+      state.gender = gender;
+      
+      document.body.className = gender === 'female' ? 'theme-pink' : 'theme-blue';
+      document.getElementById('startModal').classList.remove('show');
+      document.getElementById('heroWelcome').innerText = `نورتنا يا ${state.name}!`;
+      
       openChat();
-      addMessage('bot', g === 'female' ? "هلا والله يا بعد روحي.. نورتيني! 🌷" : "هلا بالذيب.. منورني اليوم! 💙");
+      const welcome = state.gender === 'female' ? `هلا والله بـ ${state.name}.. نورتيني يا قلبي 🌷` : `هلا والله بـ ${state.name}.. منورني يا وحش! 💙`;
+      addMessage('bot', welcome);
     }
 
-    function changeMode(m, btn) {
+    function setMode(m, btn) {
       state.mode = m;
       document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
       btn.classList.add('active');
-      document.getElementById('statusText').innerText = "المود: " + btn.innerText;
-      addSystem(`تم تغيير مود Bella إلى ${btn.innerText}`);
+      const modesTxt = {auto:'التلقائي', cute:'الدلوعة', calm:'المروقة', mad:'المعصبة'};
+      document.getElementById('status').innerText = "متصلة • مود " + modesTxt[m];
+      
+      setTimeout(() => {
+        addMessage('bot', `تم.. الحين أنا في مود ${modesTxt[m]} يا ${state.name} 😉`);
+      }, 400);
     }
 
     function send() {
-      const input = document.getElementById('msgInput');
+      const input = document.getElementById('userInput');
       const text = input.value.trim();
       if(!text) return;
 
       addMessage('user', text);
       input.value = '';
-      
-      // نظام الـ XP من كودك القديم
-      state.xp += 10;
-      updateStats();
 
-      // رد البوت الذكي
+      // ذكاء الرد: البحث عن الاسم واستبداله
       setTimeout(() => {
-        const reply = getSmartReply(text);
+        let reply = pickReply(text);
+        reply = reply.replace("[الاسم]", state.name);
         addMessage('bot', reply);
       }, 700);
     }
 
-    function getSmartReply(input) {
-      let reply = "";
-      const text = input.toLowerCase();
-
-      // 1. فحص الكلمات المفتاحية أولاً
-      for(let key in KUWAITI_DB.keywords) {
-        if(text.includes(key)) {
-          reply = state.gender === 'female' ? KUWAITI_DB.keywords[key].f : KUWAITI_DB.keywords[key].m;
-          break;
-        }
-      }
-
-      // 2. إذا لم يجد كلمة مفتاحية، استخدم المود
-      if(!reply) {
-        if(state.mode === 'auto') {
-          reply = state.gender === 'female' ? "شلون أقدر أساعدج يالغالية؟" : "آمر يا حبيب.. شنو اللي بخاطرك؟";
-        } else {
-          const pool = KUWAITI_DB.modes[state.mode][state.gender === 'female' ? 'f' : 'm'];
-          reply = pool[Math.floor(Math.random() * pool.length)];
-        }
-      }
-
-      return reply;
+    function pickReply(text) {
+      // تفاعل خاص مع كلمات معينة
+      if(text.includes("شلونك") || text.includes("شلونج")) return `بخير دامني أكلم [الاسم]، أنت شلونك؟`;
+      if(text.includes("منو انا")) return `أنت [الاسم]، أعز صديق عندي!`;
+      
+      // الرد العشوائي بناءً على المود
+      const pool = DB[state.mode][state.gender === 'female' ? 'f' : 'm'];
+      return pool[Math.floor(Math.random() * pool.length)];
     }
 
     function addMessage(type, text) {
-      const box = document.getElementById('messages');
+      const box = document.getElementById('chatBox');
       const div = document.createElement('div');
       div.className = `msg ${type}`;
       div.innerText = text;
@@ -214,21 +184,8 @@
       box.scrollTop = box.scrollHeight;
     }
 
-    function addSystem(text) {
-      const box = document.getElementById('messages');
-      const div = document.createElement('div');
-      div.style = "font-size:11px; color:var(--muted); margin:5px auto; text-align:center; width:100%";
-      div.innerText = text;
-      box.appendChild(div);
-    }
-
-    function updateStats() {
-      const lvl = Math.floor(state.xp / 100) + 1;
-      document.getElementById('xpLevel').innerText = "LVL " + lvl;
-      document.getElementById('xpValue').innerText = state.xp + " XP";
-      document.getElementById('xpFill').style.width = (state.xp % 100) + "%";
-    }
-
+    function openChat() { document.getElementById('chatShell').classList.add('open'); }
+    function closeChat() { document.getElementById('chatShell').classList.remove('open'); }
   </script>
 </body>
 </html>
