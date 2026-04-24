@@ -62,31 +62,36 @@ async function send() {
 
   addMsg("يكتب...", "bot");
 
-  try {
-    const res = await fetch("/api/chat", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ message: text })
-    });
-
-    const data = await res.json();
-
+  setTimeout(() => {
     removeTyping();
-    addMsg(data.reply || "ما وصلني رد 😅", "bot");
 
-  } catch (e) {
-    removeTyping();
-    addMsg("فيه مشكلة بالسيرفر 😅", "bot");
-  }
+    let reply = "ما فهمت عليك 😅 جرّب تكتب: هلا، شلونك، اسمك";
 
-  s.messages++;
-  s.xp += 10;
-  s.lvl = Math.floor(s.xp / 100) + 1;
+    if (text.includes("هلا") || text.includes("السلام") || text.includes("مرحبا")) {
+      reply = "هلا والله، نورت 😎";
+    } else if (text.includes("شلونك") || text.includes("كيفك") || text.includes("اخبارك")) {
+      reply = "تمام يا بعدي، أنت شلونك؟";
+    } else if (text.includes("اسمك") || text.includes("منو انت") || text.includes("منو انتي")) {
+      reply = "أنا Bella، بوتك الكويتي الذكي 😏";
+    } else if (text.includes("احبك") || text.includes("أحبك")) {
+      reply = "وأنا أكثر والله 😌";
+    } else if (text.includes("باي") || text.includes("مع السلامة")) {
+      reply = "مع السلامة، ناطرتك ترجع 👋";
+    } else if (text.includes("شكرا") || text.includes("مشكور")) {
+      reply = "العفو يا الغالي 🌹";
+    } else if (text.includes("نكتة") || text.includes("ضحكني")) {
+      reply = "مرة واحد دخل مطعم قال عندكم شي خفيف؟ قالوا له الفاتورة 😭";
+    }
 
-  save();
-  updateUI();
+    addMsg(reply, "bot");
+
+    s.messages++;
+    s.xp += 10;
+    s.lvl = Math.floor(s.xp / 100) + 1;
+
+    save();
+    updateUI();
+  }, 700);
 }
 
 function addMsg(text, type) {
