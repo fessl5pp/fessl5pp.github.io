@@ -13,8 +13,8 @@ const inp = document.getElementById("inp");
 window.onload = () => {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if (saved) s = {...s, ...saved};
-  } catch(e){
+    if (saved) s = { ...s, ...saved };
+  } catch (e) {
     localStorage.removeItem(STORAGE_KEY);
   }
 
@@ -22,47 +22,64 @@ window.onload = () => {
   updateUI();
 };
 
-function save(){
+function save() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
 }
 
-function applyTheme(){
+function applyTheme() {
   document.body.className = s.theme;
 }
 
-function setTheme(t){
+function setTheme(t) {
   s.theme = t;
   applyTheme();
   save();
   hideTheme();
 }
 
-function openChat(){
+function openChat() {
   document.getElementById("win").classList.add("active");
 }
 
-function closeChat(){
+function closeChat() {
   document.getElementById("win").classList.remove("active");
 }
 
-function showTheme(){
+function showTheme() {
   document.getElementById("themeModal").classList.remove("hidden");
 }
 
-function hideTheme(){
+function hideTheme() {
   document.getElementById("themeModal").classList.add("hidden");
 }
 
-function send(){
+async function send() {
   const text = inp.value.trim();
-  if(!text) return;
+  if (!text) return;
 
-  addMsg(text,"user");
+  addMsg(text, "user");
   inp.value = "";
 
-  setTimeout(()=>{
-    addMsg(reply(text),"bot");
-  },400);
+  addMsg("يكتب...", "bot");
+
+  try {
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ message: text })
+    });
+
+    const data = await res.json();
+
+    removeTyping();
+    addMsg(data.reply || "ما وصلني رد 😅", "bot");
+
+  } catch (e) {
+    removeTyping();
+    addMsg("فيه مشكلة بالسيرفر 😅", "bot");
+  }
 
   s.messages++;
   s.xp += 10;
@@ -72,7 +89,7 @@ function send(){
   updateUI();
 }
 
-function addMsg(text,type){
+function addMsg(text, type) {
   const m = document.createElement("div");
   m.className = "m " + type;
   m.innerText = text;
@@ -80,25 +97,16 @@ function addMsg(text,type){
   box.scrollTop = box.scrollHeight;
 }
 
-function reply(t){
-  t = t.toLowerCase();
+function removeTyping() {
+  const msgs = box.querySelectorAll(".bot");
+  const last = msgs[msgs.length - 1];
 
-  if(t.includes("هلا") || t.includes("السلام"))
-    return "هلا والله 🔥";
-
-  if(t.includes("شلونك"))
-    return "تمام وانت؟ 😎";
-
-  if(t.includes("قهوة"))
-    return "جرب كوفي بالشويخ ☕";
-
-  if(t.includes("طفشان"))
-    return "يلا نغير جو 😏";
-
-  return "قول أكثر 👀";
+  if (last && last.innerText === "يكتب...") {
+    last.remove();
+  }
 }
 
-function updateUI(){
+function updateUI() {
   document.getElementById("xp-val").innerText = s.xp;
   document.getElementById("lvl-val").innerText = s.lvl;
 }
