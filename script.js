@@ -697,3 +697,341 @@ function showLevelCard() {
 
   document.body.appendChild(card);
 }
+/* =========================
+   باقي الإضافات v16
+   ألعاب + فزعة + مشاركة + مؤثرات
+========================= */
+
+let activeGame = null;
+let currentChallenge = null;
+
+const boxGameItems = [
+  {
+    answer: "مبخر",
+    clue: "غرض كويتي تحطه بالبيت، يطلع ريحة طيبة، وغالبًا تلقاه يم الدلال."
+  },
+  {
+    answer: "دلة",
+    clue: "شي قديم ومهم حق القهوة العربية، يمسكه راعي الديوان."
+  },
+  {
+    answer: "كرفاية",
+    clue: "كلمة قديمة تعني السرير، تقولها يدتي وايد."
+  },
+  {
+    answer: "منقلة",
+    clue: "غرض قديم فيه فحم، يستخدمونه للتدفئة أو البخور."
+  },
+  {
+    answer: "سدو",
+    clue: "نقشة تراثية بدوية، تلقاها بالمخدات والفرش."
+  }
+];
+
+const proverbGameItems = [
+  {
+    start: "مد رجولك...",
+    answer: "على قد لحافك"
+  },
+  {
+    start: "اللي ما يعرف الصقر...",
+    answer: "يشويه"
+  },
+  {
+    start: "اللي بالجدر...",
+    answer: "يطلعه الملاس"
+  },
+  {
+    start: "الصاحب...",
+    answer: "ساحب"
+  },
+  {
+    start: "من طول الغيبات...",
+    answer: "ياب الغنايم"
+  }
+];
+
+const fazaaReplies = {
+  food: [
+    "تبّي مطعم كشخة؟ جرّب مكان مطل على البحر أو مطعم ياباني مرتب، بس لا تروح وانت يوعان وايد تطلب المنيو كله.",
+    "إذا تبي شي فخم: مطعم هادي، إضاءة خفيفة، وقعدة مو مزعجة. لا تنسى تحجز قبل لا تتوهق.",
+    "حق طلعة محترمة: اختار مطعم فيه جلسات داخلية وديكور كشخة، وخل القهوة بعده بمكان ثاني."
+  ],
+  shows: [
+    "مسلسلات كويتية؟ جرّب الكلاسيكيات أول، تعطيك جو الدراما القديمة والسوالف اللي لها طعم.",
+    "إذا تبي شي خفيف: دور مسلسل كويتي اجتماعي قصير، لا تدخل دراما ثقيلة وانت تبي تروق.",
+    "اقتراح بيلا: حلقة قديمة + شاي + برد خفيف = مزاج."
+  ],
+  excuse: [
+    "عذر للدوام؟ قول: عندي ظرف طارئ وبحاول أعوض الوقت. رسمي وبدون خرابيط.",
+    "عذر للربع؟ قول: والله طحت علي نومة وما حسيت بالدنيا. كلاسيكي بس يمشي.",
+    "عذر محترم: صار عندي مشوار عائلي مفاجئ، أعوضكم المرة الياية."
+  ]
+};
+
+function startBoxGame() {
+  activeGame = "box";
+  currentChallenge = random(boxGameItems);
+
+  addMsg(`🎁 لعبة: شنو بالصندوق؟
+
+${currentChallenge.clue}
+
+اكتب الجواب، وإذا صح تاخذ XP دبل.`, "bot");
+
+  updateSuggestions("game-box");
+}
+
+function startProverbGame() {
+  activeGame = "proverb";
+  currentChallenge = random(proverbGameItems);
+
+  addMsg(`🧠 لعبة: كمّل المثل
+
+${currentChallenge.start}
+
+كمّل المثل عشان تاخذ XP دبل.`, "bot");
+
+  updateSuggestions("game-proverb");
+}
+
+function checkGameAnswer(msg) {
+  if (!activeGame || !currentChallenge) return null;
+
+  const answer = currentChallenge.answer.toLowerCase();
+
+  if (msg.includes(answer)) {
+    s.xp += 30;
+    const reply = activeGame === "box"
+      ? `كفووو! صح ✅ الجواب: ${currentChallenge.answer}\nخذ +30 XP.`
+      : `صح عليك ✅ المثل كامل: ${currentChallenge.start} ${currentChallenge.answer}\nخذ +30 XP.`;
+
+    activeGame = null;
+    currentChallenge = null;
+    save();
+    updateUI();
+    return reply;
+  }
+
+  if (has(msg, ["استسلم", "ماعرف", "ما اعرف", "ابي الحل"])) {
+    const reply = `الجواب هو: ${currentChallenge.answer} 😌\nمرة ثانية بتفوز.`;
+    activeGame = null;
+    currentChallenge = null;
+    return reply;
+  }
+
+  return random([
+    "قريب… حاول مرة ثانية 👀",
+    "لا مو هذا، ركز شوي.",
+    "غلط بس حسيتك قريب 😅",
+    "تبي تلميح؟ اكتب: ابي الحل إذا استسلمت."
+  ]);
+}
+
+function openFazaa() {
+  addMsg(`🚨 فزعة بيلا اشتغلت
+
+شنو تبي؟
+- عطني مطعم كشخة
+- عطني مسلسلات
+- وهقة`, "bot");
+
+  updateSuggestions("fazaa");
+}
+
+function fazaaReply(msg) {
+  if (has(msg, ["مطعم", "كشخة", "اكل", "عشا", "غدا"])) {
+    return random(fazaaReplies.food);
+  }
+
+  if (has(msg, ["مسلسل", "مسلسلات", "اشوف", "دراما"])) {
+    return random(fazaaReplies.shows);
+  }
+
+  if (has(msg, ["وهقة", "عذر", "دوام", "ربعي", "تأخرت", "توهقت"])) {
+    return random(fazaaReplies.excuse);
+  }
+
+  return null;
+}
+
+function shareChat() {
+  const msgs = [...document.querySelectorAll(".m")]
+    .slice(-12)
+    .map(m => {
+      const who = m.classList.contains("user")
+        ? (s.userName || "أنت")
+        : m.classList.contains("system")
+          ? "النظام"
+          : "Bella";
+      return `${who}: ${m.innerText}`;
+    })
+    .join("\n\n");
+
+  const text = `Bella Ultra Pro 💬
+Level: ${s.lvl}
+اللقب: ${getTitle()}
+
+${msgs}`;
+
+  const card = document.createElement("div");
+  card.className = "share-card";
+
+  card.innerHTML = `
+    <div class="share-card-inner">
+      <h2>بطاقة مشاركة Bella 💬</h2>
+      <p>Level ${s.lvl} — ${getTitle()}</p>
+      <pre>${escapeHtml(text)}</pre>
+      <button onclick="copyShareText()">نسخ</button>
+      <button onclick="this.closest('.share-card').remove()">إغلاق</button>
+    </div>
+  `;
+
+  document.body.appendChild(card);
+  window.__bellaShareText = text;
+}
+
+function copyShareText() {
+  const text = window.__bellaShareText || "";
+  if (!text) return;
+
+  navigator.clipboard.writeText(text).then(() => {
+    showPopupCustom("تم نسخ المحادثة، حطها بالستوري أو أرسلها لربعك 🔥");
+  }).catch(() => {
+    showPopupCustom("ما قدرت أنسخ تلقائيًا، انسخها يدويًا.");
+  });
+}
+
+function escapeHtml(str) {
+  return str.replace(/[&<>"']/g, c => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;"
+  }[c]));
+}
+
+function showPopupCustom(text) {
+  const old = document.querySelector(".bella-popup");
+  if (old) old.remove();
+
+  const pop = document.createElement("div");
+  pop.className = "bella-popup";
+  pop.innerText = text;
+  document.body.appendChild(pop);
+
+  setTimeout(() => pop.remove(), 2600);
+}
+
+function kuwaitFx() {
+  const fx = document.createElement("div");
+  fx.className = "kuwait-flag-fx";
+  fx.innerText = "🇰🇼";
+  document.body.appendChild(fx);
+  setTimeout(() => fx.remove(), 2300);
+}
+
+function fakeBan() {
+  const ban = document.createElement("div");
+  ban.className = "fake-ban";
+
+  ban.innerHTML = `
+    <div class="fake-ban-card">
+      <h2>باند وهمي 😡</h2>
+      <p>روح اشرب ماي وتعال عقب 5 دقايق!</p>
+      <small>مزحة يا بعدي، اضغط رجوع.</small>
+      <br>
+      <button onclick="this.closest('.fake-ban').remove()">رجعت مؤدب</button>
+    </div>
+  `;
+
+  document.body.appendChild(ban);
+}
+
+/* =========================
+   توسيع Smart Replies للإضافات
+========================= */
+
+const oldUpdateSuggestions = updateSuggestions;
+
+updateSuggestions = function(context = "") {
+  const el = document.getElementById("quickSuggestions");
+  if (!el) return;
+
+  if (context === "game-box") {
+    const suggestions = ["مبخر", "دلة", "كرفاية", "ابي الحل", "كمّل المثل"];
+    el.innerHTML = suggestions.map(t => `<button onclick="quickSend('${t}')">${t}</button>`).join("");
+    return;
+  }
+
+  if (context === "game-proverb") {
+    const suggestions = ["على قد لحافك", "يشويه", "يطلعه الملاس", "ابي الحل", "شنو بالصندوق"];
+    el.innerHTML = suggestions.map(t => `<button onclick="quickSend('${t}')">${t}</button>`).join("");
+    return;
+  }
+
+  if (context === "fazaa") {
+    const suggestions = ["عطني مطعم كشخة", "عطني مسلسلات", "وهقة", "ابي اتقهوى", "حكمة اليوم"];
+    el.innerHTML = suggestions.map(t => `<button onclick="quickSend('${t}')">${t}</button>`).join("");
+    return;
+  }
+
+  oldUpdateSuggestions(context);
+};
+
+/* =========================
+   توسيع getReply بدون كسر القديم
+========================= */
+
+const oldGetReply = getReply;
+
+getReply = function(text) {
+  const msg = text.toLowerCase().trim();
+
+  if (activeGame) {
+    return checkGameAnswer(msg);
+  }
+
+  if (has(msg, ["شنو بالصندوق", "لعبة الصندوق", "الصندوق"])) {
+    startBoxGame();
+    return "";
+  }
+
+  if (has(msg, ["كمل المثل", "كمّل المثل", "اكمل المثل", "لعبة المثل"])) {
+    startProverbGame();
+    return "";
+  }
+
+  const fazaa = fazaaReply(msg);
+  if (fazaa) return fazaa;
+
+  if (has(msg, ["الكويت"])) {
+    kuwaitFx();
+  }
+
+  if (has(msg, ["غثيت", "اغث", "غث", "طفشت", "كررت"])) {
+    s.moodMeter -= 2;
+    if (s.moodMeter <= -6) {
+      s.moodMeter = 0;
+      save();
+      setTimeout(fakeBan, 500);
+      return "بس خلاص 😡 وصلتني مرحلة الخطر!";
+    }
+  }
+
+  if (has(msg, ["ذوق", "مشكورة", "تسلمين", "كفو", "حلو كلامج"])) {
+    s.moodMeter += 1;
+  }
+
+  const reply = oldGetReply(text);
+
+  if (has(msg, ["سوالف اول", "سوالف أول", "يدتي", "القديمة", "قديم"])) {
+    s.theme = "theme-gold";
+    applyTheme();
+    save();
+    return "يا وليدي… فعلنا جو سوالف أول. اسألني عن شي قديم وأنا أعطيك من سوالف يدتي.";
+  }
+
+  return reply;
+};
