@@ -1,4 +1,4 @@
-const STORAGE_KEY = "bella_v10";
+const STORAGE_KEY = "bella_v11";
 
 let s = {
   theme: "theme-blue",
@@ -6,6 +6,8 @@ let s = {
   lvl: 1,
   messages: 0
 };
+
+let mode = "auto";
 
 const box = document.getElementById("box");
 const inp = document.getElementById("inp");
@@ -20,6 +22,7 @@ window.onload = () => {
 
   applyTheme();
   updateUI();
+  updateMood();
 };
 
 function save() {
@@ -53,7 +56,68 @@ function hideTheme() {
   document.getElementById("themeModal").classList.add("hidden");
 }
 
-async function send() {
+// ===== المودات =====
+function setMode(m) {
+  mode = m;
+  updateMood();
+
+  const names = {
+    auto: "🤖 أوتو",
+    angry: "😡 معصبة",
+    cute: "🥺 دلّوعة",
+    chill: "😌 رايقة"
+  };
+
+  addMsg("تم تغيير المود إلى: " + names[m], "system");
+}
+
+function updateMood() {
+  const mood = document.getElementById("mood-pill");
+  if (!mood) return;
+
+  if (mode === "auto") mood.innerText = "🤖 أوتو";
+  else if (mode === "angry") mood.innerText = "😡 معصبة";
+  else if (mode === "cute") mood.innerText = "🥺 دلّوعة";
+  else if (mode === "chill") mood.innerText = "😌 رايقة";
+}
+
+// ===== الرد =====
+function getReply(text) {
+  const msg = text.toLowerCase();
+
+  // 😡 معصبة
+  if (mode === "angry") {
+    if (msg.includes("هلا")) return "هلا 😡 شتبي؟";
+    if (msg.includes("شلونك")) return "مو رايقة 😡";
+    if (msg.includes("احبك")) return "خف علينا 😡";
+    return "تكلم عدل 😡";
+  }
+
+  // 🥺 دلّوعة
+  if (mode === "cute") {
+    if (msg.includes("هلا")) return "هلااا 🥺💗";
+    if (msg.includes("احبك")) return "وأنا أكثر 🥺❤️";
+    return "ما فهمت بس أحبك 🥺";
+  }
+
+  // 😌 رايقة
+  if (mode === "chill") {
+    if (msg.includes("هلا")) return "هلا 😌";
+    if (msg.includes("شلونك")) return "تمام 😌";
+    return "روق وفهمني 😌";
+  }
+
+  // 🤖 أوتو (نظامك الأساسي)
+  if (msg.includes("هلا")) return "هلا والله 😎";
+  if (msg.includes("شلونك")) return "تمام، إنت شلونك؟";
+  if (msg.includes("اسمك")) return "أنا Bella 🤖";
+  if (msg.includes("نكتة")) return "مرة واحد نام… صحى 😂";
+
+  return "ما فهمت عليك 😅";
+}
+
+// ===== إرسال =====
+function send() {
   const text = inp.value.trim();
   if (!text) return;
 
@@ -65,24 +129,7 @@ async function send() {
   setTimeout(() => {
     removeTyping();
 
-    let reply = "ما فهمت عليك 😅 جرّب تكتب: هلا، شلونك، اسمك";
-
-    if (text.includes("هلا") || text.includes("السلام") || text.includes("مرحبا")) {
-      reply = "هلا والله، نورت 😎";
-    } else if (text.includes("شلونك") || text.includes("كيفك") || text.includes("اخبارك")) {
-      reply = "تمام يا بعدي، أنت شلونك؟";
-    } else if (text.includes("اسمك") || text.includes("منو انت") || text.includes("منو انتي")) {
-      reply = "أنا Bella، بوتك الكويتي الذكي 😏";
-    } else if (text.includes("احبك") || text.includes("أحبك")) {
-      reply = "وأنا أكثر والله 😌";
-    } else if (text.includes("باي") || text.includes("مع السلامة")) {
-      reply = "مع السلامة، ناطرتك ترجع 👋";
-    } else if (text.includes("شكرا") || text.includes("مشكور")) {
-      reply = "العفو يا الغالي 🌹";
-    } else if (text.includes("نكتة") || text.includes("ضحكني")) {
-      reply = "مرة واحد دخل مطعم قال عندكم شي خفيف؟ قالوا له الفاتورة 😭";
-    }
-
+    const reply = getReply(text);
     addMsg(reply, "bot");
 
     s.messages++;
@@ -91,9 +138,10 @@ async function send() {
 
     save();
     updateUI();
-  }, 700);
+  }, 600);
 }
 
+// ===== عرض الرسائل =====
 function addMsg(text, type) {
   const m = document.createElement("div");
   m.className = "m " + type;
@@ -111,6 +159,7 @@ function removeTyping() {
   }
 }
 
+// ===== UI =====
 function updateUI() {
   document.getElementById("xp-val").innerText = s.xp;
   document.getElementById("lvl-val").innerText = s.lvl;
