@@ -24,14 +24,14 @@
   <div class="top-island">
     <div class="mini"><b id="xp-val">0</b><span>XP</span></div>
     <div class="mini"><b id="lvl-val">1</b><span>Level</span></div>
-    <div class="mini"><b id="rank-val">مبتدئ</b><span>الرتبة</span></div>
+    <div class="mini"><b id="rank-val">مبتدئ</b><span>اللقب</span></div>
     <div class="mini"><b id="streak-val">0</b><span>Streak</span></div>
     <div class="mood-pill" id="mood-pill">🤖 أوتو</div>
   </div>
 
   <section class="hero">
     <div class="hero-top">
-      <div class="logo">B</div>
+      <div class="logo" id="heroAvatar">B</div>
       <div class="txt">
         <b>Bella Ultra Pro</b>
         <span>نسخة مطورة أقوى وأسرع</span>
@@ -46,13 +46,14 @@
     <div class="hero-actions">
       <button class="btn" onclick="openChat()">ابدأ الحين ⚡</button>
       <button class="ghost" onclick="showTheme()">الثيم 🎨</button>
+      <button class="ghost" onclick="dailyWisdom()">حكمة اليوم 🧿</button>
     </div>
   </section>
 
   <section class="badges-wrap">
     <div class="badges-head">
       <b>الأوسمة</b>
-      <span id="ach-count">0 / 4</span>
+      <span id="ach-count">0 / 5</span>
     </div>
 
     <div class="badges">
@@ -60,6 +61,7 @@
       <div class="badge" id="b2">💬 سوالف</div>
       <div class="badge" id="b3">📍 مستكشف</div>
       <div class="badge" id="b4">☕ مزاج</div>
+      <div class="badge" id="b5">🌙 الغبقة</div>
     </div>
   </section>
 
@@ -69,14 +71,19 @@
 
   <div class="header">
     <div class="left">
-      <div class="avatar">B</div>
+      <div class="avatar" id="chatAvatar">B</div>
       <div class="title">
         <b>Bella</b>
         <span id="chat-status">جاهزة</span>
       </div>
     </div>
 
-    <button class="tiny" onclick="closeChat()">✕</button>
+    <div class="header-actions">
+      <button class="tiny" onclick="dailyWisdom()">🧿</button>
+      <button class="tiny" onclick="giveGift('rose')">🌹</button>
+      <button class="tiny" onclick="giveGift('choco')">🍫</button>
+      <button class="tiny" onclick="closeChat()">✕</button>
+    </div>
   </div>
 
   <div class="msg-box" id="box"></div>
@@ -137,6 +144,7 @@
       <div class="theme-swatch sw1" onclick="setTheme('theme-blue')"></div>
       <div class="theme-swatch sw2" onclick="setTheme('theme-pink')"></div>
       <div class="theme-swatch sw3" onclick="setTheme('theme-gold')"></div>
+      <div class="theme-swatch sw4" onclick="setTheme('theme-night')"></div>
     </div>
 
     <button class="ghost" onclick="hideTheme()">إغلاق</button>
