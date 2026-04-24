@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bella Pro - Intelligence v6.0</title>
+  <title>Bella Pro - Emotionally Intelligent</title>
   <style>
-    /* التنسيق الفخم المتكامل المحفوظ دائماً */
+    /* التنسيق الأصلي المحفوظ بالكامل */
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
     :root{
       --bg:#09090b;--bg2:#121317;--panel:rgba(23,24,29,.92);--panel2:rgba(34,36,44,.95);
@@ -19,21 +19,13 @@
       background:radial-gradient(circle at top, rgba(109,94,252,.16), transparent 24%),linear-gradient(180deg,var(--bg),var(--bg2));
       padding:24px 14px 120px;text-align:center}
     
-    /* الهوية البصرية */
     .hero{width:min(560px,100%);margin:0 auto 18px;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:30px;padding:22px 18px;backdrop-filter:blur(14px)}
     .logo{width:56px;height:56px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:24px;color:#111;background:linear-gradient(135deg,#ff93be,#7afcff);margin-bottom:10px}
     
-    /* نظام الإحصائيات (XP) المحفوظ */
     .statsGrid{width:min(720px,100%);margin:0 auto 18px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
     .stat{background:rgba(255,255,255,.045);border:1px solid var(--line);border-radius:20px;padding:12px 10px}
     .stat b{display:block;font-size:18px}.stat span{display:block;color:var(--muted);font-size:12px}
 
-    /* رف الإنجازات المحفوظ */
-    .ach-shelf {display:flex;justify-content:center;gap:8px;margin-top:10px}
-    .badge {width:35px;height:35px;background:rgba(255,255,255,0.05);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;filter:grayscale(1);transition:0.3s;border:1px solid transparent}
-    .badge.unlocked {filter:grayscale(0);background:rgba(255,215,0,0.1);border-color:var(--gold)}
-
-    /* واجهة الشات المتقدمة */
     .chatShell{width:min(470px,calc(100% - 12px));position:fixed;left:50%;transform:translateX(-50%);bottom:12px;background:var(--panel);border:1px solid var(--line);border-radius:30px;overflow:hidden;display:none;z-index:1000;box-shadow:var(--shadow);backdrop-filter:blur(18px)}
     .chatShell.open{display:block}
     .chatHeader{padding:14px;background:var(--panel2);border-bottom:1px solid var(--line)}
@@ -51,7 +43,6 @@
     input{flex:1;background:var(--bubble);border:1px solid var(--line);padding:12px;border-radius:18px;color:white;outline:none}
     .sendBtn{background:var(--accent);border:none;padding:0 20px;border-radius:18px;color:white;font-weight:bold;cursor:pointer}
 
-    /* المودالات */
     .modal{position:fixed;inset:0;background:rgba(0,0,0,0.9);display:none;align-items:center;justify-content:center;z-index:2000;backdrop-filter:blur(5px)}
     .modal.show{display:flex}
     .card{background:#1c1d22;padding:25px;border-radius:30px;width:90%;max-width:400px;border:1px solid var(--line)}
@@ -65,13 +56,9 @@
     <section class="hero">
       <div class="logo">B</div>
       <h1 id="heroWelcome">Bella Pro 🇰🇼</h1>
-      <div class="ach-shelf">
-        <div class="badge" id="ach-1" title="صديق جديد">🌱</div>
-        <div class="badge" id="ach-2" title="كويتي أصلي">🇰🇼</div>
-        <div class="badge" id="ach-3" title="الثرثار">💬</div>
-        <div class="badge" id="ach-4" title="المستكشف">📍</div>
+      <div class="heroActions" style="margin-top:20px">
+        <button class="sendBtn" style="padding:15px 30px" onclick="openChat()">ابدأ السوالف 💬</button>
       </div>
-      <button class="sendBtn" style="padding:15px 30px; margin-top:20px" onclick="openChat()">سولف مع Bella 💬</button>
     </section>
 
     <section class="statsGrid">
@@ -86,32 +73,30 @@
     <div class="chatHeader">
       <div style="display:flex; justify-content:space-between; align-items:center;">
         <div style="text-align:right">
-          <b style="font-size:16px">Bella Pro</b>
+          <b>Bella Pro</b>
           <div id="statusTxt" style="font-size:10px;color:var(--muted)">متصلة • مود التلقائي</div>
         </div>
-        <button class="pill" style="background:rgba(255,50,50,0.3)" onclick="closeChat()">✕ إغلاق</button>
+        <button class="pill" style="background:rgba(255,0,0,0.2)" onclick="closeChat()">✕ إغلاق</button>
       </div>
     </div>
     
-    <div class="modeBar">
+    <div class="modeBar" id="modeBar">
       <button class="pill active" onclick="setMode('auto', this)">🤖 أوتو</button>
       <button class="pill" onclick="setMode('cute', this)">💕 دلوعة</button>
-      <button class="pill" onclick="setMode('calm', this)">🤍 مروقة</button>
       <button class="pill" onclick="setMode('mad', this)">💢 معصبة</button>
     </div>
 
     <div class="messages" id="chatBox"></div>
 
     <div class="inputArea">
-      <input type="text" id="userInput" placeholder="اكتب شي كويتي..." onkeypress="if(event.key==='Enter') send()">
+      <input type="text" id="userInput" placeholder="سولف مع بيلا..." onkeypress="if(event.key==='Enter') send()">
       <button class="sendBtn" onclick="send()">إرسال</button>
     </div>
   </div>
 
   <div class="modal show" id="startModal">
     <div class="card">
-      <h2>حياك الله! 👋</h2>
-      <p>عشان Bella تعرفك وتناديك باسمك..</p>
+      <h2>نورتنا! 🇰🇼</h2>
       <input type="text" id="userNameInput" style="width:100%;padding:15px;margin-bottom:15px;background:#000;border:1px solid var(--line);border-radius:15px;color:white;text-align:center" placeholder="اسمك الكريم..">
       <div style="display:flex;gap:10px">
         <button class="sendBtn" style="flex:1" onclick="initApp('male')">👨 ولد</button>
@@ -121,43 +106,27 @@
   </div>
 
   <script>
-    // --- قاعدة بيانات الذكاء المتقدمة v6.0 ---
+    // --- قاعدة بيانات مطورة تدعم الذكاء العاطفي ---
     const INTEL = {
       greeting: {
-        keys: ["هلا", "مرحبا", "سلام", "قوة", "هايو"],
-        m: ["يا هلا بـ [الاسم]! نورت يالحبيب", "أهلين [الاسم]، منور يا بطل", "هلا والله وغلا بـ [الاسم]، شلون أقدر أخدمك؟"],
-        f: ["أهلين بـ [الاسم]! نورتي يا قلبي", "يا هلا وغلا بـ [الاسم]، حياج الله يالغالية", "أهلين [الاسم]، منورة الدنيا كلها"]
+        keys: ["هلا", "مرحبا", "سلام", "قوة"],
+        m: ["يا هلا بـ [الاسم]! نورت", "هلا والله وغلا بـ [الاسم]"],
+        f: ["أهلين بـ [الاسم]! نورتي يا قلبي", "يا هلا وغلا بـ [الاسم]"]
       },
       status: {
-        keys: ["شلونك", "شخبارك", "شحالك", "عساك بخير", "علومك", "شالدنيا فيك"],
-        m: ["بخير ربي يسلمك يا [الاسم]، أنت شلونك؟", "تمام التمام دامني أكلمك يا [الاسم]!", "عايشين بفضل الله، أنت شخبارك يا بطل؟"],
-        f: ["بخير يا بعد روحي يا [الاسم]، أنتي شلونج؟", "عال العال يالغالية [الاسم]، بشوفج طيبة أنا طيبة", "أنا تمام، قولي لي أنتي شخبارج يا قلبي؟"]
+        keys: ["شلونك", "شخبارك", "شحالك", "عساك بخير"],
+        m: ["بخير ربي يسلمك يا [الاسم]، أنت شلونك؟", "تمام دامني أكلمك يا [الاسم]!"],
+        f: ["بخير يا بعد روحي يا [الاسم]، أنتي شلونج؟", "عال العال يالغالية [الاسم]"]
       },
-      time: {
-        keys: ["صباح", "مساء"],
-        morning: ["صباح الورد يا [الاسم]، مصحصح؟ ☕", "أحلى صباح لـ [الاسم]، نورت!"],
-        evening: ["مساء الخير والسرور يا [الاسم] ✨", "يا مساء الورد لعيون [الاسم]"]
+      // ميزة "نور" الجديدة والمطورة
+      special: {
+        keys: ["نور"],
+        m: ["نور دنياك يا بعد قلبي ✨", "منورتنا " + "[الاسم] " + "دوم يا غالي"],
+        f: ["نور دنياج يا قلبي ✨", "منورتنا دوم يالغالية [الاسم]"]
       }
     };
 
-    let state = {
-      name: 'صديقي', gender: 'male', mode: 'auto',
-      xp: 0, msgs: 0, lvl: 1, favTeam: '', unlockedAch: []
-    };
-
-    // تحميل وحفظ البيانات
-    function loadData() {
-      const saved = localStorage.getItem('bella_pro_v6_data');
-      if(saved) {
-        state = JSON.parse(saved);
-        updateStats();
-        state.unlockedAch.forEach(id => {
-            const el = document.getElementById(`ach-${id}`);
-            if(el) el.classList.add('unlocked');
-        });
-      }
-    }
-    function saveData() { localStorage.setItem('bella_pro_v6_data', JSON.stringify(state)); }
+    let state = { name: 'صديقي', gender: 'male', mode: 'auto', xp: 0, msgs: 0, lvl: 1 };
 
     function initApp(g) {
       const n = document.getElementById('userNameInput').value.trim();
@@ -166,10 +135,9 @@
       document.body.className = g === 'female' ? 'theme-pink' : 'theme-blue';
       document.getElementById('startModal').classList.remove('show');
       document.getElementById('heroWelcome').innerText = `هلا بـ ${state.name}!`;
-      saveData();
-      unlockAch(1);
       openChat();
-      addMessage('bot', `يا هلا بـ ${state.name}، نورتني! شلون أقدر أساعدك اليوم؟ 🇰🇼`);
+      addMessage('bot', `يا هلا بـ ${state.name}، آمرني شنو بخاطرك اليوم؟ 🇰🇼`);
+      saveData();
     }
 
     function send() {
@@ -180,92 +148,73 @@
       addMessage('user', val);
       inp.value = '';
       
-      state.xp += 15;
-      state.msgs += 1;
+      [span_9](start_span)state.xp += 15;[span_9](end_span)
+      [span_10](start_span)state.msgs += 1;[span_10](end_span)
       updateStats();
       saveData();
 
       setTimeout(() => {
-        let reply = getSuperSmartReply(val);
-        reply = reply.replace(/\[الاسم\]/g, state.name);
+        let reply = getSmartReply(val);
+        [span_11](start_span)reply = reply.replace(/\[الاسم\]/g, state.name);[span_11](end_span)
         addMessage('bot', reply);
-      }, 600);
+      }, 700);
     }
 
-    function getSuperSmartReply(txt) {
+    function getSmartReply(txt) {
       const low = txt.toLowerCase();
 
-      // 1. الذكاء حسب المود (Emotional Intelligence)
-      if(state.mode === 'mad') {
-          return state.gender === 'female' ? "شتبين يا [الاسم]؟ خلصيني ماني فاضية! 💢" : "خلصني يا [الاسم] شتبي؟ مالي خلق! 💢";
-      }
-      if(state.mode === 'cute') {
-          return state.gender === 'female' ? "يا بعد عمر بيلا أنتي، تدللي يا [الاسم] 💕" : "يا بعد قلبي يا [الاسم]، كلي لك 💕";
-      }
+      // فحص المودات
+      if(state.mode === 'mad') return state.gender === 'female' ? [span_12](start_span)"شتبين يا [الاسم]؟ خلصيني! 💢" : "خلصني يا [الاسم] شتبي؟ 💢";[span_12](end_span)
+      if(state.mode === 'cute') return state.gender === 'female' ? [span_13](start_span)"يا بعد عيون بيلا أنتي 💕" : "يا بعد قلبي يا [الاسم] 💕";[span_13](end_span)
 
-      // 2. فحص الوقت
-      if(low.includes("صباح")) return INTEL.time.morning[Math.floor(Math.random()*2)];
-      if(low.includes("مساء")) return INTEL.time.evening[Math.floor(Math.random()*2)];
-
-      // 3. محرك البحث الذكي في المجموعات
+      // البحث في قاعدة الذكاء (بما فيها "نور")
       for(let cat in INTEL) {
-          if(INTEL[cat].keys && INTEL[cat].keys.some(k => low.includes(k))) {
-              const pool = state.gender === 'female' ? INTEL[cat].f : INTEL[cat].m;
-              return pool[Math.floor(Math.random() * pool.length)];
-          }
+        if(INTEL[cat].keys.some(k => low.includes(k))) {
+          const pool = state.gender === 'female' ? [span_14](start_span)INTEL[cat].f : INTEL[cat].m;[span_14](end_span)
+          return pool[Math.floor(Math.random() * pool.length)];
+        }
       }
 
-      // 4. الذاكرة العميقة (محفوظة)
-      if(txt.includes("أحب فريق") || txt.includes("نادي")) {
-          state.favTeam = txt.split("نادي")[1] || txt.split("فريق")[1];
-          saveData();
-          return `كفو والله يا [الاسم]! سجلت عندي إنك تشجع ${state.favTeam} ⚽`;
-      }
-
-      // 5. رد افتراضي
-      return state.gender === 'female' ? "سولفي يالغالية [الاسم]، أسمعج.." : "آمر يا [الاسم]، شنو بخاطرك بعد؟";
+      return state.gender === 'female' ? [span_15](start_span)"سولفي يالغالية، أسمعج.." : "آمر يا الحبيب، شنو عندك؟";[span_15](end_span)
     }
 
     function updateStats() {
-      state.lvl = Math.floor(state.xp / 100) + 1;
+      [span_16](start_span)state.lvl = Math.floor(state.xp / 100) + 1;[span_16](end_span)
       document.getElementById('s-msgs').innerText = state.msgs;
-      document.getElementById('s-xp').innerText = state.xp + " XP";
-      document.getElementById('s-lvl').innerText = state.lvl;
-      const ranks = ["مبتدئ", "عضو مميز", "كويتي أصلي", "أسطورة الشات"];
-      document.getElementById('s-rank').innerText = ranks[Math.min(state.lvl-1, 3)];
-      if(state.msgs >= 10) unlockAch(3);
+      [span_17](start_span)document.getElementById('s-xp').innerText = state.xp + " XP";[span_17](end_span)
+      [span_18](start_span)document.getElementById('s-lvl').innerText = state.lvl;[span_18](end_span)
+      [span_19](start_span)const ranks = ["مبتدئ", "كويتي أصلي", "أسطورة الشات"];[span_19](end_span)
+      [span_20](start_span)document.getElementById('s-rank').innerText = ranks[Math.min(state.lvl-1, 2)];[span_20](end_span)
     }
 
-    function unlockAch(id) {
-      if(!state.unlockedAch.includes(id)) {
-        state.unlockedAch.push(id);
-        const el = document.getElementById(`ach-${id}`);
-        if(el) el.classList.add('unlocked');
-        saveData();
-      }
-    }
+    function saveData() { localStorage.setItem('bella_v_final_data', JSON.stringify(state)); [span_21](start_span)}
 
     function setMode(m, btn) {
-      state.mode = m;
-      document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+      state.mode = m;[span_21](end_span)
+      [span_22](start_span)document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));[span_22](end_span)
       btn.classList.add('active');
-      document.getElementById('statusTxt').innerText = "متصلة • مود " + m;
-      saveData();
+      [span_23](start_span)document.getElementById('statusTxt').innerText = "متصلة • مود " + m;[span_23](end_span)
     }
 
     function addMessage(type, text) {
       const box = document.getElementById('chatBox');
       const div = document.createElement('div');
-      div.className = `msg ${type}`;
+      [span_24](start_span)div.className = `msg ${type}`;[span_24](end_span)
       div.innerText = text;
       box.appendChild(div);
-      box.scrollTop = box.scrollHeight;
+      [span_25](start_span)box.scrollTop = box.scrollHeight;[span_25](end_span)
     }
 
-    function openChat() { document.getElementById('chatShell').style.display = 'block'; }
-    function closeChat() { document.getElementById('chatShell').style.display = 'none'; }
+    function openChat() { document.getElementById('chatShell').style.display = 'block'; [span_26](start_span)}
+    function closeChat() { document.getElementById('chatShell').style.display = 'none'; }[span_26](end_span)
 
-    window.onload = loadData;
+    window.onload = () => {
+      const saved = localStorage.getItem('bella_v_final_data');
+      if(saved) {
+        state = JSON.parse(saved);
+        updateStats();
+      }
+    };
   </script>
 </body>
 </html>
