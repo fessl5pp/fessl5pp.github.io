@@ -3,375 +3,149 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bella Kuwaiti Pro - AI Edition</title>
-  <meta name="description" content="Bella Pro بلهجة كويتية بحتة مع ذكاء اصطناعي متطور ومودات ذكية." />
+  <title>Bella AI Pro - Kuwait 🇰🇼</title>
   <style>
-    /* التنسيقات الأصلية مع تحسينات بسيطة */
-    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-    :root{
-      --bg:#09090b;--bg2:#121317;--panel:rgba(23,24,29,.92);--panel2:rgba(34,36,44,.95);
-      --line:rgba(255,255,255,.08);--text:#fff;--muted:#b5bac5;--accent:#0a84ff;--accent2:#6d5efc;
-      --pink:#ff4d8d;--gold:#ffcc00;--orange:#ff9f0a;--bot:#2b2d33;--user:#0a84ff;--bubble:#1b1d23;
-      --shadow:0 22px 55px rgba(0,0,0,.35)
+    /* التنسيقات المتطورة */
+    :root {
+      --bg: #09090b; --panel: rgba(23, 24, 29, 0.95);
+      --accent: #0a84ff; --text: #ffffff; --muted: #b5bac5;
+      --bot-bg: #1b1d23; --user-bg: #0a84ff;
     }
-    body.theme-pink{--accent:#ff4d8d;--accent2:#ff8db7;--user:#ff4d8d}
-    body.theme-blue{--accent:#0a84ff;--accent2:#6d5efc;--user:#0a84ff}
-    body.theme-gold{--accent:#ff9f0a;--accent2:#ffcc00;--user:#ff9f0a}
-    body{margin:0;min-height:100vh;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",Arial,sans-serif;
-      background:radial-gradient(circle at top, rgba(109,94,252,.16), transparent 24%),
-      radial-gradient(circle at bottom, rgba(10,132,255,.12), transparent 22%),linear-gradient(180deg,var(--bg),var(--bg2));
-      padding:24px 14px 120px;text-align:center}
-    .page{width:min(980px,100%);margin:0 auto}
-    .hero{width:min(560px,100%);margin:0 auto 18px;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:30px;
-      padding:22px 18px;box-shadow:var(--shadow);backdrop-filter:blur(14px)}
-    .heroTop{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:10px}
-    .logo{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:24px;color:#111;
-      background:linear-gradient(135deg,#ff93be,#7afcff);box-shadow:0 12px 28px rgba(0,0,0,.2);flex-shrink:0}
-    .heroText{text-align:right}.heroText b{display:block;font-size:20px}.heroText span{display:block;color:var(--muted);font-size:13px;margin-top:3px}
-    h1{margin:8px 0 0;font-size:34px;line-height:1.15;letter-spacing:-.4px}
-    .sub{color:var(--muted);margin-top:8px;font-size:14px;line-height:1.7}
-    .heroActions{margin-top:14px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
-    .btn,.pill,.miniBtn,.iconBtn{border:none;cursor:pointer;color:#fff;font-family:inherit}
-    .btn{border-radius:999px;padding:14px 22px;font-size:15px;font-weight:900;background:linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:0 14px 28px rgba(0,0,0,.2)}
-    .btnGhost{background:rgba(255,255,255,.07);border:1px solid var(--line);box-shadow:none}
-    .statsGrid{width:min(720px,100%);margin:0 auto 18px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
-    .stat{background:rgba(255,255,255,.045);border:1px solid var(--line);border-radius:20px;padding:12px 10px;box-shadow:var(--shadow)}
-    .stat b{display:block;font-size:18px}.stat span{display:block;color:var(--muted);font-size:12px;margin-top:4px}
-    .chatShell{width:min(470px,calc(100% - 12px));position:fixed;left:50%;transform:translateX(-50%);bottom:12px;background:var(--panel);
-      border:1px solid var(--line);border-radius:30px;overflow:hidden;box-shadow:0 30px 70px rgba(0,0,0,.42);backdrop-filter:blur(18px);display:none;z-index:1000}
-    .chatShell.open{display:block}.chatHeader{padding:14px;background:var(--panel2);border-bottom:1px solid var(--line)}
-    .chatTop{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;direction:ltr}
-    .profileWrap{display:flex;gap:10px;align-items:center;direction:rtl;flex:1;text-align:right}
-    .avatar{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#ff93be,#7afcff);color:#111;font-weight:900;font-size:20px;flex-shrink:0}
-    .nameWrap b{display:block;font-size:15px}.nameWrap span{display:block;color:#d6d9e0;font-size:12px;margin-top:3px}
-    .xpCard{width:152px;flex-shrink:0;text-align:left;direction:ltr;background:rgba(255,255,255,.07);border:1px solid var(--line);border-radius:18px;padding:10px 11px}
-    .xpTop{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:12px;font-weight:800}.gold{color:var(--gold)}
-    .xpBar{width:100%;height:8px;border-radius:999px;overflow:hidden;background:rgba(255,255,255,.08);margin-top:8px}
-    .xpFill{width:0%;height:100%;background:linear-gradient(90deg,var(--gold),var(--orange));border-radius:999px;transition:width .25s ease}
-    .xpMeta{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px}.xpMeta span{background:rgba(255,255,255,.08);border-radius:999px;padding:4px 8px;font-size:10px;color:#eceef4;font-weight:700}
-    .topButtons,.modeBar,.quickBar,.toolBar,.favoriteBar{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
-    .topButtons::-webkit-scrollbar,.modeBar::-webkit-scrollbar,.quickBar::-webkit-scrollbar,.toolBar::-webkit-scrollbar,.favoriteBar::-webkit-scrollbar{display:none}
-    .topButtons{margin-top:10px;justify-content:flex-end;flex-wrap:wrap}
-    .miniBtn,.pill,.iconBtn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.03);border-radius:999px;padding:8px 11px;font-size:12px;font-weight:800;white-space:nowrap}
-    .bars{background:rgba(16,17,21,.85);border-bottom:1px solid var(--line)} .modeBar,.quickBar,.toolBar,.favoriteBar{padding:10px 12px}
-    .pill.active{background:linear-gradient(135deg,var(--accent),var(--accent2))}.favoriteBar{display:none}.favoriteBar.show{display:flex}
-    .messages{height:390px;overflow-y:auto;background:#000;padding:12px;text-align:right;scroll-behavior:smooth}
-    .msg{width:fit-content;max-width:86%;margin:8px 0;border-radius:24px;padding:10px 14px;line-height:1.7;font-size:14px;position:relative;animation:fadeIn .18s ease;word-break:break-word}
-    .msg.user{margin-right:auto;background:var(--user);border-bottom-right-radius:8px;color:#fff}
-    .msg.bot{margin-left:auto;background:var(--bot);border-bottom-left-radius:8px;color:#fff}
-    .msg.system{margin:10px auto;max-width:95%;border-radius:999px;background:rgba(255,255,255,.08);color:#ddd;font-size:12px;padding:8px 12px;text-align:center}
-    .msg .msgTools{margin-top:8px;display:flex;gap:6px;justify-content:flex-start;flex-wrap:wrap}.iconBtn{padding:5px 9px;font-size:11px;background:rgba(255,255,255,.09)}
-    .typing{opacity:.8;font-style:italic}
-    .inputArea{display:flex;gap:8px;padding:12px;background:rgba(20,21,25,.96);border-top:1px solid var(--line)}
-    .inputArea input{flex:1;border:none;outline:none;border-radius:18px;background:var(--bubble);color:#fff;padding:12px 14px;font-size:14px;font-family:inherit}
-    .inputArea input::placeholder{color:#9ca2ae}
-    .sendBtn{min-width:62px;border-radius:18px;padding:12px 14px;font-size:14px;font-weight:900;background:linear-gradient(135deg,var(--accent),var(--accent2))}
-    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.82);z-index:1300;padding:20px}
-    .modal.show{display:flex}
-    .card{width:min(390px,100%);background:#16171c;border:1px solid var(--line);border-radius:26px;padding:22px 18px;box-shadow:0 30px 70px rgba(0,0,0,.45)}
-    .card h2{margin:0 0 8px;font-size:24px}.card p{margin:0 0 16px;color:var(--muted);font-size:14px;line-height:1.7}
-    .rowInput{display:flex;gap:8px;margin-top:10px}.rowInput input{flex:1;border:none;outline:none;border-radius:16px;background:var(--bubble);color:#fff;padding:12px 14px;font-size:14px;font-family:inherit}
-    .cardActions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-    .selectBtn{width:100%;border:none;border-radius:18px;padding:14px 16px;margin-top:10px;font-size:15px;font-weight:900;color:#fff;cursor:pointer;font-family:inherit}
-    .blueGrad{background:linear-gradient(135deg,var(--accent),var(--accent2))}.pinkGrad{background:linear-gradient(135deg,var(--pink),#ff99c2)} .grayGrad{background:rgba(255,255,255,.08);border:1px solid var(--line)}
-    @keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
-    @media (max-width:760px){.statsGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-    @media (max-width:420px){body{padding:18px 10px 110px}h1{font-size:29px}.chatShell{width:min(440px,calc(100% - 8px));bottom:8px}.messages{height:340px}.xpCard{width:136px}.hero{padding:18px 14px}}
+    body.theme-pink { --accent: #ff4d8d; --user-bg: #ff4d8d; }
+    body.theme-blue { --accent: #0a84ff; --user-bg: #0a84ff; }
+
+    body {
+      background: var(--bg); color: var(--text); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh;
+    }
+    .chat-card {
+      width: 100%; max-width: 500px; background: var(--panel); border-radius: 30px;
+      overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1);
+    }
+    .header { padding: 20px; background: rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.1); text-align: center; }
+    .header h2 { margin: 0; font-size: 22px; color: var(--accent); }
+    
+    /* شريط المودات الجديد */
+    .mode-selector {
+      display: flex; gap: 8px; padding: 10px; background: rgba(0,0,0,0.2);
+      overflow-x: auto; justify-content: center;
+    }
+    .mode-btn {
+      border: none; padding: 8px 15px; border-radius: 20px; background: rgba(255,255,255,0.1);
+      color: white; cursor: pointer; font-size: 13px; transition: 0.3s; white-space: nowrap;
+    }
+    .mode-btn.active { background: var(--accent); font-weight: bold; }
+
+    .messages { height: 400px; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+    .msg { max-width: 80%; padding: 12px 18px; border-radius: 20px; line-height: 1.5; font-size: 15px; animation: fadeIn 0.3s; }
+    .msg.bot { align-self: flex-start; background: var(--bot-bg); border-bottom-left-radius: 5px; }
+    .msg.user { align-self: flex-end; background: var(--user-bg); border-bottom-right-radius: 5px; }
+    .typing { font-size: 12px; color: var(--muted); margin-bottom: 10px; display: none; }
+
+    .input-area { padding: 20px; display: flex; gap: 10px; background: rgba(255,255,255,0.02); }
+    input { flex: 1; background: #272930; border: none; padding: 12px; border-radius: 15px; color: white; outline: none; }
+    button.send { background: var(--accent); border: none; padding: 10px 20px; border-radius: 15px; color: white; cursor: pointer; font-weight: bold; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 <body class="theme-blue">
-  <div class="page">
-    <section class="hero">
-      <div class="heroTop">
-        <div class="logo">B</div>
-        <div class="heroText">
-          <b>Bella Pro AI 🇰🇼</b>
-          <span>ذكاء اصطناعي • لهجة كويتية • مودات متطورة</span>
-        </div>
-      </div>
-      <h1>بوت سوالف كويتي<br>بذكاء كامل وهالمرة غير</h1>
-      <div class="sub">تم تطوير المحرك ليدعم الردود الذكية وتوقع ما تريده باللهجة الكويتية الأصيلة.</div>
-      <div class="heroActions">
-        <button class="btn" id="openChatBtn">افتح Bella 💬</button>
-        <button class="btn btnGhost" id="openNameBtn">حط اسمك ✍️</button>
-      </div>
-    </section>
 
-    <section class="statsGrid">
-      <div class="stat"><b id="heroLevel">LVL 1</b><span>مستواك الحالي</span></div>
-      <div class="stat"><b id="heroRank">مبتدئ</b><span>رتبتك</span></div>
-      <div class="stat"><b id="heroFavs">0</b><span>المفضلة</span></div>
-      <div class="stat"><b id="heroStreak">0</b><span>سلسلة الأيام</span></div>
-    </section>
+<div class="chat-card">
+  <div class="header">
+    <h2>Bella AI 🇰🇼</h2>
+    <div id="status" style="font-size: 12px; color: var(--muted);">المود الحالي: تلقائي</div>
   </div>
 
-  <div class="chatShell" id="chatShell">
-    <div class="chatHeader">
-      <div class="chatTop">
-        <div class="xpCard">
-          <div class="xpTop">
-            <span class="gold" id="xpLevel">LVL 1</span>
-            <span id="xpValue">0 XP</span>
-          </div>
-          <div style="margin-top:6px;font-size:12px;color:#e6e9ef" id="xpRank">الرتبة: مبتدئ</div>
-          <div class="xpBar"><div class="xpFill" id="xpFill"></div></div>
-          <div class="xpMeta">
-            <span id="xpCombo">Combo: 0</span>
-            <span id="xpAch">Ach: 0</span>
-            <span id="xpFav">Fav: 0</span>
-          </div>
-        </div>
-
-        <div style="flex:1;direction:rtl">
-          <div class="profileWrap">
-            <div class="avatar">B</div>
-            <div class="nameWrap">
-              <b>Bella AI 🇰🇼</b>
-              <span id="statusText">موجودة • مود: أوتو</span>
-            </div>
-          </div>
-          <div class="topButtons">
-            <button class="miniBtn" id="showFavBtn">المفضلة</button>
-            <button class="miniBtn" id="settingsBtn">الثيم</button>
-            <button class="miniBtn" id="clearBtn">مسح</button>
-            <button class="miniBtn" id="closeBtn">✕</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="bars">
-      <div class="modeBar" id="modeBar"></div>
-      <div class="toolBar" id="toolBar"></div>
-      <div class="quickBar" id="quickBar"></div>
-      <div class="favoriteBar" id="favoriteBar"></div>
-    </div>
-
-    <div class="messages" id="messages"></div>
-
-    <div class="inputArea">
-      <input id="msgInput" type="text" placeholder="اكتب رسالتك..." />
-      <button class="sendBtn" id="sendBtn">إرسال</button>
-    </div>
+  <div class="mode-selector" id="modeSelector">
+    <button class="mode-btn active" onclick="setMode('auto')">🤖 Auto</button>
+    <button class="mode-btn" onclick="setMode('cute')">💕 دلوعة</button>
+    <button class="mode-btn" onclick="setMode('calm')">🤍 مروقة</button>
+    <button class="mode-btn" onclick="setMode('mad')">💢 معصبة</button>
   </div>
 
-  <div class="modal show" id="genderModal">
-    <div class="card">
-      <h2>شلون تبي Bella تكلمك؟</h2>
-      <p>اختار الصيغة، وBella راح تستخدم الذكاء الاصطناعي عشان ترد عليك بالأسلوب المناسب.</p>
-      <button class="selectBtn blueGrad" data-gender="male">👨 كلّمني كأني ولد</button>
-      <button class="selectBtn pinkGrad" data-gender="female">👩 كلّميني كأني بنت</button>
-      <div class="rowInput">
-        <input id="nameInput" type="text" maxlength="24" placeholder="اسمك (اختياري)" />
-      </div>
-      <div class="cardActions">
-        <button class="btn btnGhost" id="skipNameBtn" style="width:100%">ادخل</button>
-      </div>
-    </div>
+  <div class="messages" id="chatBox">
+    <div class="msg bot">هلا والله! أنا بيلا.. شلون أقدر أساعدك اليوم؟</div>
   </div>
+  
+  <div id="typing" class="typing" style="padding-left: 20px;">Bella تكتب الآن...</div>
 
-  <div class="modal" id="themeModal">
-    <div class="card">
-      <h2>اختار الثيم</h2>
-      <button class="selectBtn blueGrad" data-theme="theme-blue">أزرق</button>
-      <button class="selectBtn pinkGrad" data-theme="theme-pink">وردي</button>
-      <button class="selectBtn grayGrad" id="closeThemeBtn">إغلاق</button>
-    </div>
+  <div class="input-area">
+    <input type="text" id="userInput" placeholder="اكتب شي..." onkeypress="handleKey(event)">
+    <button class="send" onclick="sendMsg()">إرسال</button>
   </div>
+</div>
 
-  <script>
-    const STORAGE_KEY = "bella_ai_pro_v2";
-    const MAX_HISTORY = 60;
-    const XP_STEP = 25;
+<script>
+  let currentMode = 'auto';
+  const chatBox = document.getElementById('chatBox');
+  const typing = document.getElementById('typing');
 
-    // AI Configuration Placeholder
-    // هنا يمكنك مستقبلاً إضافة API Key الخاص بك
-    const AI_CONFIG = {
-        enabled: false, // اجعلها true عند ربط API حقيقي
-        endpoint: "YOUR_API_ENDPOINT"
-    };
+  // إعدادات الردود لكل مود
+  const responses = {
+    cute: ["يا بعد قلبي والله.. آمري تدللي 💕", "يا عيون بيلا أنت.. شلونه يومك؟ 🥰", "فديتك.. قولي اللي بخاطرك وأنا أسمعك ✨"],
+    calm: ["هلا بالزين.. الدنيا ما تسوى، روق وقولي شعندك 🤍", "يا هلا.. أنا معاك، خذ راحتك بالكلام ☕", "سمّ.. آمر وش بخاطرك؟ أنا أسمعك بكل هدوء"],
+    mad: ["خلصني شتبي؟ ماني فاضية حق الحنة 💢", "ترى حدي واصلة معاي.. قول اللي عندك بسرعة 😒", "أوف.. وبعدين؟ شتبي الحين؟"],
+    auto: ["هلا فيك، شلون أقدر أساعدك؟", "أنا موجودة عشانك، تفضل", "شلون الأمور معاك اليوم؟"]
+  };
 
-    const MODES = [
-      { id:"auto", labels:{male:"🤖 أوتو", female:"🤖 أوتو"} },
-      { id:"cute", labels:{male:"💕 دلع", female:"💕 دلع"} },
-      { id:"fun", labels:{male:"😎 فلة", female:"😎 فلة"} },
-      { id:"calm", labels:{male:"🤍 رايق", female:"🤍 رايقة"} },
-      { id:"mad", labels:{male:"😒 معصب", female:"😒 معصبة"} }
-    ];
+  function setMode(mode) {
+    currentMode = mode;
+    // تحديث شكل الأزرار
+    document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    // تحديث الحالة
+    const statusTxt = {auto: 'تلقائي', cute: 'دلوعة', calm: 'مروقة', mad: 'معصبة'};
+    document.getElementById('status').innerText = "المود الحالي: " + statusTxt[mode];
+    
+    // رد فعلي فوري عند تغيير المود
+    showTyping();
+    setTimeout(() => {
+      hideTyping();
+      addMessage('bot', "تم تغيير المود إلى: " + statusTxt[mode] + ".. الحين أنا جاهزة!");
+    }, 600);
+  }
 
-    const SUGGESTIONS = {
-      male: ["هلا","شلونك","شخبارك","شكو ماكو","قهوه","ضحكني","منو أنا","نقاطي"],
-      female: ["هلا","شلونج","شخبارج","شكو ماكو","قهوه","ضحكيني","منو أنا","نقاطي"],
-      commonTools: [
-        { label:"حفظ الاسم", value:"احفظ اسمي" },
-        { label:"منو أنا", value:"منو أنا" },
-        { label:"نقاطي", value:"نقاطي" },
-        { label:"رتبتي", value:"رتبتي" }
-      ]
-    };
+  function sendMsg() {
+    const input = document.getElementById('userInput');
+    const text = input.value.trim();
+    if (!text) return;
 
-    const MODE_FLAVOR = {
-      auto: { male:["تمام","حلو"], female:["تمام","حلو"] },
-      cute: { male:["يا بعد قلبي","فديتك"], female:["يا بعد روحي","فديتج"] },
-      fun: { male:["ههههه","وناسه"], female:["ههههه","وناسه"] },
-      calm: { male:["روق","على اهونك"], female:["روقي","على اهونج"] },
-      mad: { male:["لا تغثني","وش تبي"], female:["لا تغثيني","وش تبين"] }
-    };
+    addMessage('user', text);
+    input.value = '';
 
-    const state = {
-      gender:"male", name:"", mode:"auto", theme:"theme-blue", xp:0, combo:0, streak:0,
-      lastSeenDate:"", messageCount:0, achievements:{}, favorites:[], history:[]
-    };
+    showTyping();
 
-    const el = {
-      body:document.body, heroLevel:document.getElementById("heroLevel"), heroRank:document.getElementById("heroRank"),
-      heroFavs:document.getElementById("heroFavs"), heroStreak:document.getElementById("heroStreak"),
-      openChatBtn:document.getElementById("openChatBtn"), openNameBtn:document.getElementById("openNameBtn"),
-      chatShell:document.getElementById("chatShell"), closeBtn:document.getElementById("closeBtn"),
-      messages:document.getElementById("messages"), msgInput:document.getElementById("msgInput"),
-      sendBtn:document.getElementById("sendBtn"), statusText:document.getElementById("statusText"),
-      modeBar:document.getElementById("modeBar"), quickBar:document.getElementById("quickBar"),
-      toolBar:document.getElementById("toolBar"), favoriteBar:document.getElementById("favoriteBar"),
-      showFavBtn:document.getElementById("showFavBtn"), settingsBtn:document.getElementById("settingsBtn"),
-      clearBtn:document.getElementById("clearBtn"), xpLevel:document.getElementById("xpLevel"),
-      xpValue:document.getElementById("xpValue"), xpRank:document.getElementById("xpRank"),
-      xpFill:document.getElementById("xpFill"), xpCombo:document.getElementById("xpCombo"),
-      xpAch:document.getElementById("xpAch"), xpFav:document.getElementById("xpFav"),
-      genderModal:document.getElementById("genderModal"), nameInput:document.getElementById("nameInput"),
-      skipNameBtn:document.getElementById("skipNameBtn"), themeModal:document.getElementById("themeModal"),
-      closeThemeBtn:document.getElementById("closeThemeBtn")
-    };
+    // محاكاة تفكير الـ AI والرد بناءً على المود
+    setTimeout(() => {
+      hideTyping();
+      const reply = pickResponse(text);
+      addMessage('bot', reply);
+    }, 1000);
+  }
 
-    // --- Core Functions ---
-    function loadState(){
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if(!raw) return;
-      const saved = JSON.parse(raw);
-      Object.assign(state,saved);
-    }
+  function pickResponse(userText) {
+    // منطق ذكي بسيط: إذا سأل عن شيء معين
+    if (userText.includes("شلونك")) return currentMode === 'mad' ? "مو شغلك!" : "بخير دامك بخير";
+    
+    // الرد العشوائي بناءً على المود المختار
+    const pool = responses[currentMode];
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
 
-    function saveState(){
-      localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
-    }
+  function addMessage(sender, text) {
+    const div = document.createElement('div');
+    div.className = `msg ${sender}`;
+    div.innerText = text;
+    chatBox.appendChild(div);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
 
-    function pick(arr){return arr[Math.floor(Math.random() * arr.length)]}
+  function showTyping() { typing.style.display = 'block'; chatBox.scrollTop = chatBox.scrollHeight; }
+  function hideTyping() { typing.style.display = 'none'; }
+  function handleKey(e) { if (e.key === 'Enter') sendMsg(); }
 
-    // --- AI Logic ---
-    async function fetchAIResponse(userInput) {
-        if (!AI_CONFIG.enabled) return null;
-        // محاكاة لطلب API مستقبلي
-        try {
-            const response = await fetch(AI_CONFIG.endpoint, {
-                method: "POST",
-                body: JSON.stringify({ prompt: userInput, context: state.history })
-            });
-            const data = await response.json();
-            return data.reply;
-        } catch(e) { return null; }
-    }
-
-    function buildLocalReply(raw) {
-        // نستخدم المنطق القديم كـ Fallback في حال عدم وجود AI
-        const normalized = raw.toLowerCase();
-        if(normalized.includes("هلا")) return state.gender === "female" ? "هلا وغلا يا بعد روحي 🌷" : "هلا وغلا يا بعد قلبي 🌷";
-        if(normalized.includes("شلون")) return "بخير وعافية، إنت شلونك؟";
-        return pick(["وصلت فكرتك، كمل..","سمّ آمر وش بخاطرك؟","والله ماني متأكدة شقصدك، وضح لي أكثر"]);
-    }
-
-    // --- Message Handling ---
-    async function sendMessage(forcedText) {
-        const text = (forcedText ?? el.msgInput.value).trim();
-        if(!text) return;
-
-        addMessage("user", text);
-        state.history.push({role:"user", text});
-        el.msgInput.value = "";
-        
-        // XP & Stats
-        state.xp += 5;
-        state.combo += 1;
-        updateStats();
-
-        // Typing Indicator
-        const typingIndicator = addMessage("bot", "Bella تكتب...");
-        typingIndicator.classList.add("typing");
-
-        // Get Response (AI then Local)
-        let reply = await fetchAIResponse(text);
-        if(!reply) reply = buildLocalReply(text);
-
-        // Add Flavor based on Mode
-        if(state.mode !== "auto") {
-            const flavor = pick(MODE_FLAVOR[state.mode][state.gender]);
-            reply = `${flavor}، ${reply}`;
-        }
-
-        setTimeout(() => {
-            typingIndicator.remove();
-            addMessage("bot", reply, true);
-            state.history.push({role:"bot", text:reply});
-            saveState();
-        }, 800);
-    }
-
-    function addMessage(type, text, withTools=false) {
-        const msg = document.createElement("div");
-        msg.className = "msg " + type;
-        msg.textContent = text;
-        if(type === "bot" && withTools) {
-            const tools = document.createElement("div");
-            tools.className = "msgTools";
-            tools.innerHTML = `<button class="iconBtn" onclick="navigator.clipboard.writeText('${text}')">نسخ</button>`;
-            msg.appendChild(tools);
-        }
-        el.messages.appendChild(msg);
-        el.messages.scrollTop = el.messages.scrollHeight;
-        return msg;
-    }
-
-    function updateStats(){
-        const level = Math.floor(state.xp / XP_STEP) + 1;
-        el.xpLevel.textContent = "LVL " + level;
-        el.xpValue.textContent = state.xp + " XP";
-        el.xpFill.style.width = ((state.xp % XP_STEP) / XP_STEP * 100) + "%";
-        el.heroLevel.textContent = "LVL " + level;
-        saveState();
-    }
-
-    function bind() {
-        el.openChatBtn.onclick = () => el.chatShell.classList.add("open");
-        el.closeBtn.onclick = () => el.chatShell.classList.remove("open");
-        el.sendBtn.onclick = () => sendMessage();
-        el.msgInput.onkeydown = (e) => { if(e.key === "Enter") sendMessage(); };
-        
-        document.querySelectorAll("[data-gender]").forEach(btn => {
-            btn.onclick = () => {
-                state.gender = btn.dataset.gender;
-                state.name = el.nameInput.value || (state.gender === "female" ? "بنت" : "ولد");
-                el.genderModal.classList.remove("show");
-                el.chatShell.classList.add("open");
-                saveState();
-            };
-        });
-
-        document.querySelectorAll("[data-theme]").forEach(btn => {
-            btn.onclick = () => {
-                el.body.className = btn.dataset.theme;
-                state.theme = btn.dataset.theme;
-                saveState();
-            };
-        });
-    }
-
-    function boot() {
-        loadState();
-        el.body.className = state.theme || "theme-blue";
-        bind();
-        updateStats();
-        addMessage("bot", "هلا والله! أنا Bella المطورة بالذكاء الاصطناعي.. شخبارك؟", true);
-    }
-
-    boot();
-  </script>
+</script>
 </body>
 </html>
