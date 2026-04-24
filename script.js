@@ -1130,3 +1130,110 @@ getReply = function(text) {
 
   return oldGetReplyAngryReal(text);
 };
+/* =========================
+   زر غير للاقتراحات v18
+   يجدد الاقتراحات كل مرة
+========================= */
+
+let suggestionContext = "";
+let suggestionSetIndex = 0;
+
+const suggestionBanks = {
+  auto: [
+    ["شلونچ؟", "ابي اتقهوى", "نكتة", "حكمة اليوم", "شنو الجو؟"],
+    ["شنو بالصندوق", "كمّل المثل", "فزعة بيلا", "الكويت", "عطني عيدية"],
+    ["اسمي فيصل", "وين قهوة", "مكان بحر", "ترجم", "شكو؟"],
+    ["قوة", "صج السالفة؟", "أنا زعلان", "ابي اضحك", "شارك الشات"]
+  ],
+  angry: [
+    ["ليش نفسيتچ جذي؟", "منو مزعلچ؟", "هدي بالج", "اهديچ وردة", "ابي اتقهوى"],
+    ["شعلي فيچ؟", "لا تعصبين", "ضحكني إنتي", "اهديچ ككاو", "غيري المود"],
+    ["تكلمين عدل؟", "ليش مطنقرة؟", "بس لا تصارخين", "قولي حكمة", "نكتة"],
+    ["تمام لا تزعلين", "شلونچ؟", "حطي رايقة", "أنا آسف", "فزعة بيلا"]
+  ],
+  cute: [
+    ["دلّعيني", "احبچ", "نكتة", "ابي اتقهوى", "حكمة اليوم"],
+    ["واااي", "فديتچ", "شلونچ يا حلوة؟", "قهوة كيوت", "غير هالقهوة"],
+    ["سولفي لي", "أنا زعلان", "ضحكيني", "مكان كشخة", "كمّل المثل"],
+    ["عطيني مثل", "ابي دلع", "الكويت", "اسمي فيصل", "شنو بالصندوق"]
+  ],
+  chill: [
+    ["سولفي بهدوء", "قهوة هادية", "حكمة اليوم", "شنو الجو؟", "غير هالقهوة"],
+    ["مكان بحر", "خلنا نروق", "قهوة رايقة", "المباركية", "مارينا"],
+    ["كمّل المثل", "شنو بالصندوق", "فزعة بيلا", "سوالف أول", "قوة"],
+    ["وضحّي لي", "نكتة هادية", "أنا متضايق", "ترجم", "شارك الشات"]
+  ],
+  radar: [
+    ["غير هالقهوة", "قهوة هادية", "مكان بحر", "مكان تمشي", "مكان كافيه"],
+    ["غير هالقز", "المباركية", "الشويخ", "مارينا", "الأفنيوز"],
+    ["ابي اتقهوى", "قهوة كشخة", "قهوة رايقة", "كوفي", "رادار القز"]
+  ],
+  game: [
+    ["مبخر", "دلة", "كرفاية", "ابي الحل", "غير"],
+    ["على قد لحافك", "يشويه", "يطلعه الملاس", "استسلم", "كمّل المثل"],
+    ["شنو بالصندوق", "مبخر", "منقلة", "سدو", "ابي الحل"]
+  ],
+  fazaa: [
+    ["عطني مطعم كشخة", "عطني مسلسلات", "وهقة", "ابي اتقهوى", "غير"],
+    ["عذر للدوام", "عذر للربع", "مطعم بحر", "مسلسل كويتي", "قهوة"],
+    ["فزعة بيلا", "وين اروح؟", "اكل", "دراما", "غير هالقهوة"]
+  ]
+};
+
+function renderSuggestions(list) {
+  const el = document.getElementById("quickSuggestions");
+  if (!el) return;
+
+  const finalList = [...list];
+
+  if (!finalList.includes("غير")) {
+    finalList.push("غير");
+  }
+
+  el.innerHTML = finalList.map(t => {
+    if (t === "غير") {
+      return `<button onclick="refreshSuggestions()">غير 🔄</button>`;
+    }
+
+    const safe = t.replace(/'/g, "\\'");
+    return `<button onclick="quickSend('${safe}')">${t}</button>`;
+  }).join("");
+}
+
+function pickSuggestionBank(context = "") {
+  if (context.includes("رادار") || context.includes("اختار") || context.includes("قهوة") || context.includes("قهوه")) {
+    return "radar";
+  }
+
+  if (context === "game-box" || context === "game-proverb" || context.includes("لعبة") || context.includes("المثل") || context.includes("الصندوق")) {
+    return "game";
+  }
+
+  if (context === "fazaa" || context.includes("فزعة") || context.includes("مطعم") || context.includes("وهقة")) {
+    return "fazaa";
+  }
+
+  return s.mode || "auto";
+}
+
+function refreshSuggestions() {
+  const bankName = pickSuggestionBank(suggestionContext);
+  const bank = suggestionBanks[bankName] || suggestionBanks.auto;
+
+  suggestionSetIndex = (suggestionSetIndex + 1) % bank.length;
+  renderSuggestions(bank[suggestionSetIndex]);
+
+  showPopupCustom ? showPopupCustom("بدلت لك الاقتراحات 🔄") : null;
+}
+
+const oldUpdateSuggestionsWithRefresh = updateSuggestions;
+
+updateSuggestions = function(context = "") {
+  suggestionContext = context || "";
+
+  const bankName = pickSuggestionBank(suggestionContext);
+  const bank = suggestionBanks[bankName] || suggestionBanks.auto;
+
+  suggestionSetIndex = 0;
+  renderSuggestions(bank[0]);
+};
