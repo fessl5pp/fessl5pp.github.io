@@ -3,149 +3,232 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bella AI Pro - Kuwait 🇰🇼</title>
+  <title>Bella Kuwaiti Pro - AI Enhanced</title>
   <style>
-    /* التنسيقات المتطورة */
-    :root {
-      --bg: #09090b; --panel: rgba(23, 24, 29, 0.95);
-      --accent: #0a84ff; --text: #ffffff; --muted: #b5bac5;
-      --bot-bg: #1b1d23; --user-bg: #0a84ff;
+    /* الحفاظ على التصميم الأصلي الفخم مع تحسينات بسيطة */
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    :root{
+      --bg:#09090b;--bg2:#121317;--panel:rgba(23,24,29,.92);--panel2:rgba(34,36,44,.95);
+      --line:rgba(255,255,255,.08);--text:#fff;--muted:#b5bac5;--accent:#0a84ff;--accent2:#6d5efc;
+      --pink:#ff4d8d;--gold:#ffcc00;--orange:#ff9f0a;--bot:#2b2d33;--user:#0a84ff;--bubble:#1b1d23;
+      --shadow:0 22px 55px rgba(0,0,0,.35)
     }
-    body.theme-pink { --accent: #ff4d8d; --user-bg: #ff4d8d; }
-    body.theme-blue { --accent: #0a84ff; --user-bg: #0a84ff; }
-
-    body {
-      background: var(--bg); color: var(--text); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh;
-    }
-    .chat-card {
-      width: 100%; max-width: 500px; background: var(--panel); border-radius: 30px;
-      overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1);
-    }
-    .header { padding: 20px; background: rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.1); text-align: center; }
-    .header h2 { margin: 0; font-size: 22px; color: var(--accent); }
+    body.theme-pink{--accent:#ff4d8d;--accent2:#ff8db7;--user:#ff4d8d}
+    body.theme-blue{--accent:#0a84ff;--accent2:#6d5efc;--user:#0a84ff}
+    body{margin:0;min-height:100vh;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+      background:radial-gradient(circle at top, rgba(109,94,252,.16), transparent 24%),linear-gradient(180deg,var(--bg),var(--bg2));
+      padding:24px 14px 120px;text-align:center}
     
-    /* شريط المودات الجديد */
-    .mode-selector {
-      display: flex; gap: 8px; padding: 10px; background: rgba(0,0,0,0.2);
-      overflow-x: auto; justify-content: center;
-    }
-    .mode-btn {
-      border: none; padding: 8px 15px; border-radius: 20px; background: rgba(255,255,255,0.1);
-      color: white; cursor: pointer; font-size: 13px; transition: 0.3s; white-space: nowrap;
-    }
-    .mode-btn.active { background: var(--accent); font-weight: bold; }
+    .page{width:min(980px,100%);margin:0 auto}
+    .hero{width:min(560px,100%);margin:0 auto 18px;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:30px;padding:22px 18px;backdrop-filter:blur(14px)}
+    .logo{width:56px;height:56px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:24px;color:#111;background:linear-gradient(135deg,#ff93be,#7afcff);margin-bottom:10px}
+    h1{margin:8px 0;font-size:32px;line-height:1.2}
+    
+    /* نظام المودات الجديد في الواجهة */
+    .chatShell{width:min(480px,calc(100% - 12px));position:fixed;left:50%;transform:translateX(-50%);bottom:12px;background:var(--panel);border:1px solid var(--line);border-radius:30px;overflow:hidden;box-shadow:var(--shadow);backdrop-filter:blur(18px);display:none;z-index:1000}
+    .chatShell.open{display:block}
+    .chatHeader{padding:14px;background:var(--panel2);border-bottom:1px solid var(--line)}
+    
+    .xpCard{background:rgba(255,255,255,.07);border-radius:18px;padding:10px;margin-bottom:10px;text-align:right}
+    .xpBar{width:100%;height:6px;background:rgba(255,255,255,.1);border-radius:10px;margin-top:5px;overflow:hidden}
+    .xpFill{height:100%;background:var(--gold);width:0%;transition:0.3s}
 
-    .messages { height: 400px; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
-    .msg { max-width: 80%; padding: 12px 18px; border-radius: 20px; line-height: 1.5; font-size: 15px; animation: fadeIn 0.3s; }
-    .msg.bot { align-self: flex-start; background: var(--bot-bg); border-bottom-left-radius: 5px; }
-    .msg.user { align-self: flex-end; background: var(--user-bg); border-bottom-right-radius: 5px; }
-    .typing { font-size: 12px; color: var(--muted); margin-bottom: 10px; display: none; }
+    /* شريط اختيار المود المطور */
+    .modeBar {display:flex;gap:8px;padding:10px;overflow-x:auto;background:rgba(0,0,0,0.3);scrollbar-width:none}
+    .modeBar::-webkit-scrollbar {display:none}
+    .pill {border:none;padding:8px 16px;border-radius:20px;background:rgba(255,255,255,0.1);color:white;cursor:pointer;white-space:nowrap;font-size:13px}
+    .pill.active {background:var(--accent);font-weight:bold}
 
-    .input-area { padding: 20px; display: flex; gap: 10px; background: rgba(255,255,255,0.02); }
-    input { flex: 1; background: #272930; border: none; padding: 12px; border-radius: 15px; color: white; outline: none; }
-    button.send { background: var(--accent); border: none; padding: 10px 20px; border-radius: 15px; color: white; cursor: pointer; font-weight: bold; }
+    .messages{height:380px;overflow-y:auto;padding:15px;display:flex;flex-direction:column;gap:12px;background:rgba(0,0,0,0.2)}
+    .msg{max-width:85%;padding:12px 16px;border-radius:20px;font-size:14px;line-height:1.6;position:relative;animation:pop 0.2s ease-out}
+    .msg.bot{align-self:flex-start;background:var(--bot);border-bottom-left-radius:4px}
+    .msg.user{align-self:flex-end;background:var(--user);border-bottom-right-radius:4px}
+    
+    .inputArea{display:flex;gap:8px;padding:12px;background:var(--panel2)}
+    input{flex:1;background:var(--bubble);border:none;padding:12px;border-radius:15px;color:white;outline:none}
+    .sendBtn{background:var(--accent);border:none;padding:0 20px;border-radius:15px;color:white;font-weight:bold;cursor:pointer}
 
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pop { from{opacity:0;transform:scale(0.95)} to{opacity:1;transform:scale(1)} }
+    
+    /* الستايليات المفقودة من الملف الأصلي */
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,0.8);display:none;align-items:center;justify-content:center;z-index:2000}
+    .modal.show{display:flex}
+    .card{background:#1c1d22;padding:25px;border-radius:25px;width:90%;max-width:400px;text-align:center}
+    .btn{padding:12px 25px;border-radius:15px;border:none;background:var(--accent);color:white;font-weight:bold;cursor:pointer;margin-top:10px}
   </style>
 </head>
 <body class="theme-blue">
 
-<div class="chat-card">
-  <div class="header">
-    <h2>Bella AI 🇰🇼</h2>
-    <div id="status" style="font-size: 12px; color: var(--muted);">المود الحالي: تلقائي</div>
+  <div class="page">
+    <section class="hero">
+      <div class="logo">B</div>
+      <h1>Bella Pro AI</h1>
+      <p>بوت السوالف الكويتي المطور بالمودات الذكية</p>
+      <button class="btn" onclick="openChat()">ابدأ السوالف 💬</button>
+    </section>
   </div>
 
-  <div class="mode-selector" id="modeSelector">
-    <button class="mode-btn active" onclick="setMode('auto')">🤖 Auto</button>
-    <button class="mode-btn" onclick="setMode('cute')">💕 دلوعة</button>
-    <button class="mode-btn" onclick="setMode('calm')">🤍 مروقة</button>
-    <button class="mode-btn" onclick="setMode('mad')">💢 معصبة</button>
+  <div class="chatShell" id="chatShell">
+    <div class="chatHeader">
+      <div class="xpCard">
+        <div style="display:flex;justify-content:space-between;font-size:12px">
+          <span id="xpLevel">LVL 1</span>
+          <span id="xpValue">0 XP</span>
+        </div>
+        <div class="xpBar"><div class="xpFill" id="xpFill"></div></div>
+      </div>
+      <div style="text-align:right">
+        <b style="font-size:16px">Bella AI 🇰🇼</b>
+        <div id="statusText" style="font-size:11px;color:var(--muted)">المود: تلقائي</div>
+      </div>
+    </div>
+
+    <div class="modeBar">
+      <button class="pill active" onclick="changeMode('auto', this)">🤖 تلقائي</button>
+      <button class="pill" onclick="changeMode('cute', this)">💕 دلوعة</button>
+      <button class="pill" onclick="changeMode('calm', this)">🤍 مروقة</button>
+      <button class="pill" onclick="changeMode('mad', this)">💢 معصبة</button>
+    </div>
+
+    <div class="messages" id="messages"></div>
+
+    <div class="inputArea">
+      <input type="text" id="msgInput" placeholder="شنو بخاطرك تقول؟" onkeypress="if(event.key==='Enter') send()">
+      <button class="sendBtn" onclick="send()">إرسال</button>
+    </div>
   </div>
 
-  <div class="messages" id="chatBox">
-    <div class="msg bot">هلا والله! أنا بيلا.. شلون أقدر أساعدك اليوم؟</div>
+  <div class="modal show" id="genderModal">
+    <div class="card">
+      <h2>هلا بيك! شلون أكلمك؟</h2>
+      <p>اختار عشان Bella تعرف تضبط اللهجة معاك</p>
+      <button class="btn" style="width:100%;background:#0a84ff" onclick="setGender('male')">👨 أكلمك كولد</button>
+      <button class="btn" style="width:100%;background:#ff4d8d" onclick="setGender('female')">👩 أكلمج كبنت</button>
+    </div>
   </div>
-  
-  <div id="typing" class="typing" style="padding-left: 20px;">Bella تكتب الآن...</div>
 
-  <div class="input-area">
-    <input type="text" id="userInput" placeholder="اكتب شي..." onkeypress="handleKey(event)">
-    <button class="send" onclick="sendMsg()">إرسال</button>
-  </div>
-</div>
+  <script>
+    // --- النظام الأساسي (Data) ---
+    const state = {
+      gender: 'male',
+      mode: 'auto',
+      xp: 0,
+      name: 'مستخدم',
+      history: []
+    };
 
-<script>
-  let currentMode = 'auto';
-  const chatBox = document.getElementById('chatBox');
-  const typing = document.getElementById('typing');
+    // قاعدة بيانات الردود الكويتية المطورة
+    const KUWAITI_DB = {
+      keywords: {
+        "شلونك": { m: "بخير الله يسلمك، أنت شلونك؟", f: "بخير يا بعد روحي، أنتي شلونج؟" },
+        "هلا": { m: "هلا بالزين، نور المكان!", f: "أهلين وغلا، نورتي يا قلبي" },
+        "قهوه": { m: "صب قند راسك، تبيها مع هيل؟ ☕", f: "تفضلي أحلى فنجال لج ☕" },
+        "شكو ماكو": { m: "صافية وافية، ماكو إلا الخير", f: "كل خير يالغالية، الأمور طيبة" }
+      },
+      modes: {
+        cute: {
+          m: ["يا بعد قلبي والله.. آمري تدلل 💕", "فديت قلبك، قولي اللي بخاطرك ✨"],
+          f: ["يا بعد روحي أنتي.. تدللي 💕", "يا عيوني، كل شي لعيونج يهون ✨"]
+        },
+        calm: {
+          m: ["يا هلا.. روق وقولي شعندك 🤍", "خذ راحتك، أنا أسمعك بكل هدوء.."],
+          f: ["هلا يالغالية.. روقي وقولي اللي تبينه 🤍", "على اهونج، قولي كل اللي بخاطرج.."]
+        },
+        mad: {
+          m: ["خلصني شتبي؟ ماني فاضية حق الحنة 💢", "ترى واصلة معاي، قول بسرعة 😒"],
+          f: ["أوف.. وبعدين؟ شتبي الحين؟ 💢", "لا تغثيني، قولي اللي عندج وخلصيني 😒"]
+        }
+      }
+    };
 
-  // إعدادات الردود لكل مود
-  const responses = {
-    cute: ["يا بعد قلبي والله.. آمري تدللي 💕", "يا عيون بيلا أنت.. شلونه يومك؟ 🥰", "فديتك.. قولي اللي بخاطرك وأنا أسمعك ✨"],
-    calm: ["هلا بالزين.. الدنيا ما تسوى، روق وقولي شعندك 🤍", "يا هلا.. أنا معاك، خذ راحتك بالكلام ☕", "سمّ.. آمر وش بخاطرك؟ أنا أسمعك بكل هدوء"],
-    mad: ["خلصني شتبي؟ ماني فاضية حق الحنة 💢", "ترى حدي واصلة معاي.. قول اللي عندك بسرعة 😒", "أوف.. وبعدين؟ شتبي الحين؟"],
-    auto: ["هلا فيك، شلون أقدر أساعدك؟", "أنا موجودة عشانك، تفضل", "شلون الأمور معاك اليوم؟"]
-  };
+    // --- الوظائف (Functions) ---
 
-  function setMode(mode) {
-    currentMode = mode;
-    // تحديث شكل الأزرار
-    document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
-    
-    // تحديث الحالة
-    const statusTxt = {auto: 'تلقائي', cute: 'دلوعة', calm: 'مروقة', mad: 'معصبة'};
-    document.getElementById('status').innerText = "المود الحالي: " + statusTxt[mode];
-    
-    // رد فعلي فوري عند تغيير المود
-    showTyping();
-    setTimeout(() => {
-      hideTyping();
-      addMessage('bot', "تم تغيير المود إلى: " + statusTxt[mode] + ".. الحين أنا جاهزة!");
-    }, 600);
-  }
+    function openChat() { document.getElementById('chatShell').classList.add('open'); }
 
-  function sendMsg() {
-    const input = document.getElementById('userInput');
-    const text = input.value.trim();
-    if (!text) return;
+    function setGender(g) {
+      state.gender = g;
+      document.body.className = g === 'female' ? 'theme-pink' : 'theme-blue';
+      document.getElementById('genderModal').classList.remove('show');
+      openChat();
+      addMessage('bot', g === 'female' ? "هلا والله يا بعد روحي.. نورتيني! 🌷" : "هلا بالذيب.. منورني اليوم! 💙");
+    }
 
-    addMessage('user', text);
-    input.value = '';
+    function changeMode(m, btn) {
+      state.mode = m;
+      document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('statusText').innerText = "المود: " + btn.innerText;
+      addSystem(`تم تغيير مود Bella إلى ${btn.innerText}`);
+    }
 
-    showTyping();
+    function send() {
+      const input = document.getElementById('msgInput');
+      const text = input.value.trim();
+      if(!text) return;
 
-    // محاكاة تفكير الـ AI والرد بناءً على المود
-    setTimeout(() => {
-      hideTyping();
-      const reply = pickResponse(text);
-      addMessage('bot', reply);
-    }, 1000);
-  }
+      addMessage('user', text);
+      input.value = '';
+      
+      // نظام الـ XP من كودك القديم
+      state.xp += 10;
+      updateStats();
 
-  function pickResponse(userText) {
-    // منطق ذكي بسيط: إذا سأل عن شيء معين
-    if (userText.includes("شلونك")) return currentMode === 'mad' ? "مو شغلك!" : "بخير دامك بخير";
-    
-    // الرد العشوائي بناءً على المود المختار
-    const pool = responses[currentMode];
-    return pool[Math.floor(Math.random() * pool.length)];
-  }
+      // رد البوت الذكي
+      setTimeout(() => {
+        const reply = getSmartReply(text);
+        addMessage('bot', reply);
+      }, 700);
+    }
 
-  function addMessage(sender, text) {
-    const div = document.createElement('div');
-    div.className = `msg ${sender}`;
-    div.innerText = text;
-    chatBox.appendChild(div);
-    chatBox.scrollTop = chatBox.scrollHeight;
-  }
+    function getSmartReply(input) {
+      let reply = "";
+      const text = input.toLowerCase();
 
-  function showTyping() { typing.style.display = 'block'; chatBox.scrollTop = chatBox.scrollHeight; }
-  function hideTyping() { typing.style.display = 'none'; }
-  function handleKey(e) { if (e.key === 'Enter') sendMsg(); }
+      // 1. فحص الكلمات المفتاحية أولاً
+      for(let key in KUWAITI_DB.keywords) {
+        if(text.includes(key)) {
+          reply = state.gender === 'female' ? KUWAITI_DB.keywords[key].f : KUWAITI_DB.keywords[key].m;
+          break;
+        }
+      }
 
-</script>
+      // 2. إذا لم يجد كلمة مفتاحية، استخدم المود
+      if(!reply) {
+        if(state.mode === 'auto') {
+          reply = state.gender === 'female' ? "شلون أقدر أساعدج يالغالية؟" : "آمر يا حبيب.. شنو اللي بخاطرك؟";
+        } else {
+          const pool = KUWAITI_DB.modes[state.mode][state.gender === 'female' ? 'f' : 'm'];
+          reply = pool[Math.floor(Math.random() * pool.length)];
+        }
+      }
+
+      return reply;
+    }
+
+    function addMessage(type, text) {
+      const box = document.getElementById('messages');
+      const div = document.createElement('div');
+      div.className = `msg ${type}`;
+      div.innerText = text;
+      box.appendChild(div);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function addSystem(text) {
+      const box = document.getElementById('messages');
+      const div = document.createElement('div');
+      div.style = "font-size:11px; color:var(--muted); margin:5px auto; text-align:center; width:100%";
+      div.innerText = text;
+      box.appendChild(div);
+    }
+
+    function updateStats() {
+      const lvl = Math.floor(state.xp / 100) + 1;
+      document.getElementById('xpLevel').innerText = "LVL " + lvl;
+      document.getElementById('xpValue').innerText = state.xp + " XP";
+      document.getElementById('xpFill').style.width = (state.xp % 100) + "%";
+    }
+
+  </script>
 </body>
 </html>
