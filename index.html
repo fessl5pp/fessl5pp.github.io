@@ -47,6 +47,10 @@
       <button class="btn" onclick="openChat()">ابدأ الحين ⚡</button>
       <button class="ghost" onclick="showTheme()">الثيم 🎨</button>
       <button class="ghost" onclick="dailyWisdom()">حكمة اليوم 🧿</button>
+      <button class="ghost" onclick="startBoxGame()">شنو بالصندوق 🎁</button>
+      <button class="ghost" onclick="startProverbGame()">كمّل المثل 🧠</button>
+      <button class="ghost" onclick="openFazaa()">فزعة بيلا 🚨</button>
+      <button class="ghost" onclick="shareChat()">شارك الشات 📸</button>
     </div>
   </section>
 
@@ -80,6 +84,10 @@
 
     <div class="header-actions">
       <button class="tiny" onclick="dailyWisdom()">🧿</button>
+      <button class="tiny" onclick="startBoxGame()">🎁</button>
+      <button class="tiny" onclick="startProverbGame()">🧠</button>
+      <button class="tiny" onclick="openFazaa()">🚨</button>
+      <button class="tiny" onclick="shareChat()">📸</button>
       <button class="tiny" onclick="giveGift('rose')">🌹</button>
       <button class="tiny" onclick="giveGift('choco')">🍫</button>
       <button class="tiny" onclick="closeChat()">✕</button>
@@ -141,10 +149,10 @@
     <h2>الثيم</h2>
 
     <div class="theme-box">
-      <div class="theme-swatch sw1" onclick="setTheme('theme-blue')"></div>
-      <div class="theme-swatch sw2" onclick="setTheme('theme-pink')"></div>
-      <div class="theme-swatch sw3" onclick="setTheme('theme-gold')"></div>
-      <div class="theme-swatch sw4" onclick="setTheme('theme-night')"></div>
+      <div class="theme-swatch sw1" onclick="setTheme('theme-blue')" title="أزرق"></div>
+      <div class="theme-swatch sw2" onclick="setTheme('theme-pink')" title="وردي"></div>
+      <div class="theme-swatch sw3" onclick="setTheme('theme-gold')" title="ذهبي / قديم"></div>
+      <div class="theme-swatch sw4" onclick="setTheme('theme-night')" title="مود السهارى"></div>
     </div>
 
     <button class="ghost" onclick="hideTheme()">إغلاق</button>
