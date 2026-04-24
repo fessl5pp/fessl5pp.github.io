@@ -1,4 +1,4 @@
-const STORAGE_KEY = "bella_v13";
+const STORAGE_KEY = "bella_v14";
 
 let s = {
   theme: "theme-blue",
@@ -10,6 +10,9 @@ let s = {
 
 const box = document.getElementById("box");
 const inp = document.getElementById("inp");
+
+let lastRadarType = "coffee";
+let lastRadarName = "";
 
 window.onload = () => {
   try {
@@ -41,6 +44,9 @@ function setTheme(t) {
 
 function openChat() {
   document.getElementById("win").classList.add("active");
+  setTimeout(() => {
+    box.scrollTop = box.scrollHeight;
+  }, 50);
 }
 
 function closeChat() {
@@ -53,6 +59,11 @@ function showTheme() {
 
 function hideTheme() {
   document.getElementById("themeModal").classList.add("hidden");
+}
+
+function quickSend(text) {
+  inp.value = text;
+  send();
 }
 
 function setMode(m) {
@@ -198,25 +209,42 @@ const qazPlaces = {
   ]
 };
 
-function radarIntro() {
-  if (s.mode === "angry") return "رادار القز اشتغل 😡☕ خذ الاقتراحات ولا تتحلطم:";
-  if (s.mode === "cute") return "واااي بتقهوى؟ 🥺☕ اختار من هالأماكن الحلوة:";
-  if (s.mode === "chill") return "قهوة ورايق؟ اختيار موفق 😌☕ هذي أماكن تنفع:";
-  return "📡 رادار القز اشتغل… هذي اقتراحات Bella:";
-}
-
 function coffeeRadar(msg) {
-  const pool = has(msg, ["مشي", "تمشي", "نتمشى", "ممشى", "بحر"])
-    ? qazPlaces.walking.concat(qazPlaces.coffee)
-    : qazPlaces.coffee;
+  const isWalking = has(msg, [
+    "مشي",
+    "تمشي",
+    "نتمشى",
+    "ممشى",
+    "بحر",
+    "قز",
+    "نقز",
+    "هالقز",
+    "غير هالقز",
+    "غير القز"
+  ]);
 
-  const picked = [...pool].sort(() => Math.random() - 0.5).slice(0, 4);
+  const pool = isWalking ? qazPlaces.walking.concat(qazPlaces.coffee) : qazPlaces.coffee;
 
-  const lines = picked.map((p, i) => {
-    return `${i + 1}. ${p.name} — ${p.vibe}\n   📍 ${p.area}\n   ليش؟ ${p.why}`;
-  });
+  let choices = pool.filter(p => p.name !== lastRadarName);
+  if (choices.length === 0) choices = pool;
 
-  return `${radarIntro()}\n\n${lines.join("\n\n")}\n\nتبيني أفلترها لك؟ اكتب: قهوة هادية، قهوة كشخة، تمشي، بحر، أو تراثي.`;
+  const picked = random(choices);
+
+  lastRadarType = isWalking ? "walking" : "coffee";
+  lastRadarName = picked.name;
+
+  let intro = "رادار القز اختار لك 📡☕";
+  if (s.mode === "angry") intro = "خلاص، اختاري هذا 😡☕";
+  if (s.mode === "cute") intro = "واااي أحس هذا يناسبچ 🥺☕";
+  if (s.mode === "chill") intro = "اختيار رايق لك 😌☕";
+
+  return `${intro}
+
+${picked.name} — ${picked.vibe}
+📍 ${picked.area}
+ليش؟ ${picked.why}
+
+إذا ما عجبك اكتب: غير هالقهوة`;
 }
 
 /* =========================
@@ -308,8 +336,6 @@ const bellaBrain = [
     angry: ["دز السؤال وخلاص 😡", "لا ترسل نص ناقص.", "حدد: ترجمة ولا شرح؟"],
     chill: ["ارسل المطلوب بهدوء ونرتبه.", "خلنا نحلها خطوة خطوة.", "أكتب النص وأنا أساعدك."]
   },
-
-  /* مفردات كويتية / شارع */
   {
     keys: ["عيار", "جذاب", "كذاب", "جذب", "يكذب"],
     auto: ["هذا عيّار، يعني يلف ويدور بالكلام.", "لا تصدق كل شي، يمكن السالفة عيارة."],
@@ -346,28 +372,7 @@ const bellaBrain = [
     chill: ["يمكن أسلوبه مو مناسب لك، خلك رايق.", "مو كل الناس خفيفة."]
   },
   {
-    keys: ["خرنقي", "ضعيف شخصيه", "ضعيف شخصية"],
-    auto: ["خرنقي يعني ضعيف شخصية وما يمسك موقف.", "يبيله ثقة أكثر."],
-    cute: ["يا قلبي يمكن يستحي 🥺", "مو شرط ضعف، يمكن توتر."],
-    angry: ["خرنقي؟ خله يقوّي قلبه 😡", "ما ينفع كل شي يهتز."],
-    chill: ["الثقة تتبنى مع الوقت.", "يمكن يحتاج دفعة بسيطة."]
-  },
-  {
-    keys: ["لوتي", "محتال", "نصاب", "يلف ويدور"],
-    auto: ["لوتي يعني محتال وذكي بطريقة ملتوية.", "انتبه من اللي يلف ويدور."],
-    cute: ["لااا لوتي؟ انتبه لا يقص عليك 🥺", "لا تعطيه ثقة بسرعة."],
-    angry: ["لوتي؟ قص عليه قبل لا يقص عليك 😡", "ابتعد عنه أبرك."],
-    chill: ["خلك حذر وخل كل شي واضح.", "الوضوح يقطع الطريق على اللوتية."]
-  },
-  {
-    keys: ["شغمبي", "فنان", "ستايل", "كشخه", "كشخة"],
-    auto: ["كفو، شغمبي وستايله واضح.", "كشخة وذوق."],
-    cute: ["واااي شغمبي 🥺 ذوقه حلو.", "كشخة ما شاء الله."],
-    angry: ["شغمبي؟ زين بس لا يتفلسف 😡", "الكشخة بروحها ما تكفي."],
-    chill: ["ستايل رايق ومرتب.", "كشخة هادية."]
-  },
-  {
-    keys: ["يا حافظ", "اييه", "ايه", "شكو", "شدعوه", "شدعوة"],
+    keys: ["شدعوه", "شدعوة", "شكو", "يا حافظ", "اييه", "ايه"],
     auto: ["شدعوه؟ شنو صار؟", "يا حافظ، السالفة شكلها قوية.", "شكو؟ وضح لي."],
     cute: ["يا حافظ 🥺 شنو صار؟", "شدعوه يا قلبي؟", "واااي شنو السالفة؟"],
     angry: ["شدعوه؟ لا تكبرها 😡", "شكو يعني؟ وضح.", "يا حافظ من هالحوسة."],
@@ -386,16 +391,48 @@ function dictionaryReply(msg) {
 }
 
 /* =========================
-   ردود المودات
+   الردود
 ========================= */
 
 function getReply(text) {
   const msg = text.toLowerCase().trim();
 
   if (has(msg, [
-    "بتقهوى", "قهوة", "قهوه", "ابي قهوة", "ابي قهوه", "كافيه", "كوفي",
-    "وين نقز", "نقز", "قز", "رادار القز", "تمشي", "نتمشى", "مشي", "بحر",
-    "مكان", "وين اروح"
+    "غير هالقهوة",
+    "غير القهوة",
+    "غير هالقهوه",
+    "غير القهوه",
+    "غير هالقز",
+    "غير القز"
+  ])) {
+    return coffeeRadar(lastRadarType === "walking" ? "قز" : "قهوة");
+  }
+
+  if (has(msg, [
+    "ابي اتقهوى",
+    "ابي قهوة",
+    "ابي قهوه",
+    "نبي قهوة",
+    "نبي قهوه",
+    "بتقهوى",
+    "بقهوى",
+    "قهوة وين",
+    "قهوه وين",
+    "وين قهوة",
+    "وين قهوه",
+    "كافيه",
+    "كوفي",
+    "رادار القز",
+    "وين نقز",
+    "نقز وين",
+    "مكان قهوة",
+    "مكان قهوه",
+    "مكان كوفي",
+    "مكان كافيه",
+    "نتمشى وين",
+    "تمشي وين",
+    "مكان تمشي",
+    "مكان بحر"
   ])) {
     return coffeeRadar(msg);
   }
@@ -403,23 +440,23 @@ function getReply(text) {
   const dict = dictionaryReply(msg);
   if (dict) return dict;
 
-  if (s.mode === "angry") return angryFallback(msg);
-  if (s.mode === "cute") return cuteFallback(msg);
-  if (s.mode === "chill") return chillFallback(msg);
+  if (s.mode === "angry") return angryFallback();
+  if (s.mode === "cute") return cuteFallback();
+  if (s.mode === "chill") return chillFallback();
 
-  return autoFallback(msg);
+  return autoFallback();
 }
 
-function autoFallback(msg) {
+function autoFallback() {
   return random([
     "ما فهمت عليك عدل 😅 جرّب تقولها بطريقة ثانية.",
     "وضح لي أكثر، شنو تقصد؟",
     "عطني تفاصيل أكثر عشان أرد عليك صح.",
-    "إذا تبي قهوة اكتب: بتقهوى ☕، وإذا تبي سوالف اكتب: شلونك."
+    "إذا تبي قهوة اكتب: ابي اتقهوى ☕"
   ]);
 }
 
-function angryFallback(msg) {
+function angryFallback() {
   return random([
     "تكلم عدل 😡 شنو تبي بالضبط؟",
     "عيدها بس بدون لف ودوران 😡",
@@ -428,7 +465,7 @@ function angryFallback(msg) {
   ]);
 }
 
-function cuteFallback(msg) {
+function cuteFallback() {
   return random([
     "ما فهمت بس أحب سوالفك 🥺",
     "عيدها لي بطريقة أسهل يا حلو.",
@@ -437,7 +474,7 @@ function cuteFallback(msg) {
   ]);
 }
 
-function chillFallback(msg) {
+function chillFallback() {
   return random([
     "تمام… كمل، أنا أسمعك 😌",
     "وضح لي أكثر شوي.",
@@ -480,7 +517,10 @@ function addMsg(text, type) {
   m.className = "m " + type;
   m.innerText = text;
   box.appendChild(m);
-  box.scrollTop = box.scrollHeight;
+
+  requestAnimationFrame(() => {
+    box.scrollTop = box.scrollHeight;
+  });
 }
 
 function removeTyping() {
