@@ -87,7 +87,12 @@
   </div>
 
   <div class="msg-box" id="box"></div>
-
+<div class="mode-buttons">
+  <button onclick="setMode('auto')">🤖 أوتو</button>
+  <button onclick="setMode('angry')">😡 معصبة</button>
+  <button onclick="setMode('cute')">🥺 دلّوعة</button>
+  <button onclick="setMode('chill')">😌 رايقة</button>
+</div>
   <div class="input-area">
     <input id="inp" placeholder="اكتب..." 
       onkeydown="if(event.key==='Enter') send()">
