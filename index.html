@@ -7,16 +7,13 @@
   <title>Bella Ultra Pro</title>
   <meta name="description" content="بوت كويتي ذكي - نسخة مطورة">
 
-  <!-- تحسين الشكل -->
   <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/4712/4712027.png">
 
-  <!-- Open Graph -->
   <meta property="og:title" content="Bella Ultra Pro">
   <meta property="og:description" content="بوت كويتي ذكي">
   <meta property="og:image" content="https://cdn-icons-png.flaticon.com/512/4712/4712027.png">
   <meta property="og:type" content="website">
 
-  <!-- ربط CSS -->
   <link rel="stylesheet" href="style.css">
 </head>
 
@@ -24,7 +21,6 @@
 
 <div class="wrap">
 
-  <!-- الشريط العلوي -->
   <div class="top-island">
     <div class="mini"><b id="xp-val">0</b><span>XP</span></div>
     <div class="mini"><b id="lvl-val">1</b><span>Level</span></div>
@@ -33,7 +29,6 @@
     <div class="mood-pill" id="mood-pill">🤖 أوتو</div>
   </div>
 
-  <!-- الهيرو -->
   <section class="hero">
     <div class="hero-top">
       <div class="logo">B</div>
@@ -54,7 +49,6 @@
     </div>
   </section>
 
-  <!-- الأوسمة -->
   <section class="badges-wrap">
     <div class="badges-head">
       <b>الأوسمة</b>
@@ -71,7 +65,6 @@
 
 </div>
 
-<!-- نافذة الشات -->
 <div class="chat-win" id="win">
 
   <div class="header">
@@ -79,7 +72,7 @@
       <div class="avatar">B</div>
       <div class="title">
         <b>Bella</b>
-        <span>جاهزة</span>
+        <span id="chat-status">جاهزة</span>
       </div>
     </div>
 
@@ -87,21 +80,47 @@
   </div>
 
   <div class="msg-box" id="box"></div>
-<div class="mode-buttons">
-  <button onclick="setMode('auto')">🤖 أوتو</button>
-  <button onclick="setMode('angry')">😡 معصبة</button>
-  <button onclick="setMode('cute')">🥺 دلّوعة</button>
-  <button onclick="setMode('chill')">😌 رايقة</button>
-</div>
+
+  <div class="mode-panel">
+    <div class="mode-head">
+      <span>اختار شخصية Bella</span>
+      <b id="mode-status">🤖 أوتو</b>
+    </div>
+
+    <div class="mode-grid">
+      <button class="mode-card active" id="mode-auto" onclick="setMode('auto')">
+        <span class="mode-icon">🤖</span>
+        <span class="mode-name">أوتو</span>
+        <small>ترد حسب الكلام</small>
+      </button>
+
+      <button class="mode-card" id="mode-angry" onclick="setMode('angry')">
+        <span class="mode-icon">😡</span>
+        <span class="mode-name">معصبة</span>
+        <small>مطنقرة وردودها حادة</small>
+      </button>
+
+      <button class="mode-card" id="mode-cute" onclick="setMode('cute')">
+        <span class="mode-icon">🥺</span>
+        <span class="mode-name">دلّوعة</span>
+        <small>ناعمة وغنوجة</small>
+      </button>
+
+      <button class="mode-card" id="mode-chill" onclick="setMode('chill')">
+        <span class="mode-icon">😌</span>
+        <span class="mode-name">رايقة</span>
+        <small>هادية وتفهمك</small>
+      </button>
+    </div>
+  </div>
+
   <div class="input-area">
-    <input id="inp" placeholder="اكتب..." 
-      onkeydown="if(event.key==='Enter') send()">
+    <input id="inp" placeholder="اكتب..." onkeydown="if(event.key==='Enter') send()">
     <button class="send" onclick="send()">إرسال</button>
   </div>
 
 </div>
 
-<!-- اختيار الثيم -->
 <div class="modal hidden" id="themeModal">
   <div class="card">
     <h2>الثيم</h2>
@@ -116,7 +135,6 @@
   </div>
 </div>
 
-<!-- ربط JS -->
 <script src="script.js"></script>
 
 </body>
