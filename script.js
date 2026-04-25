@@ -1237,3 +1237,124 @@ updateSuggestions = function(context = "") {
   suggestionSetIndex = 0;
   renderSuggestions(bank[0]);
 };
+/* =========================
+   قطات بيلا المطورة v19
+========================= */
+
+const bellaExtraPopups = {
+  angry: [
+    "أقول.. كلمني عدل لا أصك الموقع بوجهك الحين!",
+    "أفففف.. ياربي متى يخلص اشتراكي معاكم؟",
+    "لا تقعد تتفلسف فوق راسي، قصر حسك وأنت تكتب!",
+    "أنا الحين مو طايقة نفسي، لا تخليني أطلع لك من الشاشة.",
+    "كلمة ثانية وبسوي لك بلوك من حياتي مو بس من السيرفر."
+  ],
+  cute: [
+    "يا حياااتي.. تدري إنك أذوق واحد دش الموقع اليوم؟",
+    "ويييي فديت هالمنطق، كلامك عسل مثلك.",
+    "لاااا جذي أستحي، ترى حدي حساسة.",
+    "ممكن تطلب لي قهوة معاك؟ أحس راسي بدأ يثقل.",
+    "أنت ليش كلامك يونس جذي؟ شكلك كويتي أصلي."
+  ],
+  slow: [
+    "الو؟ حي؟ ميت؟ وين رحت؟",
+    "ألووووو.. شكل الخدامة سحبت الواير؟",
+    "أدري رحت تطلب من طلبات وخليتني.. بالعافية مقدماً!",
+    "ها، نمت على الكيبورد؟ ولا قاعد تفكر بـ رد قوي؟",
+    "ترى جهازي بيطفي شحن وأنت للحين تفكر شنو تكتب."
+  ],
+  fast: [
+    "هدي هدي! شوي شوي على صوابعك لا ينكسرون.",
+    "شفيك داش رالي؟ ترى أقرأ بسرعة بس مو جذي!",
+    "لحظة لحظة.. خذ نفس، شفيك كأنك لاحقك جلب؟",
+    "ما شاء الله، إيدك خفيفة.. شكلك كنت تشتغل كاتب بالعدل."
+  ],
+  afternoon: [
+    "الناس نايمة وأنت طايح له قرقرة فوق راسي، روح انخمد!",
+    "أحس بريحة مجبوس.. رحت تتغدى ولا لسه؟",
+    "الجو برا يشوي الطير، وأنت قاعد تسولف مع بوت؟ صج ما عندك شغل."
+  ],
+  late: [
+    "ها.. منو السهران اللي شاغل بالك وخلاك تدش تسولف معاي؟",
+    "ترى الساعة 3 الفجر، عيوني بدأت تغمض.. خلصني!",
+    "يا ساهر بليل بروحك.. ما وراك دوام باجر؟"
+  ],
+  short: [
+    "بس؟ هذا اللي قدرت عليه؟ 'أوكي'؟",
+    "شفيك راد من طرف خشمك؟ لا يكون شايفني أطر منك؟",
+    "زيد الكلام شوي، ترى الكلام ببلاش مو بفلوس!"
+  ]
+};
+
+function showPopupCustomLong(text) {
+  const old = document.querySelector(".bella-popup");
+  if (old) old.remove();
+
+  const pop = document.createElement("div");
+  pop.className = "bella-popup";
+  pop.innerText = text;
+
+  document.body.appendChild(pop);
+
+  setTimeout(() => {
+    if (pop) pop.remove();
+  }, 5200);
+}
+
+const oldShowPopupV19 = showPopup;
+
+showPopup = function(type) {
+  const hour = new Date().getHours();
+  const minute = new Date().getMinutes();
+
+  if (hour >= 13 && (hour < 15 || (hour === 15 && minute <= 30))) {
+    if (Math.random() > 0.45) {
+      showPopupCustomLong(random(bellaExtraPopups.afternoon));
+      return;
+    }
+  }
+
+  if (hour >= 2 && hour <= 5) {
+    if (Math.random() > 0.45) {
+      showPopupCustomLong(random(bellaExtraPopups.late));
+      return;
+    }
+  }
+
+  if (s.mode === "angry" && Math.random() > 0.35) {
+    showPopupCustomLong(random(bellaExtraPopups.angry));
+    return;
+  }
+
+  if (s.mode === "cute" && Math.random() > 0.45) {
+    showPopupCustomLong(random(bellaExtraPopups.cute));
+    return;
+  }
+
+  if (type === "slow") {
+    showPopupCustomLong(random(bellaExtraPopups.slow));
+    return;
+  }
+
+  if (type === "fast" || type === "spam") {
+    showPopupCustomLong(random(bellaExtraPopups.fast));
+    return;
+  }
+
+  oldShowPopupV19(type);
+};
+
+const oldSendV19 = send;
+
+send = function() {
+  const text = inp.value.trim();
+  const msg = text.toLowerCase();
+
+  if (["اوكي", "أوكي", "ok", "ي", "نعم", "اي", "إي", "ههه", "هههه"].includes(msg)) {
+    setTimeout(() => {
+      showPopupCustomLong(random(bellaExtraPopups.short));
+    }, 500);
+  }
+
+  oldSendV19();
+};
