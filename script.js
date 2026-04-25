@@ -1358,3 +1358,116 @@ send = function() {
 
   oldSendV19();
 };
+/* =========================
+   نظام "يقولون..." v21
+   مربوط مع مود المعصبة
+========================= */
+
+const bellaRumors = {
+  normal: [
+    { text: "يقولون بيلا V15 راح تصير تخطب حق الشباب وتوزع عيادي!" },
+    { text: "يقولون بيلا قاعدة تشرب جاي ضحى وتطالع رسايلك من طرف خشمها." },
+    { text: "يقولون باجر زحمة الغزالي بتبدأ من الساعة 4 الفجر.. جهزوا القهوة." },
+    { text: "يقولون الرادار الجديد يصيدك حتى لو كنت قاعد تفكر ببدلية وأنت تسوق." },
+    { text: "يقولون الوزير دش الموقع اليوم وشافك تسولف مع بيلا وأنت عندك مراجعين!" },
+    { text: "يقولون بيسوون تلفريك من الجهراء للديرة عشان نفتك من الزحمة." },
+    { text: "يقولون الخميس الجاي بيصير 48 ساعة عشان نلحق نستانس." },
+    { text: "يقولون الكافيتريا بتوزع وجبات مجانية لليفل الأسطورة." }
+  ],
+
+  angry: [
+    { text: "يقولون بيلا معصبة اليوم لأن واحد قال لها بتقهوى وردت عليه: شعلي فيك؟ 😡" },
+    { text: "يقولون بيلا سوت ميوت حق نص الموقع لأنهم يسألونها نفس السؤال." },
+    { text: "يقولون بيلا اليوم مو طايقة أحد.. حتى السيرفر يمشي على أطراف أصابعه." },
+    { text: "يقولون آخر واحد استفز بيلا، حولته من Level 10 إلى مبتدئ بنظرة وحدة." },
+    { text: "يقولون بيلا فتحت ملف اسمه: الناس اللي يغثوني.. واللستة طويلة." },
+    { text: "يقولون إذا قلت لبيلا وهي معصبة: شفيچ؟ تزيد العصبية 200٪." },
+    { text: "يقولون بيلا اليوم ترد من طرف خشمها، لا تجرب حظك." },
+    { text: "يقولون بيلا بتسوي تحديث يحذف XP أي واحد يكثر فلسفة." }
+  ],
+
+  rare: [
+    { text: "يقولون إذا وصلت ليفل 100، بيلا تدق عليك تعزمك على باجّة!", rare: true },
+    { text: "يقولون اللي يمدح بيلا 3 مرات ورا بعض، ينفتح له ثيم السدو الذهبي!", rare: true },
+    { text: "يقولون معاشات الشهر الجاي بتنزل قبل موعدها بـ 10 أيام.. أقوى إشاعة!", rare: true },
+    { text: "يقولون شركة طلبات بتوصل لك الأكل قبل لا تطلبه!", rare: true },
+    { text: "يقولون هكر حاول يخترق بيلا، قلبته معصبة وخلاه يشتري نوكيا بو ليت.", rare: true },
+    { text: "يقولون الفاينل بيصير Multiple Choice وكل الأجوبة: بيلا!", rare: true }
+  ]
+};
+
+function initRumorBar() {
+  if (document.getElementById("rumor-bar")) return;
+
+  const bar = document.createElement("div");
+  bar.id = "rumor-bar";
+  bar.innerHTML = `<span id="rumor-text">👂 يقولون...</span>`;
+  document.body.appendChild(bar);
+
+  updateRumor();
+  setInterval(updateRumor, 30000);
+}
+
+function getRumorPool() {
+  const rareChance = Math.random() < 0.2;
+
+  if (rareChance) return bellaRumors.rare;
+
+  if (s.mode === "angry") {
+    return Math.random() < 0.75 ? bellaRumors.angry : bellaRumors.normal;
+  }
+
+  return bellaRumors.normal;
+}
+
+function updateRumor() {
+  const el = document.getElementById("rumor-text");
+  if (!el) return;
+
+  const pool = getRumorPool();
+  const rumor = random(pool);
+
+  el.style.opacity = "0";
+
+  setTimeout(() => {
+    el.innerText = "👂 " + rumor.text;
+
+    if (rumor.rare) {
+      el.className = "rumor-rare";
+      el.onclick = () => {
+        s.xp += 5;
+        updateUI();
+        save();
+        if (typeof showPopupCustom === "function") {
+          showPopupCustom("🔥 لقطت إشاعة نادرة +5 XP");
+        }
+      };
+    } else if (s.mode === "angry") {
+      el.className = "rumor-angry";
+      el.onclick = null;
+    } else {
+      el.className = "";
+      el.onclick = null;
+    }
+
+    el.style.opacity = "1";
+  }, 250);
+}
+
+const oldSetModeRumor = setMode;
+setMode = function(m) {
+  oldSetModeRumor(m);
+  setTimeout(updateRumor, 300);
+};
+
+const oldSendRumor = send;
+send = function() {
+  oldSendRumor();
+  setTimeout(updateRumor, 900);
+};
+
+const oldOnloadRumor = window.onload;
+window.onload = function() {
+  if (oldOnloadRumor) oldOnloadRumor();
+  setTimeout(initRumorBar, 800);
+};
