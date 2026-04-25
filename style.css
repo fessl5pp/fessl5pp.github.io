@@ -568,3 +568,41 @@ body.theme-night{
   background:linear-gradient(135deg,#ff3b30,#ff9500);
   font-weight:900;
 }
+#rumor-bar{
+  position:fixed;
+  bottom:82px;
+  right:0;
+  left:0;
+  z-index:999;
+  text-align:center;
+  pointer-events:auto;
+  padding:0 12px;
+}
+
+#rumor-text{
+  display:inline-block;
+  max-width:min(92vw,680px);
+  background:rgba(0,0,0,.62);
+  color:#d7dbe7;
+  padding:8px 14px;
+  border-radius:999px;
+  font-size:13px;
+  line-height:1.6;
+  border:1px solid rgba(255,255,255,.12);
+  backdrop-filter:blur(14px);
+  box-shadow:0 14px 34px rgba(0,0,0,.25);
+  transition:opacity .25s ease, color .25s ease, text-shadow .25s ease, border-color .25s ease;
+  cursor:pointer;
+}
+
+#rumor-text.rumor-angry{
+  color:#ffb3ae;
+  border-color:rgba(255,59,48,.36);
+  text-shadow:0 0 10px rgba(255,59,48,.35);
+}
+
+#rumor-text.rumor-rare{
+  color:#ffd700;
+  border-color:rgba(255,215,0,.45);
+  text-shadow:0 0 12px rgba(255,215,0,.75);
+}
