@@ -2177,11 +2177,10 @@ getReply = function(text) {
   return oldGetReplyV27(text);
 };
 /* =========================
-   Gemini fallback v28
-   إذا بيلا ما عرفت ترد، تسأل Gemini
+   Gemini fallback v30 (clean + safe)
 ========================= */
 
-async function askGeminiV28(text) {
+async function askGemini(text) {
   try {
     const res = await fetch("/api/gemini", {
       method: "POST",
@@ -2189,39 +2188,48 @@ async function askGeminiV28(text) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        message: `المود الحالي: ${s.mode}
-اسم المستخدم: ${s.userName || "غير معروف"}
+        message: `
+Mode: ${s.mode}
+User: ${s.userName || "Unknown"}
 
-رسالة المستخدم:
-${text}`
+User message:
+${text}
+
+Reply in Kuwaiti dialect based on mode:
+- angry = aggressive
+- cute = flirty
+- chill = calm
+- auto = normal
+`
       })
     });
 
     const data = await res.json();
     return data.reply || "ما فهمت عليك";
   } catch (e) {
-    return "صار خطأ وأنا أحاول أفهمك 😅";
+    return "في مشكلة بالشبكة 😅";
   }
 }
 
-function shouldUseGeminiV28(reply) {
+function shouldUseGemini(reply) {
   if (!reply) return true;
 
-  const weakReplies = [
-    "ما فهمت عليك",
-    "وضح لي أكثر",
-    "عطني تفاصيل أكثر",
-    "جرّب تقولها بطريقة ثانية",
-    "مممم وضح",
-    "ما فهمت بس"
+  const weak = [
+    "ما فهمت",
+    "وضح",
+    "عيدها",
+    "مممم",
+    "ما فهمت عليك"
   ];
 
-  return weakReplies.some(w => reply.includes(w));
+  return weak.some(w => reply.includes(w));
 }
 
-const oldSendV28 = send;
+// نحفظ send القديم
+const oldSend = send;
 
-send = async function() {
+// نكتب send جديد
+send = async function () {
   const text = inp.value.trim();
   if (!text) return;
 
@@ -2238,15 +2246,16 @@ send = async function() {
 
     let reply = getReply(text);
 
-    if (shouldUseGeminiV28(reply)) {
-      addMsg("أسأل مخ بيلا شوي...", "bot");
-      const loading = box.querySelectorAll(".bot");
-      const lastLoading = loading[loading.length - 1];
+    if (shouldUseGemini(reply)) {
+      addMsg("خليني أفكر شوي 🤔", "bot");
 
-      reply = await askGeminiV28(text);
+      const msgs = box.querySelectorAll(".bot");
+      const last = msgs[msgs.length - 1];
 
-      if (lastLoading && lastLoading.innerText === "أسأل مخ بيلا شوي...") {
-        lastLoading.remove();
+      reply = await askGemini(text);
+
+      if (last && last.innerText === "خليني أفكر شوي 🤔") {
+        last.remove();
       }
     }
 
