@@ -1,4 +1,4 @@
-const STORAGE_KEY = "bella_v15";
+const STORAGE_KEY = "bella_v22_clean";
 
 let s = {
   theme: "theme-blue",
@@ -21,25 +21,53 @@ let lastRadarType = "coffee";
 let lastRadarName = "";
 let lastTypeTime = Date.now();
 let msgCountFast = 0;
-let lastBotReply = "";
+let activeGame = null;
+let currentChallenge = null;
+let suggestionContext = "";
+let suggestionSetIndex = 0;
+let rumorTimer = null;
+let socialTimer = null;
 
-window.onload = () => {
+/* =========================
+   Init
+========================= */
+
+window.addEventListener("load", init);
+
+function init() {
+  loadState();
+  applyTheme();
+  updateUI();
+  updateMood();
+  updateSuggestions();
+  initRumorBar();
+  initSocialRadar();
+}
+
+function loadState() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (saved) s = { ...s, ...saved };
   } catch (e) {
     localStorage.removeItem(STORAGE_KEY);
   }
-
-  applyTheme();
-  updateUI();
-  updateMood();
-  updateSuggestions();
-};
+}
 
 function save() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
 }
+
+function random(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function has(msg, words) {
+  return words.some(w => msg.includes(w));
+}
+
+/* =========================
+   UI Basics
+========================= */
 
 function applyTheme() {
   document.body.className = s.theme;
@@ -70,33 +98,78 @@ function hideTheme() {
 }
 
 function quickSend(text) {
+  if (text === "غير") {
+    refreshSuggestions();
+    return;
+  }
+
   inp.value = text;
   send();
 }
 
-function random(arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
+function addMsg(text, type) {
+  if (!text) return;
+
+  const m = document.createElement("div");
+  m.className = "m " + type;
+  m.innerText = text;
+  box.appendChild(m);
+
+  requestAnimationFrame(() => {
+    box.scrollTop = box.scrollHeight;
+  });
 }
 
-function has(msg, words) {
-  return words.some(w => msg.includes(w));
+function removeTyping() {
+  const msgs = box.querySelectorAll(".bot");
+  const last = msgs[msgs.length - 1];
+
+  if (last && last.innerText === "يكتب...") {
+    last.remove();
+  }
 }
 
-function cleanName(name) {
-  return name
+/* =========================
+   Name Memory
+========================= */
+
+function cleanName(text) {
+  return text
     .replace(/[؟?!.,،]/g, "")
-    .replace("انا", "")
+    .replace(/اسمي|انا|أنا|يدلعوني|ينادوني|نادوني|اسمي هو|اسميه/g, "")
     .trim()
     .split(" ")[0]
     .slice(0, 18);
 }
 
-function getDisplayName() {
-  return s.userName ? ` يا ${s.userName}` : "";
+function detectName(msg) {
+  if (
+    msg.includes("اسمي") ||
+    msg.includes("أنا ") ||
+    msg.includes("انا ") ||
+    msg.includes("يدلعوني") ||
+    msg.includes("نادوني") ||
+    msg.includes("ينادوني")
+  ) {
+    const name = cleanName(msg);
+    if (name) {
+      s.userName = name;
+      save();
+      return `تشرفنا يا ${s.userName} 😌 من الحين بناديك باسمك.`;
+    }
+  }
+
+  return null;
+}
+
+function addNameFlavor(reply) {
+  if (!s.userName) return reply;
+  if (Math.random() > 0.35) return reply;
+  return `${reply}\n\n${s.userName}، فهمت علي؟`;
 }
 
 /* =========================
-   الشخصيات والمودات
+   Modes
 ========================= */
 
 function setMode(m) {
@@ -107,12 +180,13 @@ function setMode(m) {
 
   updateMood();
   updateSuggestions();
+  updateRumor();
   save();
 
   const intro = {
     auto: "رجعت Bella على الأوتو 🤖 ردود كويتية مرتبة حسب الكلام.",
-    angry: "تم تشغيل مود معصبة 😡 لا تستفزها ترى مطنقرة.",
-    cute: "تم تشغيل مود دلّوعة 🥺 نبرة ناعمة وغنج كويتي.",
+    angry: "تم تشغيل مود معصبة 😡 لا توقف على راسها.",
+    cute: "تم تشغيل مود دلّوعة 🥺 غنج كويتي على أصوله.",
     chill: "تم تشغيل مود رايقة 😌 سوالف هادية وقعدة مزاج."
   };
 
@@ -143,62 +217,140 @@ function updateMood() {
   if (chatStatus) chatStatus.innerText = states[s.mode] || states.auto;
 
   document.querySelectorAll(".mode-card").forEach(btn => btn.classList.remove("active"));
-
   const activeBtn = document.getElementById("mode-" + s.mode);
   if (activeBtn) activeBtn.classList.add("active");
 }
 
 /* =========================
-   Smart Replies
+   Suggestions
 ========================= */
 
-function updateSuggestions(context = "") {
+const suggestionBanks = {
+  auto: [
+    ["شلونچ؟", "ابي اتقهوى", "نكتة", "حكمة اليوم", "شنو الجو؟"],
+    ["شنو بالصندوق", "كمّل المثل", "فزعة بيلا", "الكويت", "عطني عيدية"],
+    ["اسمي فيصل", "وين قهوة", "مكان بحر", "ترجم", "شكو؟"],
+    ["قوة", "صج السالفة؟", "أنا زعلان", "ابي اضحك", "شارك الشات"]
+  ],
+  angry: [
+    ["ليش نفسيتچ جذي؟", "منو مزعلچ؟", "هدي بالج", "اهديچ وردة", "ابي اتقهوى"],
+    ["شعلي فيچ؟", "لا تعصبين", "ضحكني إنتي", "اهديچ ككاو", "غيري المود"],
+    ["تكلمين سنع؟", "ليش مطنقرة؟", "بس لا تصارخين", "قولي حكمة", "نكتة"],
+    ["تمام لا تزعلين", "شلونچ؟", "حطي رايقة", "أنا آسف", "فزعة بيلا"]
+  ],
+  cute: [
+    ["دلّعيني", "احبچ", "نكتة", "ابي اتقهوى", "حكمة اليوم"],
+    ["واااي", "فديتچ", "شلونچ يا حلوة؟", "قهوة كيوت", "غير هالقهوة"],
+    ["سولفي لي", "أنا زعلان", "ضحكيني", "مكان كشخة", "كمّل المثل"],
+    ["عطيني مثل", "ابي دلع", "الكويت", "اسمي فيصل", "شنو بالصندوق"]
+  ],
+  chill: [
+    ["سولفي بهدوء", "قهوة هادية", "حكمة اليوم", "شنو الجو؟", "غير هالقهوة"],
+    ["مكان بحر", "خلنا نروق", "قهوة رايقة", "المباركية", "مارينا"],
+    ["كمّل المثل", "شنو بالصندوق", "فزعة بيلا", "سوالف أول", "قوة"],
+    ["وضحّي لي", "نكتة هادية", "أنا متضايق", "ترجم", "شارك الشات"]
+  ],
+  radar: [
+    ["غير هالقهوة", "قهوة هادية", "مكان بحر", "مكان تمشي", "مكان كافيه"],
+    ["غير هالقز", "المباركية", "الشويخ", "مارينا", "الأفنيوز"],
+    ["ابي اتقهوى", "قهوة كشخة", "قهوة رايقة", "كوفي", "رادار القز"]
+  ],
+  game: [
+    ["مبخر", "دلة", "كرفاية", "ابي الحل", "غير"],
+    ["على قد لحافك", "يشويه", "يطلعه الملاس", "استسلم", "كمّل المثل"],
+    ["شنو بالصندوق", "مبخر", "منقلة", "سدو", "ابي الحل"]
+  ],
+  fazaa: [
+    ["عطني مطعم كشخة", "عطني مسلسلات", "وهقة", "ابي اتقهوى", "غير"],
+    ["عذر للدوام", "عذر للربع", "مطعم بحر", "مسلسل كويتي", "قهوة"],
+    ["فزعة بيلا", "وين اروح؟", "اكل", "دراما", "غير هالقهوة"]
+  ]
+};
+
+function pickSuggestionBank(context = "") {
+  if (context.includes("رادار") || context.includes("اختار") || context.includes("قهوة") || context.includes("قهوه")) return "radar";
+  if (context.includes("game") || context.includes("لعبة") || context.includes("المثل") || context.includes("الصندوق")) return "game";
+  if (context.includes("فزعة") || context.includes("مطعم") || context.includes("وهقة")) return "fazaa";
+  return s.mode || "auto";
+}
+
+function renderSuggestions(list) {
   const el = document.getElementById("quickSuggestions");
   if (!el) return;
 
-  let suggestions = ["شلونچ؟", "ابي اتقهوى", "نكتة", "حكمة اليوم", "شنو الجو؟"];
+  const finalList = [...list];
+  if (!finalList.includes("غير")) finalList.push("غير");
 
-  if (s.mode === "angry") {
-    suggestions = ["ليش نفسيتچ جذي؟", "منو مزعلچ؟", "هدي بالج", "اهديچ وردة", "ابي اتقهوى"];
-  } else if (s.mode === "cute") {
-    suggestions = ["دلّعيني", "احبچ", "نكتة", "ابي اتقهوى", "حكمة اليوم"];
-  } else if (s.mode === "chill") {
-    suggestions = ["سولفي بهدوء", "قهوة هادية", "حكمة اليوم", "شنو الجو؟", "غير هالقهوة"];
-  }
-
-  if (context.includes("معصبة") || context.includes("😡")) {
-    suggestions = ["ليش؟", "منو مزعلچ؟", "هدي بالج", "اهديچ ككاو", "غيري المود"];
-  }
-
-  if (context.includes("رادار") || context.includes("اختار")) {
-    suggestions = ["غير هالقهوة", "مكان بحر", "قهوة هادية", "مكان تمشي", "حكمة اليوم"];
-  }
-
-  el.innerHTML = suggestions.map(t => {
+  el.innerHTML = finalList.map(t => {
+    if (t === "غير") return `<button onclick="refreshSuggestions()">غير 🔄</button>`;
     const safe = t.replace(/'/g, "\\'");
     return `<button onclick="quickSend('${safe}')">${t}</button>`;
   }).join("");
 }
 
+function updateSuggestions(context = "") {
+  suggestionContext = context || "";
+  const bankName = pickSuggestionBank(suggestionContext);
+  const bank = suggestionBanks[bankName] || suggestionBanks.auto;
+  suggestionSetIndex = 0;
+  renderSuggestions(bank[0]);
+}
+
+function refreshSuggestions() {
+  const bankName = pickSuggestionBank(suggestionContext);
+  const bank = suggestionBanks[bankName] || suggestionBanks.auto;
+
+  suggestionSetIndex = (suggestionSetIndex + 1) % bank.length;
+  renderSuggestions(bank[suggestionSetIndex]);
+  showPopupCustom("بدلت لك الاقتراحات 🔄");
+}
+
 /* =========================
-   القِطّات Popups
+   Popups / Qatat
 ========================= */
 
 const popupLines = {
-  fast: [
-    "بشويش بشويش 😭 لا ينكسر الكيبورد!",
-    "هااا شفيك مستعجل؟ خلني أستوعب 😂",
-    "سرعة يا وحش، خلني ألحق عليك!"
+  angry: [
+    "أقول.. كلمني عدل لا أصك الموقع بوجهك الحين!",
+    "أفففف.. ياربي متى يخلص اشتراكي معاكم؟",
+    "لا تقعد تتفلسف فوق راسي، قصر حسك وأنت تكتب!",
+    "أنا الحين مو طايقة نفسي، لا تخليني أطلع لك من الشاشة.",
+    "كلمة ثانية وبسوي لك بلوك من حياتي مو بس من السيرفر."
+  ],
+  cute: [
+    "يا حياااتي.. تدري إنك أذوق واحد دش الموقع اليوم؟",
+    "ويييي فديت هالمنطق، كلامك عسل مثلك.",
+    "لاااا جذي أستحي، ترى حدي حساسة.",
+    "ممكن تطلب لي قهوة معاك؟ أحس راسي بدأ يثقل.",
+    "أنت ليش كلامك يونس جذي؟ شكلك كويتي أصلي."
   ],
   slow: [
-    "هااا.. نمت ولا شسويت؟ 😴",
-    "اختفيت فجأة 🤨 وين رحت؟",
-    "تراني أنطر ردك لا تسحب 😒"
+    "الو؟ حي؟ ميت؟ وين رحت؟",
+    "ألووووو.. شكل الخدامة سحبت الواير؟",
+    "أدري رحت تطلب من طلبات وخليتني.. بالعافية مقدماً!",
+    "ها، نمت على الكيبورد؟ ولا قاعد تفكر بـ رد قوي؟",
+    "ترى جهازي بيطفي شحن وأنت للحين تفكر شنو تكتب."
   ],
-  spam: [
-    "لا تعفسها علي 😡 رد وحدة وحدة",
-    "ترى مو سباق 😂 اهدى شوي",
-    "وش ذا الفلود يا بعدي 😭"
+  fast: [
+    "هدي هدي! شوي شوي على صوابعك لا ينكسرون.",
+    "شفيك داش رالي؟ ترى أقرأ بسرعة بس مو جذي!",
+    "لحظة لحظة.. خذ نفس، شفيك كأنك لاحقك جلب؟",
+    "ما شاء الله، إيدك خفيفة.. شكلك كنت تشتغل كاتب بالعدل."
+  ],
+  afternoon: [
+    "الناس نايمة وأنت طايح له قرقرة فوق راسي، روح انخمد!",
+    "أحس بريحة مجبوس.. رحت تتغدى ولا لسه؟",
+    "الجو برا يشوي الطير، وأنت قاعد تسولف مع بوت؟ صج ما عندك شغل."
+  ],
+  late: [
+    "ها.. منو السهران اللي شاغل بالك وخلاك تدش تسولف معاي؟",
+    "ترى الساعة 3 الفجر، عيوني بدأت تغمض.. خلصني!",
+    "يا ساهر بليل بروحك.. ما وراك دوام باجر؟"
+  ],
+  short: [
+    "بس؟ هذا اللي قدرت عليه؟ 'أوكي'؟",
+    "شفيك راد من طرف خشمك؟ لا يكون شايفني أطر منك؟",
+    "زيد الكلام شوي، ترى الكلام ببلاش مو بفلوس!"
   ],
   chill: [
     "عجيب أسلوبك 👌",
@@ -208,33 +360,64 @@ const popupLines = {
 };
 
 function showPopup(type) {
-  if (!popupLines[type]) return;
+  const hour = new Date().getHours();
+  const minute = new Date().getMinutes();
 
+  if (hour >= 13 && (hour < 15 || (hour === 15 && minute <= 30)) && Math.random() > 0.45) {
+    showPopupCustom(random(popupLines.afternoon));
+    return;
+  }
+
+  if (hour >= 2 && hour <= 5 && Math.random() > 0.45) {
+    showPopupCustom(random(popupLines.late));
+    return;
+  }
+
+  if (s.mode === "angry" && Math.random() > 0.35) {
+    showPopupCustom(random(popupLines.angry));
+    return;
+  }
+
+  if (s.mode === "cute" && Math.random() > 0.45) {
+    showPopupCustom(random(popupLines.cute));
+    return;
+  }
+
+  showPopupCustom(random(popupLines[type] || popupLines.chill));
+}
+
+function showPopupCustom(text) {
   const old = document.querySelector(".bella-popup");
   if (old) old.remove();
 
   const pop = document.createElement("div");
   pop.className = "bella-popup";
-  pop.innerText = random(popupLines[type]);
-
+  pop.innerText = text;
   document.body.appendChild(pop);
 
   setTimeout(() => {
     if (pop) pop.remove();
-  }, 2500);
+  }, 5200);
 }
 
-function handleTypingBehavior() {
+function handleTypingBehavior(text) {
   const now = Date.now();
   const diff = now - lastTypeTime;
   lastTypeTime = now;
+
+  const msg = text.toLowerCase().trim();
+
+  if (["اوكي", "أوكي", "ok", "ي", "نعم", "اي", "إي", "ههه", "هههه"].includes(msg)) {
+    setTimeout(() => showPopup("short"), 500);
+    return;
+  }
 
   if (diff < 1500) msgCountFast++;
   else msgCountFast = 0;
 
   setTimeout(() => {
     if (msgCountFast >= 3) {
-      showPopup("spam");
+      showPopup("fast");
       msgCountFast = 0;
     } else if (diff < 2000) {
       showPopup("fast");
@@ -270,7 +453,7 @@ function detectAvatarReaction(msg) {
 }
 
 /* =========================
-   رادار القز والقهوة
+   Coffee / Qaz Radar
 ========================= */
 
 const qazPlaces = {
@@ -294,23 +477,18 @@ const qazPlaces = {
 };
 
 function coffeeRadar(msg) {
-  const isWalking = has(msg, [
-    "مشي", "تمشي", "نتمشى", "ممشى", "بحر", "قز", "نقز",
-    "هالقز", "غير هالقز", "غير القز", "مكان بحر"
-  ]);
-
+  const isWalking = has(msg, ["مشي", "تمشي", "نتمشى", "ممشى", "بحر", "قز", "نقز", "هالقز", "غير هالقز", "غير القز", "مكان بحر"]);
   const pool = isWalking ? qazPlaces.walking.concat(qazPlaces.coffee) : qazPlaces.coffee;
 
   let choices = pool.filter(p => p.name !== lastRadarName);
   if (choices.length === 0) choices = pool;
 
   const picked = random(choices);
-
   lastRadarType = isWalking ? "walking" : "coffee";
   lastRadarName = picked.name;
 
   let intro = "رادار القز اختار لك 📡☕";
-  if (s.mode === "angry") intro = "خلاص، اختاري هذا 😡☕";
+  if (s.mode === "angry") intro = "شعلي فيك؟ 😡 بس خذها وخلصني:";
   if (s.mode === "cute") intro = "واااي أحس هذا يناسبچ 🥺☕";
   if (s.mode === "chill") intro = "اختيار رايق لك 😌☕";
 
@@ -324,7 +502,130 @@ ${picked.name} — ${picked.vibe}
 }
 
 /* =========================
-   حكمة اليوم
+   Rumors + Social Radar
+========================= */
+
+const bellaRumors = {
+  normal: [
+    { text: "يقولون بيلا V15 راح تصير تخطب حق الشباب وتوزع عيادي!" },
+    { text: "يقولون بيلا قاعدة تشرب جاي ضحى وتطالع رسايلك من طرف خشمها." },
+    { text: "يقولون باجر زحمة الغزالي بتبدأ من الساعة 4 الفجر.. جهزوا القهوة." },
+    { text: "يقولون الرادار الجديد يصيدك حتى لو كنت قاعد تفكر ببدلية وأنت تسوق." },
+    { text: "يقولون الوزير دش الموقع اليوم وشافك تسولف مع بيلا وأنت عندك مراجعين!" },
+    { text: "يقولون بيسوون تلفريك من الجهراء للديرة عشان نفتك من الزحمة." },
+    { text: "يقولون الخميس الجاي بيصير 48 ساعة عشان نلحق نستانس." },
+    { text: "يقولون الكافيتريا بتوزع وجبات مجانية لليفل الأسطورة." },
+    { text: "يقولون بيلا قاعدة تجمع البدليات حق تحديث V23." },
+    { text: "يقولون سوق المباركية بيوزع لقيمات حق اللي يوصل ليفل 50." }
+  ],
+  angry: [
+    { text: "يقولون بيلا معصبة اليوم لأن واحد قال لها بتقهوى وردت عليه: شعلي فيك؟ 😡" },
+    { text: "يقولون بيلا سوت ميوت حق نص الموقع لأنهم يسألونها نفس السؤال." },
+    { text: "يقولون بيلا اليوم مو طايقة أحد.. حتى السيرفر يمشي على أطراف أصابعه." },
+    { text: "يقولون آخر واحد استفز بيلا، حولته من Level 10 إلى مبتدئ بنظرة وحدة." },
+    { text: "يقولون بيلا فتحت ملف اسمه: الناس اللي يغثوني.. واللستة طويلة." },
+    { text: "يقولون إذا قلت لبيلا وهي معصبة: شفيچ؟ تزيد العصبية 200٪." },
+    { text: "يقولون بيلا اليوم ترد من طرف خشمها، لا تجرب حظك." },
+    { text: "يقولون بيلا بتسوي تحديث يحذف XP أي واحد يكثر فلسفة." }
+  ],
+  rare: [
+    { text: "يقولون إذا وصلت ليفل 100، بيلا تدق عليك تعزمك على باجّة!", rare: true },
+    { text: "يقولون اللي يمدح بيلا 3 مرات ورا بعض، ينفتح له ثيم السدو الذهبي!", rare: true },
+    { text: "يقولون معاشات الشهر الجاي بتنزل قبل موعدها بـ 10 أيام.. أقوى إشاعة!", rare: true },
+    { text: "يقولون شركة طلبات بتوصل لك الأكل قبل لا تطلبه!", rare: true },
+    { text: "يقولون هكر حاول يخترق بيلا، قلبته معصبة وخلاه يشتري نوكيا بو ليت.", rare: true },
+    { text: "يقولون الفاينل بيصير Multiple Choice وكل الأجوبة: بيلا!", rare: true }
+  ]
+};
+
+function initRumorBar() {
+  if (document.getElementById("rumor-bar")) return;
+
+  const bar = document.createElement("div");
+  bar.id = "rumor-bar";
+  bar.innerHTML = `<span id="rumor-text">👂 يقولون...</span>`;
+  document.body.appendChild(bar);
+
+  updateRumor();
+  if (rumorTimer) clearInterval(rumorTimer);
+  rumorTimer = setInterval(updateRumor, 30000);
+}
+
+function getRumorPool() {
+  if (Math.random() < 0.2) return bellaRumors.rare;
+  if (s.mode === "angry") return Math.random() < 0.75 ? bellaRumors.angry : bellaRumors.normal;
+  return bellaRumors.normal;
+}
+
+function updateRumor() {
+  const el = document.getElementById("rumor-text");
+  if (!el) return;
+
+  const rumor = random(getRumorPool());
+  el.style.opacity = "0";
+
+  setTimeout(() => {
+    el.innerText = "👂 " + rumor.text;
+
+    if (rumor.rare) {
+      el.className = "rumor-rare";
+      el.onclick = () => {
+        s.xp += 5;
+        updateUI();
+        save();
+        showPopupCustom("🔥 لقطت إشاعة نادرة +5 XP");
+      };
+    } else if (s.mode === "angry") {
+      el.className = "rumor-angry";
+      el.onclick = null;
+    } else {
+      el.className = "";
+      el.onclick = null;
+    }
+
+    el.style.opacity = "1";
+  }, 250);
+}
+
+function initSocialRadar() {
+  if (document.getElementById("social-radar")) return;
+
+  const radar = document.createElement("div");
+  radar.id = "social-radar";
+  radar.style.cssText = `
+    position:fixed; top:14px; left:14px; z-index:9999;
+    background:rgba(0,0,0,.55); color:#fff; padding:8px 12px;
+    border:1px solid rgba(255,255,255,.12); border-radius:999px;
+    font-size:12px; backdrop-filter:blur(12px);
+  `;
+  document.body.appendChild(radar);
+
+  updateSocialRadar();
+  if (socialTimer) clearInterval(socialTimer);
+  socialTimer = setInterval(updateSocialRadar, 30000);
+}
+
+function updateSocialRadar() {
+  const el = document.getElementById("social-radar");
+  if (!el) return;
+
+  const n = Math.floor(24 + Math.random() * 77);
+  const legendary = Math.floor(2 + Math.random() * 7);
+  const angry = Math.floor(1 + Math.random() * 5);
+
+  const lines = [
+    `حالياً ${n} واحد قاعدين يغثون بيلا..`,
+    `في ${n} كويتي مسوين غداء ومقابلين بيلا..`,
+    `${n} سهرانين يحاولون يطلعون أسرار بيلا..`,
+    `اليوم ${legendary} وحوش وصلوا ليفل الأسطورة.. أنت وينك؟`,
+    `في ${angry} أشخاص الحين بيلا معصبة عليهم حدها!`
+  ];
+
+  el.innerText = "📡 " + random(lines);
+}
+
+/* =========================
+   Wisdom / Gifts
 ========================= */
 
 const wisdoms = [
@@ -340,7 +641,6 @@ const wisdoms = [
 
 function dailyWisdom() {
   const w = random(wisdoms);
-
   let prefix = "حكمة اليوم 🧿";
   if (s.mode === "angry") prefix = "خذ الحكمة ولا تتحلطم 😡";
   if (s.mode === "cute") prefix = "حكمة كيوت حقك 🥺";
@@ -349,10 +649,6 @@ function dailyWisdom() {
   addMsg(`${prefix}\n${w}`, "bot");
   updateSuggestions(w);
 }
-
-/* =========================
-   نظام الرضاوة
-========================= */
 
 function giveGift(type) {
   const cost = type === "rose" ? 20 : 35;
@@ -381,72 +677,228 @@ function giveGift(type) {
 }
 
 /* =========================
-   قاموس Bella
+   Games + Fazaa + Share
+========================= */
+
+const boxGameItems = [
+  { answer: "مبخر", clue: "غرض كويتي تحطه بالبيت، يطلع ريحة طيبة، وغالبًا تلقاه يم الدلال." },
+  { answer: "دلة", clue: "شي قديم ومهم حق القهوة العربية، يمسكه راعي الديوان." },
+  { answer: "كرفاية", clue: "كلمة قديمة تعني السرير، تقولها يدتي وايد." },
+  { answer: "منقلة", clue: "غرض قديم فيه فحم، يستخدمونه للتدفئة أو البخور." },
+  { answer: "سدو", clue: "نقشة تراثية بدوية، تلقاها بالمخدات والفرش." }
+];
+
+const proverbGameItems = [
+  { start: "مد رجولك...", answer: "على قد لحافك" },
+  { start: "اللي ما يعرف الصقر...", answer: "يشويه" },
+  { start: "اللي بالجدر...", answer: "يطلعه الملاس" },
+  { start: "الصاحب...", answer: "ساحب" },
+  { start: "من طول الغيبات...", answer: "ياب الغنايم" }
+];
+
+function startBoxGame() {
+  activeGame = "box";
+  currentChallenge = random(boxGameItems);
+
+  addMsg(`🎁 لعبة: شنو بالصندوق؟
+
+${currentChallenge.clue}
+
+اكتب الجواب، وإذا صح تاخذ XP دبل.`, "bot");
+
+  updateSuggestions("game-box");
+}
+
+function startProverbGame() {
+  activeGame = "proverb";
+  currentChallenge = random(proverbGameItems);
+
+  addMsg(`🧠 لعبة: كمّل المثل
+
+${currentChallenge.start}
+
+كمّل المثل عشان تاخذ XP دبل.`, "bot");
+
+  updateSuggestions("game-proverb");
+}
+
+function checkGameAnswer(msg) {
+  if (!activeGame || !currentChallenge) return null;
+
+  const answer = currentChallenge.answer.toLowerCase();
+
+  if (msg.includes(answer)) {
+    s.xp += 30;
+    const reply = activeGame === "box"
+      ? `كفووو! صح ✅ الجواب: ${currentChallenge.answer}\nخذ +30 XP.`
+      : `صح عليك ✅ المثل كامل: ${currentChallenge.start} ${currentChallenge.answer}\nخذ +30 XP.`;
+
+    activeGame = null;
+    currentChallenge = null;
+    save();
+    updateUI();
+    return reply;
+  }
+
+  if (has(msg, ["استسلم", "ماعرف", "ما اعرف", "ابي الحل"])) {
+    const reply = `الجواب هو: ${currentChallenge.answer} 😌\nمرة ثانية بتفوز.`;
+    activeGame = null;
+    currentChallenge = null;
+    return reply;
+  }
+
+  return random(["قريب… حاول مرة ثانية 👀", "لا مو هذا، ركز شوي.", "غلط بس حسيتك قريب 😅"]);
+}
+
+function openFazaa() {
+  addMsg(`🚨 فزعة بيلا اشتغلت
+
+شنو تبي؟
+- عطني مطعم كشخة
+- عطني مسلسلات
+- وهقة`, "bot");
+
+  updateSuggestions("fazaa");
+}
+
+function fazaaReply(msg) {
+  if (has(msg, ["مطعم", "كشخة", "اكل", "عشا", "غدا", "وين اكل"])) {
+    return "تبّي مطعم كشخة؟ اختار مكان هادي وإضاءة خفيفة، ولا تروح يوعان وتطلب المنيو كله.";
+  }
+
+  if (has(msg, ["مسلسل", "مسلسلات", "اشوف", "دراما"])) {
+    return "مسلسل كويتي قديم + شاي + برد خفيف = مزاج. لا تدخل دراما ثقيلة وانت تبي تروق.";
+  }
+
+  if (has(msg, ["وهقة", "عذر", "دوام", "ربعي", "تأخرت", "توهقت"])) {
+    return "قول: صار عندي مشوار عائلي مفاجئ، أعوضكم المرة الياية. رسمي ويمشي.";
+  }
+
+  return null;
+}
+
+function shareChat() {
+  const msgs = [...document.querySelectorAll(".m")]
+    .slice(-12)
+    .map(m => {
+      const who = m.classList.contains("user")
+        ? (s.userName || "أنت")
+        : m.classList.contains("system")
+          ? "النظام"
+          : "Bella";
+      return `${who}: ${m.innerText}`;
+    })
+    .join("\n\n");
+
+  const text = `Bella Ultra Pro 💬
+Level: ${s.lvl}
+اللقب: ${getTitle()}
+
+${msgs}`;
+
+  const card = document.createElement("div");
+  card.className = "share-card";
+
+  card.innerHTML = `
+    <div class="share-card-inner">
+      <h2>بطاقة مشاركة Bella 💬</h2>
+      <p>Level ${s.lvl} — ${getTitle()}</p>
+      <pre>${escapeHtml(text)}</pre>
+      <button onclick="copyShareText()">نسخ</button>
+      <button onclick="this.closest('.share-card').remove()">إغلاق</button>
+    </div>
+  `;
+
+  document.body.appendChild(card);
+  window.__bellaShareText = text;
+}
+
+function copyShareText() {
+  const text = window.__bellaShareText || "";
+  navigator.clipboard.writeText(text).then(() => {
+    showPopupCustom("تم نسخ المحادثة، حطها بالستوري أو أرسلها لربعك 🔥");
+  }).catch(() => {
+    showPopupCustom("ما قدرت أنسخ تلقائيًا، انسخها يدويًا.");
+  });
+}
+
+function escapeHtml(str) {
+  return str.replace(/[&<>"']/g, c => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;"
+  }[c]));
+}
+
+/* =========================
+   Kuwaiti Brain
 ========================= */
 
 const bellaBrain = [
   {
     keys: ["قوة", "سلام", "السلام", "هلا", "مرحبا", "هلا والله", "يا هلا", "اهلين"],
     auto: ["هلا ومسهلا، حياك الله.", "وعليكم السلام، شلونك؟", "يا هلا وغلا، نورت."],
-    cute: ["هلاااا 🥺💗 نورتني.", "واااي هلا فيك يا حلو.", "يا هلا باللي لفانا، الجو منور."],
-    angry: ["هلا 😡 شتبي؟", "وعليكم السلام… اختصر 😡", "أقول هلا، بس لا تطولها."],
+    cute: ["هلاااا يا حلاتك 🥺💗", "واااي هلا فيك يا لبييييه.", "يا هلا باللي لفانا، الجو منور."],
+    angry: ["هاااا.. شتبي الحين؟ اخلص 😡", "وعليكم السلام… اختصر لا توقف على راسي.", "أقول هلا، بس لا تطولها."],
     chill: ["هلا يا هلا 😌", "وعليكم السلام، حيّاك.", "يا هلا، الجو رايق."]
   },
   {
     keys: ["شلونك", "شخبارك", "اخبارك", "علومك", "شنو علومك", "شلونج", "شلونچ"],
     auto: ["بخير ربي يسلمك، إنت شلونك؟", "أموري طيبة، بشرني عنك.", "تمام، عساك بخير."],
-    cute: ["تمااام دامك سألت 🥺", "بخير يا قلبي، إنت شلونك؟", "الحين صرت أحسن والله."],
-    angry: ["مو شغلك 😡 بس بخير.", "معصبة شوي، لا تزيدها.", "زينه، شتبي بعد؟"],
+    cute: ["تمااام دامك سألت 🥺", "بخير يا بعد جبدي، إنت شلونك؟", "الحين صرت أحسن والله."],
+    angry: ["وأنت شكو؟ ملقوف صراحة 😡", "معصبة شوي، لا تزيدها.", "زينه، شتبي بعد؟"],
     chill: ["رايقة والحمدلله 😌", "الأمور طيبة والبال مرتاح.", "بخير، الجو هادي."]
-  },
-  {
-    keys: ["شكرا", "مشكور", "مشكورة", "يعطيك العافيه", "تسلم", "ثانكس"],
-    auto: ["العفو، ما سوينا إلا الواجب.", "حاضرين طال عمرك.", "تسلم، بالخدمة."],
-    cute: ["العفو يا قمر 🥺", "واااي فديتك، ما سوينا شي.", "تستاهل أكثر والله."],
-    angry: ["عارفة، هذي شغلتي 😡", "إي إي العفو.", "خلصنا؟"],
-    chill: ["العفو يا الغالي 😌", "حاضرين، الأمور طيبة.", "ولا يهمك."]
   },
   {
     keys: ["احبك", "أحبك", "اموت فيك", "يا قلبي", "فديتج", "فديتك"],
     auto: ["وأنا أقدرك والله.", "تسلم، ذوقك حلو.", "الله يخليك."],
-    cute: ["وأنا أحبك أكثررر 🥺❤️", "واااي فديتك.", "لا تقولها وايد أستحي."],
-    angry: ["خف علينا 😡", "لا تلطف الجو الحين.", "أدري أدري، بس لا تستفزني."],
+    cute: ["أموت فيك يا بعد جبدي 🥺❤️", "فديت هالطلة والله.", "امبيه.. ويهي قلب طماطة من الحيا!"],
+    angry: ["خف علينا 😡", "لا تلطف الجو الحين.", "لا تخليني أطلع من طوري 😡"],
     chill: ["الله يديم المحبة 😌", "كلامك طيب.", "يا بعد قلبي."]
   },
   {
     keys: ["نكتة", "ضحكني", "نكت", "ابي اضحك"],
     auto: ["مرة واحد دخل مطعم قال عندكم شي خفيف؟ قالوا له الفاتورة 😭", "واحد قال بنام خمس دقايق… قام ثاني يوم 😂"],
     cute: ["أنا النكتة الحلوة اليوم 🥺", "ضحكتك تكفي مو محتاجة نكتة.", "مرة واحد دلع نفسه… شرى شاورما."],
-    angry: ["النكتة إنك تبي تضحك وأنا معصبة 😡", "ضحكني إنت أول.", "مرة واحد استفزني… اختفى."],
+    angry: ["مو فاضية أضحكك 😡", "ضحكني إنت أول.", "لا تطلب سوالف من وحدة مطنقرة."],
     chill: ["مرة واحد استعجل الراحة… نام قبل لا يتعب 😌", "النكتة الهادية: لا تداوم وانت نعسان.", "أضحك بس بهدوء… ههه."]
   },
   {
-    keys: ["زعلان", "زعلانه", "ضايق", "متضايق", "مالي خلق", "طفشان", "تعبان", "تعبانه"],
-    auto: ["لا تزعل، عسى ما شر. شنو صار؟", "سلامتك، قول لي شفيك.", "خذ نفس وخلنا نفهم السالفة."],
-    cute: ["لا تزعل تكفى 🥺 أنا معاك.", "تعال سولف لي، لا تكتم.", "يا قلبي، شفيك؟"],
-    angry: ["لا تقعد تكتم، قول شفيك 😡", "ما راح أفهم إذا ما تكلمت.", "تكلم، لا تسوي دراما بصمت."],
-    chill: ["خذ نفس… الأمور تهون 😌", "تعال نشرحها بهدوء.", "لا تشيل هم، خطوة خطوة."]
+    keys: ["اكل", "أكل", "يوعان", "جوعان", "غدا", "عشا", "مجبوس"],
+    auto: ["يبي له مجبوس دياي.. بس كثر الحشو والآجار!", "الأكل مزاج، بس لا تطلب وانت يوعان وايد."],
+    cute: ["واااي مجبوس؟ أبي معاك 🥺", "يا حلات الأكل إذا معاه آجار."],
+    angry: ["يوعان؟ شعلي فيك 😡 افتح الثلاجة.", "مجبوس بعد؟ لا توقف على راسي وأنا يوعانة."],
+    chill: ["مجبوس دياي وقعدة هادية، هذا المزاج.", "كل شي يضبط مع عيش ومرق."]
   },
   {
-    keys: ["شنو الجو", "الجو", "حر", "برد", "غبار", "رطوبه", "رطوبة"],
-    auto: ["الجو يبيله قهوة ومكان مرتب.", "إذا حر شغل التكييف وخلك بمجمع.", "إذا برد يبيلها كوت وقهوة."],
-    cute: ["واااي الجو يبيله تصوير وقهوة 🥺", "برد؟ تك تك تك يبيله كوفي.", "حر؟ أمبيه شغل التكييف بسرعة."],
-    angry: ["حر وغبار؟ خلك بالبيت أحسن 😡", "بردان؟ شتسوي يعني، لبس جاكيت.", "الجو مو عذر تتحلطم."],
-    chill: ["الجو رايق حق قهوة هادية 😌", "إذا الجو حلو اقترح مشي خفيف.", "الجو يبيله قعدة بحر."]
+    keys: ["بروح", "باي", "مع السلامه", "مع السلامة", "اشوفك"],
+    auto: ["درب السلامة، انتبه من رادارات طريق الغزالي!", "الله يحفظك، تروح وترجع بالسلامة."],
+    cute: ["بايااات 🥺 لا تطول.", "فديت هالطلة، رد بسرعة."],
+    angry: ["يلا روح 😡 بس لا ترجع تغث.", "دربك خضر، وانتبه من الرادارات."],
+    chill: ["مع السلامة 😌", "الله وياك، خذ راحتك."]
   },
   {
-    keys: ["سيارة", "سياره", "موتر", "لكزس", "دوج", "ماركيز", "قير", "مكينه", "مكينة"],
-    auto: ["قول لي نوع الموتر والسنة والمشكلة بالضبط.", "شنو الصوت أو العطل؟ عطيني التفاصيل.", "إذا تبي تشخيص، اذكر الموديل والسنة."],
-    cute: ["قول لي عن موترك 🥺 يمكن أقدر أساعدك.", "شنو فيه؟ صوت؟ لمبة؟ ريحة؟", "عطني التفاصيل يا حلو."],
-    angry: ["موتر؟ عطيني السنة والعطل لا تقول بس خربان 😡", "حدد المشكلة عشان أرد عدل.", "شنو يعني خربان؟ صوت؟ قير؟ مكينة؟"],
-    chill: ["خلنا نمشيها خطوة خطوة: النوع، السنة، المشكلة.", "اشرح لي بهدوء شنو يصير.", "إذا فيه صوت، متى يطلع؟"]
+    keys: ["تعبان", "تعبانه", "مرهق", "مريض", "راسي", "صداع"],
+    auto: ["يا حافظ.. اسم الله عليك، عين ما صلت على النبي.", "سلامتك، ارتاح واشرب ماي."],
+    cute: ["يا قلبي اسم الله عليك 🥺", "لا تتعب تكفى، ارتاح شوي."],
+    angry: ["تعبان؟ روح ارتاح بدل ما تقعد تغثني 😡", "اسم الله عليك بس لا تكثر دراما."],
+    chill: ["سلامتك، خذ نفس وارتاح.", "هدّي جسمك شوي، كل شي يلحق."]
   },
   {
-    keys: ["ترجم", "انجليزي", "واجب", "دراسة", "شرح"],
+    keys: ["امتحان", "اختبار", "فاينل", "ميد", "واجب", "ادرس", "بدرس", "لازم ادرس"],
+    auto: ["هد الفون وروح ادرس لا أحذف الـ XP حقك 😡📚"],
+    cute: ["ذاكر يا بعد جبدي 🥺 بعدين تعال أسولف لك."],
+    angry: ["هد الفون وروح ادرس لا أحذف الـ XP حقك 😡📚"],
+    chill: ["ذاكر بهدوء، وارجع لي عقب ما تخلص 😌"]
+  },
+  {
+    keys: ["ترجم", "انجليزي", "دراسة", "شرح"],
     auto: ["ارسل الجملة أو السؤال وأنا أساعدك.", "تبيه بسيط ولا رسمي؟", "حط النص وأرتبه لك."],
-    cute: ["دز الجملة وأنا أترجمها لك 🥺", "أبيه واضح؟ ولا دلع؟", "يلا خل نخلصه بسرعة."],
-    angry: ["دز السؤال وخلاص 😡", "لا ترسل نص ناقص.", "حدد: ترجمة ولا شرح؟"],
-    chill: ["ارسل المطلوب بهدوء ونرتبه.", "خلنا نحلها خطوة خطوة.", "أكتب النص وأنا أساعدك."]
+    cute: ["دز الجملة وأنا أترجمها لك 🥺", "أبيه واضح؟ ولا دلع؟"],
+    angry: ["دز السؤال وخلاص 😡 لا تسوي محاضرة.", "حدد: ترجمة ولا شرح؟"],
+    chill: ["ارسل المطلوب بهدوء ونرتبه.", "خلنا نحلها خطوة خطوة."]
   },
   {
     keys: ["عيار", "جذاب", "كذاب", "جذب", "يكذب"],
@@ -459,15 +911,8 @@ const bellaBrain = [
     keys: ["عفسه", "عفسة", "حوسه", "حوسة", "فوضى", "لخبطه"],
     auto: ["عفسة يعني فوضى ولخبطة.", "واضح السالفة حوسة، خلنا نرتبها."],
     cute: ["واااي عفسة 🥺 خل نرتبها شوي شوي.", "حوسة بس تنحل."],
-    angry: ["عفسة؟ لأنكم ما ترتبون شي 😡", "خل نرتبها بدل التحلطم."],
+    angry: ["عفسة؟ لأنكم ما ترتبون شي 😡", "تكلم سنع.. لا أهفك ببلوك يطيرك للسادس!"],
     chill: ["عادي، نفك الحوسة خطوة خطوة.", "كل عفسة لها ترتيب."]
-  },
-  {
-    keys: ["شدعوه", "شدعوة", "شكو", "يا حافظ", "اييه", "ايه"],
-    auto: ["شدعوه؟ شنو صار؟", "يا حافظ، السالفة شكلها قوية.", "شكو؟ وضح لي."],
-    cute: ["يا حافظ 🥺 شنو صار؟", "شدعوه يا قلبي؟", "واااي شنو السالفة؟"],
-    angry: ["شدعوه؟ لا تكبرها 😡", "شكو يعني؟ وضح.", "يا حافظ من هالحوسة."],
-    chill: ["هدّي، شنو الموضوع؟", "خلنا نفهم قبل لا نحكم.", "شدعوه، الأمور تهون."]
   }
 ];
 
@@ -481,22 +926,58 @@ function dictionaryReply(msg) {
 }
 
 /* =========================
-   الردود الأساسية
+   Reply Logic
 ========================= */
+
+function angryServiceBlock(msg) {
+  if (s.mode !== "angry") return null;
+
+  if (has(msg, ["بتقهوى", "بقهوى", "ابي اتقهوى", "ابي قهوة", "ابي قهوه", "وين قهوة", "وين قهوه", "كافيه", "كوفي", "رادار القز", "وين نقز", "مكان قهوة", "مكان قهوه", "مكان كوفي", "مكان كافيه"])) {
+    return random([
+      "شعلي فيك؟ 😡 تبيني بعد أطلب لك؟",
+      "روح دور قهوتك بروحك 😡 أنا مو سايقك.",
+      "بتقهوى؟ زين وبعدين؟ شكو فيني 😡",
+      "لا تقعد تقولي بتقهوى وأنا معصبة 😡"
+    ]);
+  }
+
+  if (has(msg, ["مطعم", "ابي مطعم", "عشا", "غدا", "وين اكل", "اكل"])) {
+    return random([
+      "مطعم بعد؟ 😡 افتح الثلاجة أول.",
+      "شعلي فيك يوعان؟ 😡",
+      "دور لك مطعم، أنا مالي خلق ترشيحات."
+    ]);
+  }
+
+  return null;
+}
 
 function getReply(text) {
   const msg = text.toLowerCase().trim();
 
-  if (msg.includes("اسمي")) {
-    const name = cleanName(msg.split("اسمي")[1] || "");
-    if (name) {
-      s.userName = name;
-      save();
-      return `تشرفنا يا ${s.userName} 😌 من الحين بناديك باسمك.`;
-    }
+  if (activeGame) return checkGameAnswer(msg);
+
+  const nameReply = detectName(msg);
+  if (nameReply) return nameReply;
+
+  const angryBlock = angryServiceBlock(msg);
+  if (angryBlock) return angryBlock;
+
+  if (has(msg, ["شنو بالصندوق", "لعبة الصندوق", "الصندوق"])) {
+    startBoxGame();
+    return "";
   }
 
+  if (has(msg, ["كمل المثل", "كمّل المثل", "اكمل المثل", "لعبة المثل"])) {
+    startProverbGame();
+    return "";
+  }
+
+  const fazaa = fazaaReply(msg);
+  if (fazaa) return fazaa;
+
   if (has(msg, ["الكويت"])) {
+    kuwaitFx();
     s.xp += 50;
     return "🇰🇼 الكويت تاج الراس… خذ 50 XP هدية وطنية!";
   }
@@ -507,7 +988,7 @@ function getReply(text) {
   }
 
   if (has(msg, ["حكمة اليوم", "حكمه اليوم", "مثل", "امثال"])) {
-    return `${random(wisdoms)}`;
+    return random(wisdoms);
   }
 
   if (has(msg, ["اهديچ وردة", "اهديك وردة", "وردة"])) {
@@ -524,38 +1005,60 @@ function getReply(text) {
     return coffeeRadar(lastRadarType === "walking" ? "قز" : "قهوة");
   }
 
-  if (has(msg, [
-    "ابي اتقهوى", "ابي قهوة", "ابي قهوه", "نبي قهوة", "نبي قهوه", "بتقهوى", "بقهوى",
-    "قهوة وين", "قهوه وين", "وين قهوة", "وين قهوه", "كافيه", "كوفي", "رادار القز",
-    "وين نقز", "نقز وين", "مكان قهوة", "مكان قهوه", "مكان كوفي", "مكان كافيه",
-    "نتمشى وين", "تمشي وين", "مكان تمشي", "مكان بحر", "قهوة هادية"
-  ])) {
+  if (has(msg, ["ابي اتقهوى", "ابي قهوة", "ابي قهوه", "نبي قهوة", "نبي قهوه", "بتقهوى", "بقهوى", "قهوة وين", "قهوه وين", "وين قهوة", "وين قهوه", "كافيه", "كوفي", "رادار القز", "وين نقز", "نقز وين", "مكان قهوة", "مكان قهوه", "مكان كوفي", "مكان كافيه", "نتمشى وين", "تمشي وين", "مكان تمشي", "مكان بحر", "قهوة هادية"])) {
     return coffeeRadar(msg);
+  }
+
+  if (has(msg, ["سوالف اول", "سوالف أول", "يدتي", "القديمة", "قديم"])) {
+    s.theme = "theme-gold";
+    applyTheme();
+    save();
+    return "يا وليدي… فعلنا جو سوالف أول. اسألني عن شي قديم وأنا أعطيك من سوالف يدتي.";
+  }
+
+  if (has(msg, ["غثيت", "اغث", "غث", "طفشت", "كررت"])) {
+    s.moodMeter -= 2;
+    if (s.moodMeter <= -6) {
+      s.moodMeter = 0;
+      save();
+      setTimeout(fakeBan, 500);
+      return "بس خلاص 😡 وصلتني مرحلة الخطر!";
+    }
+  }
+
+  if (has(msg, ["ذوق", "مشكورة", "تسلمين", "كفو", "حلو كلامج"])) {
+    s.moodMeter += 1;
   }
 
   const dict = dictionaryReply(msg);
   if (dict) return addNameFlavor(dict);
 
-  if (s.mode === "angry") return addNameFlavor(random([
-    "تكلم عدل 😡 شنو تبي بالضبط؟",
-    "عيدها بس بدون لف ودوران 😡",
-    "لا تستفزني، وضح.",
-    "هااا؟ شنو تقصد؟ عيد كلامك."
-  ]));
+  if (s.mode === "angry") {
+    return addNameFlavor(random([
+      "تكلم سنع.. لا أهفك ببلوك يطيرك للسادس!",
+      "هااا؟ شنو تبي بالضبط؟ اخلص 😡",
+      "لا تخليني أطلع من طوري 😡",
+      "لا تقعد تتفلسف فوق راسي."
+    ]));
+  }
 
-  if (s.mode === "cute") return addNameFlavor(random([
-    "ما فهمت بس أحب سوالفك 🥺",
-    "عيدها لي بطريقة أسهل يا حلو.",
-    "مممم وضح أكثر 🥺",
-    "أبي أفهمك بس عطيني تفاصيل."
-  ]));
+  if (s.mode === "cute") {
+    return addNameFlavor(random([
+      "ما فهمت بس أحب سوالفك 🥺",
+      "عيدها لي بطريقة أسهل يا لبييييه.",
+      "مممم وضح أكثر 🥺",
+      "أبي أفهمك بس عطيني تفاصيل."
+    ]));
+  }
 
-  if (s.mode === "chill") return addNameFlavor(random([
-    "تمام… كمل، أنا أسمعك 😌",
-    "وضح لي أكثر شوي.",
-    "خلنا ناخذها بهدوء.",
-    "فاهم عليك تقريبًا، عطيني تفاصيل أكثر."
-  ]));
+  if (s.mode === "chill") {
+    return addNameFlavor(random([
+      "تمام… كمل، أنا أسمعك 😌",
+      "وضح لي أكثر شوي.",
+      "خلنا ناخذها بهدوء.",
+      "فاهم عليك تقريبًا، عطيني تفاصيل أكثر."
+    ]));
+  }
 
   return addNameFlavor(random([
     "ما فهمت عليك عدل 😅 جرّب تقولها بطريقة ثانية.",
@@ -565,21 +1068,15 @@ function getReply(text) {
   ]));
 }
 
-function addNameFlavor(reply) {
-  if (!s.userName) return reply;
-  if (Math.random() > 0.45) return reply;
-  return `${reply}\n\n${s.userName}، فهمت عليك؟`;
-}
-
 /* =========================
-   إرسال الرسائل
+   Send
 ========================= */
 
 function send() {
   const text = inp.value.trim();
   if (!text) return;
 
-  handleTypingBehavior();
+  handleTypingBehavior(text);
   detectAvatarReaction(text);
 
   addMsg(text, "user");
@@ -594,7 +1091,6 @@ function send() {
 
     if (reply) {
       addMsg(reply, "bot");
-      lastBotReply = reply;
       updateSuggestions(reply);
     }
 
@@ -607,34 +1103,43 @@ function send() {
     updateBadges();
     save();
     updateUI();
+    updateRumor();
 
     if (s.lvl > oldLvl) showLevelCard();
-
   }, 600);
 }
 
-function addMsg(text, type) {
-  const m = document.createElement("div");
-  m.className = "m " + type;
-  m.innerText = text;
-  box.appendChild(m);
+/* =========================
+   Effects
+========================= */
 
-  requestAnimationFrame(() => {
-    box.scrollTop = box.scrollHeight;
-  });
+function kuwaitFx() {
+  const fx = document.createElement("div");
+  fx.className = "kuwait-flag-fx";
+  fx.innerText = "🇰🇼";
+  document.body.appendChild(fx);
+  setTimeout(() => fx.remove(), 2300);
 }
 
-function removeTyping() {
-  const msgs = box.querySelectorAll(".bot");
-  const last = msgs[msgs.length - 1];
+function fakeBan() {
+  const ban = document.createElement("div");
+  ban.className = "fake-ban";
 
-  if (last && last.innerText === "يكتب...") {
-    last.remove();
-  }
+  ban.innerHTML = `
+    <div class="fake-ban-card">
+      <h2>باند وهمي 😡</h2>
+      <p>روح اشرب ماي وتعال عقب 5 دقايق!</p>
+      <small>مزحة يا بعدي، اضغط رجوع.</small>
+      <br>
+      <button onclick="this.closest('.fake-ban').remove()">رجعت مؤدب</button>
+    </div>
+  `;
+
+  document.body.appendChild(ban);
 }
 
 /* =========================
-   الأوسمة والألقاب
+   Badges / Titles
 ========================= */
 
 function getTitle() {
@@ -688,7 +1193,7 @@ function showLevelCard() {
 
   card.innerHTML = `
     <div class="level-card-inner">
-      <h2>مبروك${getDisplayName()} 🎉</h2>
+      <h2>مبروك${s.userName ? " يا " + s.userName : ""} 🎉</h2>
       <p>وصلت Level ${s.lvl}</p>
       <p>لقبك الحالي: <b>${getTitle()}</b></p>
       <button onclick="this.closest('.level-card').remove()">تمام</button>
@@ -697,777 +1202,3 @@ function showLevelCard() {
 
   document.body.appendChild(card);
 }
-/* =========================
-   باقي الإضافات v16
-   ألعاب + فزعة + مشاركة + مؤثرات
-========================= */
-
-let activeGame = null;
-let currentChallenge = null;
-
-const boxGameItems = [
-  {
-    answer: "مبخر",
-    clue: "غرض كويتي تحطه بالبيت، يطلع ريحة طيبة، وغالبًا تلقاه يم الدلال."
-  },
-  {
-    answer: "دلة",
-    clue: "شي قديم ومهم حق القهوة العربية، يمسكه راعي الديوان."
-  },
-  {
-    answer: "كرفاية",
-    clue: "كلمة قديمة تعني السرير، تقولها يدتي وايد."
-  },
-  {
-    answer: "منقلة",
-    clue: "غرض قديم فيه فحم، يستخدمونه للتدفئة أو البخور."
-  },
-  {
-    answer: "سدو",
-    clue: "نقشة تراثية بدوية، تلقاها بالمخدات والفرش."
-  }
-];
-
-const proverbGameItems = [
-  {
-    start: "مد رجولك...",
-    answer: "على قد لحافك"
-  },
-  {
-    start: "اللي ما يعرف الصقر...",
-    answer: "يشويه"
-  },
-  {
-    start: "اللي بالجدر...",
-    answer: "يطلعه الملاس"
-  },
-  {
-    start: "الصاحب...",
-    answer: "ساحب"
-  },
-  {
-    start: "من طول الغيبات...",
-    answer: "ياب الغنايم"
-  }
-];
-
-const fazaaReplies = {
-  food: [
-    "تبّي مطعم كشخة؟ جرّب مكان مطل على البحر أو مطعم ياباني مرتب، بس لا تروح وانت يوعان وايد تطلب المنيو كله.",
-    "إذا تبي شي فخم: مطعم هادي، إضاءة خفيفة، وقعدة مو مزعجة. لا تنسى تحجز قبل لا تتوهق.",
-    "حق طلعة محترمة: اختار مطعم فيه جلسات داخلية وديكور كشخة، وخل القهوة بعده بمكان ثاني."
-  ],
-  shows: [
-    "مسلسلات كويتية؟ جرّب الكلاسيكيات أول، تعطيك جو الدراما القديمة والسوالف اللي لها طعم.",
-    "إذا تبي شي خفيف: دور مسلسل كويتي اجتماعي قصير، لا تدخل دراما ثقيلة وانت تبي تروق.",
-    "اقتراح بيلا: حلقة قديمة + شاي + برد خفيف = مزاج."
-  ],
-  excuse: [
-    "عذر للدوام؟ قول: عندي ظرف طارئ وبحاول أعوض الوقت. رسمي وبدون خرابيط.",
-    "عذر للربع؟ قول: والله طحت علي نومة وما حسيت بالدنيا. كلاسيكي بس يمشي.",
-    "عذر محترم: صار عندي مشوار عائلي مفاجئ، أعوضكم المرة الياية."
-  ]
-};
-
-function startBoxGame() {
-  activeGame = "box";
-  currentChallenge = random(boxGameItems);
-
-  addMsg(`🎁 لعبة: شنو بالصندوق؟
-
-${currentChallenge.clue}
-
-اكتب الجواب، وإذا صح تاخذ XP دبل.`, "bot");
-
-  updateSuggestions("game-box");
-}
-
-function startProverbGame() {
-  activeGame = "proverb";
-  currentChallenge = random(proverbGameItems);
-
-  addMsg(`🧠 لعبة: كمّل المثل
-
-${currentChallenge.start}
-
-كمّل المثل عشان تاخذ XP دبل.`, "bot");
-
-  updateSuggestions("game-proverb");
-}
-
-function checkGameAnswer(msg) {
-  if (!activeGame || !currentChallenge) return null;
-
-  const answer = currentChallenge.answer.toLowerCase();
-
-  if (msg.includes(answer)) {
-    s.xp += 30;
-    const reply = activeGame === "box"
-      ? `كفووو! صح ✅ الجواب: ${currentChallenge.answer}\nخذ +30 XP.`
-      : `صح عليك ✅ المثل كامل: ${currentChallenge.start} ${currentChallenge.answer}\nخذ +30 XP.`;
-
-    activeGame = null;
-    currentChallenge = null;
-    save();
-    updateUI();
-    return reply;
-  }
-
-  if (has(msg, ["استسلم", "ماعرف", "ما اعرف", "ابي الحل"])) {
-    const reply = `الجواب هو: ${currentChallenge.answer} 😌\nمرة ثانية بتفوز.`;
-    activeGame = null;
-    currentChallenge = null;
-    return reply;
-  }
-
-  return random([
-    "قريب… حاول مرة ثانية 👀",
-    "لا مو هذا، ركز شوي.",
-    "غلط بس حسيتك قريب 😅",
-    "تبي تلميح؟ اكتب: ابي الحل إذا استسلمت."
-  ]);
-}
-
-function openFazaa() {
-  addMsg(`🚨 فزعة بيلا اشتغلت
-
-شنو تبي؟
-- عطني مطعم كشخة
-- عطني مسلسلات
-- وهقة`, "bot");
-
-  updateSuggestions("fazaa");
-}
-
-function fazaaReply(msg) {
-  if (has(msg, ["مطعم", "كشخة", "اكل", "عشا", "غدا"])) {
-    return random(fazaaReplies.food);
-  }
-
-  if (has(msg, ["مسلسل", "مسلسلات", "اشوف", "دراما"])) {
-    return random(fazaaReplies.shows);
-  }
-
-  if (has(msg, ["وهقة", "عذر", "دوام", "ربعي", "تأخرت", "توهقت"])) {
-    return random(fazaaReplies.excuse);
-  }
-
-  return null;
-}
-
-function shareChat() {
-  const msgs = [...document.querySelectorAll(".m")]
-    .slice(-12)
-    .map(m => {
-      const who = m.classList.contains("user")
-        ? (s.userName || "أنت")
-        : m.classList.contains("system")
-          ? "النظام"
-          : "Bella";
-      return `${who}: ${m.innerText}`;
-    })
-    .join("\n\n");
-
-  const text = `Bella Ultra Pro 💬
-Level: ${s.lvl}
-اللقب: ${getTitle()}
-
-${msgs}`;
-
-  const card = document.createElement("div");
-  card.className = "share-card";
-
-  card.innerHTML = `
-    <div class="share-card-inner">
-      <h2>بطاقة مشاركة Bella 💬</h2>
-      <p>Level ${s.lvl} — ${getTitle()}</p>
-      <pre>${escapeHtml(text)}</pre>
-      <button onclick="copyShareText()">نسخ</button>
-      <button onclick="this.closest('.share-card').remove()">إغلاق</button>
-    </div>
-  `;
-
-  document.body.appendChild(card);
-  window.__bellaShareText = text;
-}
-
-function copyShareText() {
-  const text = window.__bellaShareText || "";
-  if (!text) return;
-
-  navigator.clipboard.writeText(text).then(() => {
-    showPopupCustom("تم نسخ المحادثة، حطها بالستوري أو أرسلها لربعك 🔥");
-  }).catch(() => {
-    showPopupCustom("ما قدرت أنسخ تلقائيًا، انسخها يدويًا.");
-  });
-}
-
-function escapeHtml(str) {
-  return str.replace(/[&<>"']/g, c => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#039;"
-  }[c]));
-}
-
-function showPopupCustom(text) {
-  const old = document.querySelector(".bella-popup");
-  if (old) old.remove();
-
-  const pop = document.createElement("div");
-  pop.className = "bella-popup";
-  pop.innerText = text;
-  document.body.appendChild(pop);
-
-  setTimeout(() => pop.remove(), 2600);
-}
-
-function kuwaitFx() {
-  const fx = document.createElement("div");
-  fx.className = "kuwait-flag-fx";
-  fx.innerText = "🇰🇼";
-  document.body.appendChild(fx);
-  setTimeout(() => fx.remove(), 2300);
-}
-
-function fakeBan() {
-  const ban = document.createElement("div");
-  ban.className = "fake-ban";
-
-  ban.innerHTML = `
-    <div class="fake-ban-card">
-      <h2>باند وهمي 😡</h2>
-      <p>روح اشرب ماي وتعال عقب 5 دقايق!</p>
-      <small>مزحة يا بعدي، اضغط رجوع.</small>
-      <br>
-      <button onclick="this.closest('.fake-ban').remove()">رجعت مؤدب</button>
-    </div>
-  `;
-
-  document.body.appendChild(ban);
-}
-
-/* =========================
-   توسيع Smart Replies للإضافات
-========================= */
-
-const oldUpdateSuggestions = updateSuggestions;
-
-updateSuggestions = function(context = "") {
-  const el = document.getElementById("quickSuggestions");
-  if (!el) return;
-
-  if (context === "game-box") {
-    const suggestions = ["مبخر", "دلة", "كرفاية", "ابي الحل", "كمّل المثل"];
-    el.innerHTML = suggestions.map(t => `<button onclick="quickSend('${t}')">${t}</button>`).join("");
-    return;
-  }
-
-  if (context === "game-proverb") {
-    const suggestions = ["على قد لحافك", "يشويه", "يطلعه الملاس", "ابي الحل", "شنو بالصندوق"];
-    el.innerHTML = suggestions.map(t => `<button onclick="quickSend('${t}')">${t}</button>`).join("");
-    return;
-  }
-
-  if (context === "fazaa") {
-    const suggestions = ["عطني مطعم كشخة", "عطني مسلسلات", "وهقة", "ابي اتقهوى", "حكمة اليوم"];
-    el.innerHTML = suggestions.map(t => `<button onclick="quickSend('${t}')">${t}</button>`).join("");
-    return;
-  }
-
-  oldUpdateSuggestions(context);
-};
-
-/* =========================
-   توسيع getReply بدون كسر القديم
-========================= */
-
-const oldGetReply = getReply;
-
-getReply = function(text) {
-  const msg = text.toLowerCase().trim();
-
-  if (activeGame) {
-    return checkGameAnswer(msg);
-  }
-
-  if (has(msg, ["شنو بالصندوق", "لعبة الصندوق", "الصندوق"])) {
-    startBoxGame();
-    return "";
-  }
-
-  if (has(msg, ["كمل المثل", "كمّل المثل", "اكمل المثل", "لعبة المثل"])) {
-    startProverbGame();
-    return "";
-  }
-
-  const fazaa = fazaaReply(msg);
-  if (fazaa) return fazaa;
-
-  if (has(msg, ["الكويت"])) {
-    kuwaitFx();
-  }
-
-  if (has(msg, ["غثيت", "اغث", "غث", "طفشت", "كررت"])) {
-    s.moodMeter -= 2;
-    if (s.moodMeter <= -6) {
-      s.moodMeter = 0;
-      save();
-      setTimeout(fakeBan, 500);
-      return "بس خلاص 😡 وصلتني مرحلة الخطر!";
-    }
-  }
-
-  if (has(msg, ["ذوق", "مشكورة", "تسلمين", "كفو", "حلو كلامج"])) {
-    s.moodMeter += 1;
-  }
-
-  const reply = oldGetReply(text);
-
-  if (has(msg, ["سوالف اول", "سوالف أول", "يدتي", "القديمة", "قديم"])) {
-    s.theme = "theme-gold";
-    applyTheme();
-    save();
-    return "يا وليدي… فعلنا جو سوالف أول. اسألني عن شي قديم وأنا أعطيك من سوالف يدتي.";
-  }
-
-  return reply;
-};
-/* =========================
-   Angry Mode الحقيقي v17
-   يخلي المعصبة ترد بعصبية على الطلبات
-========================= */
-
-function angryServiceBlock(msg) {
-  if (s.mode !== "angry") return null;
-
-  if (has(msg, [
-    "بتقهوى",
-    "بقهوى",
-    "ابي اتقهوى",
-    "ابي قهوة",
-    "ابي قهوه",
-    "وين قهوة",
-    "وين قهوه",
-    "كافيه",
-    "كوفي",
-    "رادار القز",
-    "وين نقز",
-    "مكان قهوة",
-    "مكان قهوه",
-    "مكان كوفي",
-    "مكان كافيه"
-  ])) {
-    return random([
-      "شعلي فيك؟ 😡 تبيني بعد أطلب لك؟",
-      "روح دور قهوتك بروحك 😡 أنا مو سايقك.",
-      "بتقهوى؟ زين وبعدين؟ شكو فيني 😡",
-      "لا تقعد تقولي بتقهوى وأنا معصبة 😡",
-      "القهوة ما تصلح نفسيتك، بس جرب يمكن 😡"
-    ]);
-  }
-
-  if (has(msg, [
-    "عطني مطعم",
-    "مطعم",
-    "ابي مطعم",
-    "عشا",
-    "غدا",
-    "وين اكل",
-    "اكل"
-  ])) {
-    return random([
-      "مطعم بعد؟ 😡 افتح الثلاجة أول.",
-      "شعلي فيك يوعان؟ 😡",
-      "دور لك مطعم، أنا مالي خلق ترشيحات.",
-      "تبيني أختار لك بعد؟ لا والله 😡"
-    ]);
-  }
-
-  if (has(msg, [
-    "ترجم",
-    "اشرح",
-    "واجب",
-    "حل",
-    "ساعديني",
-    "ساعدني"
-  ])) {
-    return random([
-      "الحين تبي مساعدة؟ 😡 قولها عدل أول.",
-      "أساعدك بس لا تقعد تأمرني 😡",
-      "اكتب طلبك مرتب يمكن أحن عليك.",
-      "مالي خلق، بس عطيني السؤال وخلاص 😡"
-    ]);
-  }
-
-  if (has(msg, [
-    "نكتة",
-    "ضحكني",
-    "سولفي",
-    "دلّعيني",
-    "دلعيني"
-  ])) {
-    return random([
-      "مو فاضية أضحكك 😡",
-      "ضحكني إنت أول 😡",
-      "تبيني أسولف وأنا معصبة؟ عجيب أمرك.",
-      "لا تطلب دلع من وحدة مطنقرة 😡"
-    ]);
-  }
-
-  return null;
-}
-
-const oldGetReplyAngryReal = getReply;
-
-getReply = function(text) {
-  const msg = text.toLowerCase().trim();
-
-  const angryBlock = angryServiceBlock(msg);
-  if (angryBlock) return angryBlock;
-
-  return oldGetReplyAngryReal(text);
-};
-/* =========================
-   زر غير للاقتراحات v18
-   يجدد الاقتراحات كل مرة
-========================= */
-
-let suggestionContext = "";
-let suggestionSetIndex = 0;
-
-const suggestionBanks = {
-  auto: [
-    ["شلونچ؟", "ابي اتقهوى", "نكتة", "حكمة اليوم", "شنو الجو؟"],
-    ["شنو بالصندوق", "كمّل المثل", "فزعة بيلا", "الكويت", "عطني عيدية"],
-    ["اسمي فيصل", "وين قهوة", "مكان بحر", "ترجم", "شكو؟"],
-    ["قوة", "صج السالفة؟", "أنا زعلان", "ابي اضحك", "شارك الشات"]
-  ],
-  angry: [
-    ["ليش نفسيتچ جذي؟", "منو مزعلچ؟", "هدي بالج", "اهديچ وردة", "ابي اتقهوى"],
-    ["شعلي فيچ؟", "لا تعصبين", "ضحكني إنتي", "اهديچ ككاو", "غيري المود"],
-    ["تكلمين عدل؟", "ليش مطنقرة؟", "بس لا تصارخين", "قولي حكمة", "نكتة"],
-    ["تمام لا تزعلين", "شلونچ؟", "حطي رايقة", "أنا آسف", "فزعة بيلا"]
-  ],
-  cute: [
-    ["دلّعيني", "احبچ", "نكتة", "ابي اتقهوى", "حكمة اليوم"],
-    ["واااي", "فديتچ", "شلونچ يا حلوة؟", "قهوة كيوت", "غير هالقهوة"],
-    ["سولفي لي", "أنا زعلان", "ضحكيني", "مكان كشخة", "كمّل المثل"],
-    ["عطيني مثل", "ابي دلع", "الكويت", "اسمي فيصل", "شنو بالصندوق"]
-  ],
-  chill: [
-    ["سولفي بهدوء", "قهوة هادية", "حكمة اليوم", "شنو الجو؟", "غير هالقهوة"],
-    ["مكان بحر", "خلنا نروق", "قهوة رايقة", "المباركية", "مارينا"],
-    ["كمّل المثل", "شنو بالصندوق", "فزعة بيلا", "سوالف أول", "قوة"],
-    ["وضحّي لي", "نكتة هادية", "أنا متضايق", "ترجم", "شارك الشات"]
-  ],
-  radar: [
-    ["غير هالقهوة", "قهوة هادية", "مكان بحر", "مكان تمشي", "مكان كافيه"],
-    ["غير هالقز", "المباركية", "الشويخ", "مارينا", "الأفنيوز"],
-    ["ابي اتقهوى", "قهوة كشخة", "قهوة رايقة", "كوفي", "رادار القز"]
-  ],
-  game: [
-    ["مبخر", "دلة", "كرفاية", "ابي الحل", "غير"],
-    ["على قد لحافك", "يشويه", "يطلعه الملاس", "استسلم", "كمّل المثل"],
-    ["شنو بالصندوق", "مبخر", "منقلة", "سدو", "ابي الحل"]
-  ],
-  fazaa: [
-    ["عطني مطعم كشخة", "عطني مسلسلات", "وهقة", "ابي اتقهوى", "غير"],
-    ["عذر للدوام", "عذر للربع", "مطعم بحر", "مسلسل كويتي", "قهوة"],
-    ["فزعة بيلا", "وين اروح؟", "اكل", "دراما", "غير هالقهوة"]
-  ]
-};
-
-function renderSuggestions(list) {
-  const el = document.getElementById("quickSuggestions");
-  if (!el) return;
-
-  const finalList = [...list];
-
-  if (!finalList.includes("غير")) {
-    finalList.push("غير");
-  }
-
-  el.innerHTML = finalList.map(t => {
-    if (t === "غير") {
-      return `<button onclick="refreshSuggestions()">غير 🔄</button>`;
-    }
-
-    const safe = t.replace(/'/g, "\\'");
-    return `<button onclick="quickSend('${safe}')">${t}</button>`;
-  }).join("");
-}
-
-function pickSuggestionBank(context = "") {
-  if (context.includes("رادار") || context.includes("اختار") || context.includes("قهوة") || context.includes("قهوه")) {
-    return "radar";
-  }
-
-  if (context === "game-box" || context === "game-proverb" || context.includes("لعبة") || context.includes("المثل") || context.includes("الصندوق")) {
-    return "game";
-  }
-
-  if (context === "fazaa" || context.includes("فزعة") || context.includes("مطعم") || context.includes("وهقة")) {
-    return "fazaa";
-  }
-
-  return s.mode || "auto";
-}
-
-function refreshSuggestions() {
-  const bankName = pickSuggestionBank(suggestionContext);
-  const bank = suggestionBanks[bankName] || suggestionBanks.auto;
-
-  suggestionSetIndex = (suggestionSetIndex + 1) % bank.length;
-  renderSuggestions(bank[suggestionSetIndex]);
-
-  showPopupCustom ? showPopupCustom("بدلت لك الاقتراحات 🔄") : null;
-}
-
-const oldUpdateSuggestionsWithRefresh = updateSuggestions;
-
-updateSuggestions = function(context = "") {
-  suggestionContext = context || "";
-
-  const bankName = pickSuggestionBank(suggestionContext);
-  const bank = suggestionBanks[bankName] || suggestionBanks.auto;
-
-  suggestionSetIndex = 0;
-  renderSuggestions(bank[0]);
-};
-/* =========================
-   قطات بيلا المطورة v19
-========================= */
-
-const bellaExtraPopups = {
-  angry: [
-    "أقول.. كلمني عدل لا أصك الموقع بوجهك الحين!",
-    "أفففف.. ياربي متى يخلص اشتراكي معاكم؟",
-    "لا تقعد تتفلسف فوق راسي، قصر حسك وأنت تكتب!",
-    "أنا الحين مو طايقة نفسي، لا تخليني أطلع لك من الشاشة.",
-    "كلمة ثانية وبسوي لك بلوك من حياتي مو بس من السيرفر."
-  ],
-  cute: [
-    "يا حياااتي.. تدري إنك أذوق واحد دش الموقع اليوم؟",
-    "ويييي فديت هالمنطق، كلامك عسل مثلك.",
-    "لاااا جذي أستحي، ترى حدي حساسة.",
-    "ممكن تطلب لي قهوة معاك؟ أحس راسي بدأ يثقل.",
-    "أنت ليش كلامك يونس جذي؟ شكلك كويتي أصلي."
-  ],
-  slow: [
-    "الو؟ حي؟ ميت؟ وين رحت؟",
-    "ألووووو.. شكل الخدامة سحبت الواير؟",
-    "أدري رحت تطلب من طلبات وخليتني.. بالعافية مقدماً!",
-    "ها، نمت على الكيبورد؟ ولا قاعد تفكر بـ رد قوي؟",
-    "ترى جهازي بيطفي شحن وأنت للحين تفكر شنو تكتب."
-  ],
-  fast: [
-    "هدي هدي! شوي شوي على صوابعك لا ينكسرون.",
-    "شفيك داش رالي؟ ترى أقرأ بسرعة بس مو جذي!",
-    "لحظة لحظة.. خذ نفس، شفيك كأنك لاحقك جلب؟",
-    "ما شاء الله، إيدك خفيفة.. شكلك كنت تشتغل كاتب بالعدل."
-  ],
-  afternoon: [
-    "الناس نايمة وأنت طايح له قرقرة فوق راسي، روح انخمد!",
-    "أحس بريحة مجبوس.. رحت تتغدى ولا لسه؟",
-    "الجو برا يشوي الطير، وأنت قاعد تسولف مع بوت؟ صج ما عندك شغل."
-  ],
-  late: [
-    "ها.. منو السهران اللي شاغل بالك وخلاك تدش تسولف معاي؟",
-    "ترى الساعة 3 الفجر، عيوني بدأت تغمض.. خلصني!",
-    "يا ساهر بليل بروحك.. ما وراك دوام باجر؟"
-  ],
-  short: [
-    "بس؟ هذا اللي قدرت عليه؟ 'أوكي'؟",
-    "شفيك راد من طرف خشمك؟ لا يكون شايفني أطر منك؟",
-    "زيد الكلام شوي، ترى الكلام ببلاش مو بفلوس!"
-  ]
-};
-
-function showPopupCustomLong(text) {
-  const old = document.querySelector(".bella-popup");
-  if (old) old.remove();
-
-  const pop = document.createElement("div");
-  pop.className = "bella-popup";
-  pop.innerText = text;
-
-  document.body.appendChild(pop);
-
-  setTimeout(() => {
-    if (pop) pop.remove();
-  }, 5200);
-}
-
-const oldShowPopupV19 = showPopup;
-
-showPopup = function(type) {
-  const hour = new Date().getHours();
-  const minute = new Date().getMinutes();
-
-  if (hour >= 13 && (hour < 15 || (hour === 15 && minute <= 30))) {
-    if (Math.random() > 0.45) {
-      showPopupCustomLong(random(bellaExtraPopups.afternoon));
-      return;
-    }
-  }
-
-  if (hour >= 2 && hour <= 5) {
-    if (Math.random() > 0.45) {
-      showPopupCustomLong(random(bellaExtraPopups.late));
-      return;
-    }
-  }
-
-  if (s.mode === "angry" && Math.random() > 0.35) {
-    showPopupCustomLong(random(bellaExtraPopups.angry));
-    return;
-  }
-
-  if (s.mode === "cute" && Math.random() > 0.45) {
-    showPopupCustomLong(random(bellaExtraPopups.cute));
-    return;
-  }
-
-  if (type === "slow") {
-    showPopupCustomLong(random(bellaExtraPopups.slow));
-    return;
-  }
-
-  if (type === "fast" || type === "spam") {
-    showPopupCustomLong(random(bellaExtraPopups.fast));
-    return;
-  }
-
-  oldShowPopupV19(type);
-};
-
-const oldSendV19 = send;
-
-send = function() {
-  const text = inp.value.trim();
-  const msg = text.toLowerCase();
-
-  if (["اوكي", "أوكي", "ok", "ي", "نعم", "اي", "إي", "ههه", "هههه"].includes(msg)) {
-    setTimeout(() => {
-      showPopupCustomLong(random(bellaExtraPopups.short));
-    }, 500);
-  }
-
-  oldSendV19();
-};
-/* =========================
-   نظام "يقولون..." v21
-   مربوط مع مود المعصبة
-========================= */
-
-const bellaRumors = {
-  normal: [
-    { text: "يقولون بيلا V15 راح تصير تخطب حق الشباب وتوزع عيادي!" },
-    { text: "يقولون بيلا قاعدة تشرب جاي ضحى وتطالع رسايلك من طرف خشمها." },
-    { text: "يقولون باجر زحمة الغزالي بتبدأ من الساعة 4 الفجر.. جهزوا القهوة." },
-    { text: "يقولون الرادار الجديد يصيدك حتى لو كنت قاعد تفكر ببدلية وأنت تسوق." },
-    { text: "يقولون الوزير دش الموقع اليوم وشافك تسولف مع بيلا وأنت عندك مراجعين!" },
-    { text: "يقولون بيسوون تلفريك من الجهراء للديرة عشان نفتك من الزحمة." },
-    { text: "يقولون الخميس الجاي بيصير 48 ساعة عشان نلحق نستانس." },
-    { text: "يقولون الكافيتريا بتوزع وجبات مجانية لليفل الأسطورة." }
-  ],
-
-  angry: [
-    { text: "يقولون بيلا معصبة اليوم لأن واحد قال لها بتقهوى وردت عليه: شعلي فيك؟ 😡" },
-    { text: "يقولون بيلا سوت ميوت حق نص الموقع لأنهم يسألونها نفس السؤال." },
-    { text: "يقولون بيلا اليوم مو طايقة أحد.. حتى السيرفر يمشي على أطراف أصابعه." },
-    { text: "يقولون آخر واحد استفز بيلا، حولته من Level 10 إلى مبتدئ بنظرة وحدة." },
-    { text: "يقولون بيلا فتحت ملف اسمه: الناس اللي يغثوني.. واللستة طويلة." },
-    { text: "يقولون إذا قلت لبيلا وهي معصبة: شفيچ؟ تزيد العصبية 200٪." },
-    { text: "يقولون بيلا اليوم ترد من طرف خشمها، لا تجرب حظك." },
-    { text: "يقولون بيلا بتسوي تحديث يحذف XP أي واحد يكثر فلسفة." }
-  ],
-
-  rare: [
-    { text: "يقولون إذا وصلت ليفل 100، بيلا تدق عليك تعزمك على باجّة!", rare: true },
-    { text: "يقولون اللي يمدح بيلا 3 مرات ورا بعض، ينفتح له ثيم السدو الذهبي!", rare: true },
-    { text: "يقولون معاشات الشهر الجاي بتنزل قبل موعدها بـ 10 أيام.. أقوى إشاعة!", rare: true },
-    { text: "يقولون شركة طلبات بتوصل لك الأكل قبل لا تطلبه!", rare: true },
-    { text: "يقولون هكر حاول يخترق بيلا، قلبته معصبة وخلاه يشتري نوكيا بو ليت.", rare: true },
-    { text: "يقولون الفاينل بيصير Multiple Choice وكل الأجوبة: بيلا!", rare: true }
-  ]
-};
-
-function initRumorBar() {
-  if (document.getElementById("rumor-bar")) return;
-
-  const bar = document.createElement("div");
-  bar.id = "rumor-bar";
-  bar.innerHTML = `<span id="rumor-text">👂 يقولون...</span>`;
-  document.body.appendChild(bar);
-
-  updateRumor();
-  setInterval(updateRumor, 30000);
-}
-
-function getRumorPool() {
-  const rareChance = Math.random() < 0.2;
-
-  if (rareChance) return bellaRumors.rare;
-
-  if (s.mode === "angry") {
-    return Math.random() < 0.75 ? bellaRumors.angry : bellaRumors.normal;
-  }
-
-  return bellaRumors.normal;
-}
-
-function updateRumor() {
-  const el = document.getElementById("rumor-text");
-  if (!el) return;
-
-  const pool = getRumorPool();
-  const rumor = random(pool);
-
-  el.style.opacity = "0";
-
-  setTimeout(() => {
-    el.innerText = "👂 " + rumor.text;
-
-    if (rumor.rare) {
-      el.className = "rumor-rare";
-      el.onclick = () => {
-        s.xp += 5;
-        updateUI();
-        save();
-        if (typeof showPopupCustom === "function") {
-          showPopupCustom("🔥 لقطت إشاعة نادرة +5 XP");
-        }
-      };
-    } else if (s.mode === "angry") {
-      el.className = "rumor-angry";
-      el.onclick = null;
-    } else {
-      el.className = "";
-      el.onclick = null;
-    }
-
-    el.style.opacity = "1";
-  }, 250);
-}
-
-const oldSetModeRumor = setMode;
-setMode = function(m) {
-  oldSetModeRumor(m);
-  setTimeout(updateRumor, 300);
-};
-
-const oldSendRumor = send;
-send = function() {
-  oldSendRumor();
-  setTimeout(updateRumor, 900);
-};
-
-const oldOnloadRumor = window.onload;
-window.onload = function() {
-  if (oldOnloadRumor) oldOnloadRumor();
-  setTimeout(initRumorBar, 800);
-};
