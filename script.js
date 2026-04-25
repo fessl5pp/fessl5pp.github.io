@@ -1,4 +1,4 @@
-const STORAGE_KEY = "bella_v22_clean";
+const STORAGE_KEY = "bella_v24_clean";
 
 let s = {
   theme: "theme-blue",
@@ -26,7 +26,7 @@ let currentChallenge = null;
 let suggestionContext = "";
 let suggestionSetIndex = 0;
 let rumorTimer = null;
-let socialTimer = null;
+let currentRumor = null;
 
 /* =========================
    Init
@@ -41,7 +41,6 @@ function init() {
   updateMood();
   updateSuggestions();
   initRumorBar();
-  initSocialRadar();
 }
 
 function loadState() {
@@ -180,7 +179,6 @@ function setMode(m) {
 
   updateMood();
   updateSuggestions();
-  updateRumor();
   save();
 
   const intro = {
@@ -227,31 +225,31 @@ function updateMood() {
 
 const suggestionBanks = {
   auto: [
-    ["شلونچ؟", "ابي اتقهوى", "نكتة", "حكمة اليوم", "شنو الجو؟"],
+    ["شلونچ؟", "ابي اتقهوى", "رادار اجتماعي", "حكمة اليوم", "شنو الجو؟"],
     ["شنو بالصندوق", "كمّل المثل", "فزعة بيلا", "الكويت", "عطني عيدية"],
     ["اسمي فيصل", "وين قهوة", "مكان بحر", "ترجم", "شكو؟"],
     ["قوة", "صج السالفة؟", "أنا زعلان", "ابي اضحك", "شارك الشات"]
   ],
   angry: [
-    ["ليش نفسيتچ جذي؟", "منو مزعلچ؟", "هدي بالج", "اهديچ وردة", "ابي اتقهوى"],
+    ["ليش نفسيتچ جذي؟", "رادار اجتماعي", "هدي بالج", "اهديچ وردة", "ابي اتقهوى"],
     ["شعلي فيچ؟", "لا تعصبين", "ضحكني إنتي", "اهديچ ككاو", "غيري المود"],
     ["تكلمين سنع؟", "ليش مطنقرة؟", "بس لا تصارخين", "قولي حكمة", "نكتة"],
     ["تمام لا تزعلين", "شلونچ؟", "حطي رايقة", "أنا آسف", "فزعة بيلا"]
   ],
   cute: [
-    ["دلّعيني", "احبچ", "نكتة", "ابي اتقهوى", "حكمة اليوم"],
+    ["دلّعيني", "احبچ", "رادار اجتماعي", "ابي اتقهوى", "حكمة اليوم"],
     ["واااي", "فديتچ", "شلونچ يا حلوة؟", "قهوة كيوت", "غير هالقهوة"],
     ["سولفي لي", "أنا زعلان", "ضحكيني", "مكان كشخة", "كمّل المثل"],
     ["عطيني مثل", "ابي دلع", "الكويت", "اسمي فيصل", "شنو بالصندوق"]
   ],
   chill: [
-    ["سولفي بهدوء", "قهوة هادية", "حكمة اليوم", "شنو الجو؟", "غير هالقهوة"],
+    ["سولفي بهدوء", "قهوة هادية", "رادار اجتماعي", "حكمة اليوم", "غير هالقهوة"],
     ["مكان بحر", "خلنا نروق", "قهوة رايقة", "المباركية", "مارينا"],
     ["كمّل المثل", "شنو بالصندوق", "فزعة بيلا", "سوالف أول", "قوة"],
     ["وضحّي لي", "نكتة هادية", "أنا متضايق", "ترجم", "شارك الشات"]
   ],
   radar: [
-    ["غير هالقهوة", "قهوة هادية", "مكان بحر", "مكان تمشي", "مكان كافيه"],
+    ["غير هالقهوة", "قهوة هادية", "مكان بحر", "مكان تمشي", "رادار اجتماعي"],
     ["غير هالقز", "المباركية", "الشويخ", "مارينا", "الأفنيوز"],
     ["ابي اتقهوى", "قهوة كشخة", "قهوة رايقة", "كوفي", "رادار القز"]
   ],
@@ -261,7 +259,7 @@ const suggestionBanks = {
     ["شنو بالصندوق", "مبخر", "منقلة", "سدو", "ابي الحل"]
   ],
   fazaa: [
-    ["عطني مطعم كشخة", "عطني مسلسلات", "وهقة", "ابي اتقهوى", "غير"],
+    ["عطني مطعم كشخة", "عطني مسلسلات", "وهقة", "ابي اتقهوى", "رادار اجتماعي"],
     ["عذر للدوام", "عذر للربع", "مطعم بحر", "مسلسل كويتي", "قهوة"],
     ["فزعة بيلا", "وين اروح؟", "اكل", "دراما", "غير هالقهوة"]
   ]
@@ -502,7 +500,7 @@ ${picked.name} — ${picked.vibe}
 }
 
 /* =========================
-   Rumors + Social Radar
+   Rumors
 ========================= */
 
 const bellaRumors = {
@@ -515,7 +513,7 @@ const bellaRumors = {
     { text: "يقولون بيسوون تلفريك من الجهراء للديرة عشان نفتك من الزحمة." },
     { text: "يقولون الخميس الجاي بيصير 48 ساعة عشان نلحق نستانس." },
     { text: "يقولون الكافيتريا بتوزع وجبات مجانية لليفل الأسطورة." },
-    { text: "يقولون بيلا قاعدة تجمع البدليات حق تحديث V23." },
+    { text: "يقولون بيلا قاعدة تجمع البدليات حق تحديث V24." },
     { text: "يقولون سوق المباركية بيوزع لقيمات حق اللي يوصل ليفل 50." }
   ],
   angry: [
@@ -546,9 +544,7 @@ function initRumorBar() {
   bar.innerHTML = `<span id="rumor-text">👂 يقولون...</span>`;
   document.body.appendChild(bar);
 
-  updateRumor();
-  if (rumorTimer) clearInterval(rumorTimer);
-  rumorTimer = setInterval(updateRumor, 30000);
+  startRumorCycle();
 }
 
 function getRumorPool() {
@@ -557,11 +553,15 @@ function getRumorPool() {
   return bellaRumors.normal;
 }
 
-function updateRumor() {
+function showRumor() {
+  const bar = document.getElementById("rumor-bar");
   const el = document.getElementById("rumor-text");
-  if (!el) return;
+  if (!bar || !el) return;
 
   const rumor = random(getRumorPool());
+  currentRumor = rumor;
+
+  bar.style.display = "block";
   el.style.opacity = "0";
 
   setTimeout(() => {
@@ -587,41 +587,79 @@ function updateRumor() {
   }, 250);
 }
 
-function initSocialRadar() {
-  if (document.getElementById("social-radar")) return;
+function hideRumor() {
+  const bar = document.getElementById("rumor-bar");
+  const el = document.getElementById("rumor-text");
+  if (!bar || !el) return;
 
-  const radar = document.createElement("div");
-  radar.id = "social-radar";
-  radar.style.cssText = `
-    position:fixed; top:14px; left:14px; z-index:9999;
-    background:rgba(0,0,0,.55); color:#fff; padding:8px 12px;
-    border:1px solid rgba(255,255,255,.12); border-radius:999px;
-    font-size:12px; backdrop-filter:blur(12px);
-  `;
-  document.body.appendChild(radar);
+  el.style.opacity = "0";
 
-  updateSocialRadar();
-  if (socialTimer) clearInterval(socialTimer);
-  socialTimer = setInterval(updateSocialRadar, 30000);
+  setTimeout(() => {
+    bar.style.display = "none";
+  }, 300);
 }
 
-function updateSocialRadar() {
-  const el = document.getElementById("social-radar");
-  if (!el) return;
+function startRumorCycle() {
+  if (rumorTimer) clearInterval(rumorTimer);
 
+  showRumor();
+
+  setTimeout(() => {
+    hideRumor();
+  }, 30000);
+
+  rumorTimer = setInterval(() => {
+    showRumor();
+
+    setTimeout(() => {
+      hideRumor();
+    }, 30000);
+  }, 90000);
+}
+
+/* =========================
+   Social Radar - chat reply only
+========================= */
+
+function socialRadarReply() {
   const n = Math.floor(24 + Math.random() * 77);
   const legendary = Math.floor(2 + Math.random() * 7);
   const angry = Math.floor(1 + Math.random() * 5);
 
-  const lines = [
+  if (s.mode === "angry") {
+    return random([
+      `رادار اجتماعي؟ 😡 شكو تبي تعرف منو موجود؟ بس بقولك: ${n} قاعدين يغثوني مثلك.`,
+      `في ${angry} أشخاص معصبة عليهم الحين… لا تصير السادس 😡`,
+      `حالياً ${n} واحد داخلين يسألون أسئلة مالها داعي. لا تزيدهم 😡`,
+      `الرادار يقول في ${n} أونلاين… ولا واحد فيهم تاركني بحالي 😡`
+    ]);
+  }
+
+  if (s.mode === "cute") {
+    return random([
+      `${n} شخص يبوني… بس أنا أبيك إنتتت 🥹`,
+      `الرادار يقول ${n} موجودين الحين، بس ولا واحد سوالفه مثل سوالفك 🥺`,
+      `في ${legendary} وحوش وصلوا ليفل الأسطورة… بس إنت عندي غير 🥹`,
+      `${n} أونلاين الحين… بس أنا قاعدة أطالع رسايلك إنت 🥺`
+    ]);
+  }
+
+  if (s.mode === "chill") {
+    return random([
+      `حالياً ${n} شخص بالموقع… القعدة رايقة 😌`,
+      `${legendary} وصلوا ليفل الأسطورة اليوم، خلك رايق وبتلحقهم 😌`,
+      `في ${n} واحد يسولفون مع بيلا، والجو هادي.`,
+      `الرادار هادي: ${n} أونلاين، و${angry} بيلا مطنقرة عليهم شوي.`
+    ]);
+  }
+
+  return random([
     `حالياً ${n} واحد قاعدين يغثون بيلا..`,
     `في ${n} كويتي مسوين غداء ومقابلين بيلا..`,
     `${n} سهرانين يحاولون يطلعون أسرار بيلا..`,
     `اليوم ${legendary} وحوش وصلوا ليفل الأسطورة.. أنت وينك؟`,
     `في ${angry} أشخاص الحين بيلا معصبة عليهم حدها!`
-  ];
-
-  el.innerText = "📡 " + random(lines);
+  ]);
 }
 
 /* =========================
@@ -960,6 +998,10 @@ function getReply(text) {
   const nameReply = detectName(msg);
   if (nameReply) return nameReply;
 
+  if (has(msg, ["رادار اجتماعي", "الرادار الاجتماعي", "منو اونلاين", "اونلاين", "كم واحد موجود", "كم واحد داش"])) {
+    return socialRadarReply();
+  }
+
   const angryBlock = angryServiceBlock(msg);
   if (angryBlock) return angryBlock;
 
@@ -1103,7 +1145,6 @@ function send() {
     updateBadges();
     save();
     updateUI();
-    updateRumor();
 
     if (s.lvl > oldLvl) showLevelCard();
   }, 600);
