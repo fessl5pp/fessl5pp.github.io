@@ -2188,7 +2188,7 @@ async function askGemini(text) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        message: `
+    prompt: `
 Mode: ${s.mode}
 User: ${s.userName || "Unknown"}
 
@@ -2201,6 +2201,8 @@ Reply in Kuwaiti dialect based on mode:
 - chill = calm
 - auto = normal
 `
+})
+
       })
     });
 
