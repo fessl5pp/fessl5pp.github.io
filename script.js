@@ -2184,13 +2184,18 @@ async function askGemini(text) {
   try {
     const res = await fetch("/api/gemini", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-    prompt: `
-Mode: ${s.mode}
-User: ${s.userName || "Unknown"}
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        prompt: `انتِ بيلا، بوت كويتي ذكي. المود الحالي: ${s.mode}. ردي بلهجة كويتية قح. الرسالة: ${text}` 
+      }) // تم تغيير message إلى prompt لتطابق السيرفر
+    });
+    const data = await res.json();
+    return data.reply;
+  } catch (e) {
+    return "في مشكلة بالشبكة، جيك على الـ Vercel Logs يا فيصل 😅";
+  }
+}
+
 
 User message:
 ${text}
