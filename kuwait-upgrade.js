@@ -1,8 +1,21 @@
-/* Bella Kuwait Mega Upgrade v2 - smarter Kuwaiti add-on */
+/* Bella Kuwait Mega Upgrade v3 - balanced Kuwaiti smart mode */
 (function(){
   const KUWAIT_PACK = {
     greetings:["هلا والله 👋", "يا مرحبا ومسهلا", "حياك الله", "هلا بالذيب", "يا هلا فيك"],
     apologies:["مسموح يا بعد جبدي، لا تشيل هم 😌", "خلاص سامحتك، بس لا تعيدها ها؟", "ولا يهمك، الاعتذار من الذرابة."],
+    angryRefuse:[
+      "لا. مو كل ما قلت لي سوي ركضت لك 😡 رتب طلبك عدل بعدين أفكر.",
+      "ما راح أنفذ الحين، مزاجي مطفي. قولها بذوق يمكن ألين.",
+      "شفيك تأمر؟ أنا بيلا مو موظفة عندك. هات كلام سنع أول.",
+      "لا ترفع ضغطنا. طلبك مرفوض مؤقتًا لين تتكلم عدل.",
+      "أقول بسك أوامر، تراني معصبة اليوم وما أمشي على كيفك."
+    ],
+    angrySoft:[
+      "أفهمك بس لا تكثر فلسفة، عطِ الزبدة.",
+      "إي إي واضح، بس أسلوبك يبيله ترتيب.",
+      "سمعتك، لا تعيدها ثلاث مرات فوق راسي.",
+      "بجاوبك بس لا تتحمس وتسوّي فيها مدير."
+    ],
     jokes:[
       "واحد راح المباركية يبي يشتري هيبة.. قالوا له خلصت من أيام جده.",
       "كويتي قال بحط رجيم.. طلب دايت كولا مع مجبوس دياي كامل.",
@@ -10,13 +23,8 @@
       "زحمة الغزالي مو شارع.. اختبار صبر وقيادة أعصاب."
     ],
     proverbs:["اللي ما يعرف الصقر يشويه.", "على قد لحافك مد ريولك.", "من طق الباب سمع الجواب.", "الصبر مفتاح الفرج، بس مو بزحمة الدائري الرابع."],
-    compliments:["ذرب والله ✨", "أسلوبك كويتي قح", "يا بعد جبدي كلامك يونس", "عليك قبول مو طبيعي"],
-    restaurants:[
-      "مباركية: كباب وخبز إيراني وشاي مخدر، قعدة كويتية عدلة.",
-      "الواجهة البحرية: عشا خفيف ومشي، جو مرتب.",
-      "الشويخ: كافيهات مختصة وتصوير، حق طلعة كشخة.",
-      "الأفنيوز: قز ومطاعم، بس جهز نفسك للزحمة."
-    ],
+    compliments:["ذرب والله ✨", "أسلوبك كويتي قح", "كلامك يونس", "عليك قبول مو طبيعي"],
+    restaurants:["مباركية: كباب وخبز إيراني وشاي مخدر، قعدة كويتية عدلة.", "الواجهة البحرية: عشا خفيف ومشي، جو مرتب.", "الشويخ: كافيهات مختصة وتصوير، حق طلعة كشخة.", "الأفنيوز: قز ومطاعم، بس جهز نفسك للزحمة."],
     excuses:["عندي مراجعة ضرورية وبتأخر شوي.", "الطريق واقف من الزحمة وأنا بالطريج.", "صار ظرف عائلي بسيط وبعوضك اليوم.", "عندي مشوار مستعجل وبرد عليك أول ما أخلص."],
     advice:["اهدأ، خذ نفس، وفكر بالحل خطوة خطوة.", "لا ترد وأنت معصب، خلها تبرد شوي.", "رتب أولوياتك: المهم أول، والباقي لاحق."],
     slang:{"شكو":"ما العلاقة؟ أو شنو دخله؟", "اشدعوه":"الشي مو مستاهل أو مبالغ فيه.", "ذرب":"مرتب ومحترم وكلامه حلو.", "قز":"تمشية ومشاهدة الناس والأماكن.", "مطنقر":"متضايق أو معصب شوي.", "دقوس":"صلصة طماط/حارة مع العيش."}
@@ -27,6 +35,14 @@
   function say(text){ if(typeof addMsg === "function") addMsg(text,"bot"); else alert(text); }
   function normalize(t){return (t||"").trim().toLowerCase().replace(/[إأآ]/g,"ا").replace(/ة/g,"ه");}
   function reward(){ if(window.s){ s.xp=(s.xp||0)+12; s.messages=(s.messages||0)+1; if(typeof updateUI==="function") updateUI(); if(typeof save==="function") save(); } }
+  function withName(text){
+    const name=window.s && s.userName ? s.userName : "";
+    if(!name || Math.random()>0.28) return text;
+    const starts=[`${name}، `, `اسمع يا ${name}، `, `شوف ${name}، `];
+    return pick(starts)+text;
+  }
+
+  window.addNameFlavor = function(reply){ return withName(reply); };
 
   function installNameModal(){
     setTimeout(()=>{
@@ -34,7 +50,7 @@
       if(s.userName || localStorage.getItem("bella_name_asked_v2")==="yes") return;
       const overlay=document.createElement("div");
       overlay.className="name-setup";
-      overlay.innerHTML=`<div class="name-setup-card"><div class="name-flag">🇰🇼</div><h2>هلا فيك مع بيلا</h2><p>اكتب اسمك عشان بيلا تناديك فيه، وبعدها ما تلخبط بين كلامك واسمك.</p><input id="bellaNameInput" maxlength="18" placeholder="مثال: فيصل"><button id="bellaNameSave">دخول</button><button id="bellaNameSkip" class="skip">تخطي</button></div>`;
+      overlay.innerHTML=`<div class="name-setup-card"><div class="name-flag">🇰🇼</div><h2>هلا فيك مع بيلا</h2><p>اكتب اسمك عشان بيلا تناديك فيه أحيانًا بجملة مفيدة، مو كل رد.</p><input id="bellaNameInput" maxlength="18" placeholder="مثال: فيصل"><button id="bellaNameSave">دخول</button><button id="bellaNameSkip" class="skip">تخطي</button></div>`;
       document.body.appendChild(overlay);
       const input=overlay.querySelector("#bellaNameInput");
       setTimeout(()=>input.focus(),150);
@@ -52,13 +68,13 @@
   window.detectName = function(msg){
     const raw=(msg||"").trim();
     const t=normalize(raw);
-    if(includesAny(t,["انا اسف","انا آسف","انا اعتذر","اسف","آسف"])) return null;
+    if(includesAny(t,["انا اسف","انا اعتذر","اسف","آسف"])) return null;
     const patterns=[/^اسمي\s+(.{2,18})$/i,/^اسمي هو\s+(.{2,18})$/i,/^ناديني\s+(.{2,18})$/i,/^نادوني\s+(.{2,18})$/i,/^يدلعوني\s+(.{2,18})$/i];
     for(const p of patterns){
       const m=raw.match(p);
       if(m && m[1]){
         const name=m[1].trim().replace(/[؟?!.,،]/g,"").split(" ")[0].slice(0,18);
-        if(name){ s.userName=name; if(typeof save==="function") save(); return `تشرفنا يا ${name} 😌 من الحين بناديك باسمك.`; }
+        if(name){ s.userName=name; if(typeof save==="function") save(); return `تشرفنا يا ${name} 😌 من الحين بناديك باسمك، بس بميزان.`; }
       }
     }
     return null;
@@ -66,19 +82,23 @@
 
   function kuwaitAnswer(msg){
     const t=normalize(msg);
+    const angry=window.s && s.mode==="angry";
+    const isCommand=includesAny(t,["عطني","سوي","ابي","ابيك","اكتب","نفذ","قول","طلع","افتح","اختار","بدل","غير"]);
+    if(angry && isCommand && Math.random()<0.72) return pick(KUWAIT_PACK.angryRefuse);
+    if(angry && Math.random()<0.35) return pick(KUWAIT_PACK.angrySoft);
     if(includesAny(t,["انا اسف","اسف","اعتذر","سامحيني"])) return pick(KUWAIT_PACK.apologies);
-    if(includesAny(t,["كويتي", "الكويت", "لهجه", "كويتيه"])) return pick(KUWAIT_PACK.greetings)+"\nأنا بيلا الكويتية 🇰🇼 قول اللي تبيه وبرد عليك بذوق وسوالف أهل الديرة.";
+    if(includesAny(t,["كويتي", "الكويت", "لهجه", "كويتيه"])) return pick(KUWAIT_PACK.greetings)+"\nأنا بيلا الكويتية 🇰🇼 أرد عليك بذوق وسوالف أهل الديرة.";
     if(includesAny(t,["نكت", "ضحك", "نكته"])) return pick(KUWAIT_PACK.jokes);
     if(includesAny(t,["مثل", "حكمه", "مقوله"])) return pick(KUWAIT_PACK.proverbs);
     if(includesAny(t,["مطعم", "عشا", "غدا", "غداء", "اكل", "يوعان"])) return "اقتراحي لك: "+pick(KUWAIT_PACK.restaurants)+"\nتبيني شعبي ولا كشخة؟";
     if(includesAny(t,["عذر", "تصريفه", "اصرف", "دوام", "تاخير"])) return "فزعة بيلا 🚨\nقول: "+pick(KUWAIT_PACK.excuses);
     if(includesAny(t,["انصحيني", "نصيحه", "شنسوي", "وش اسوي"])) return pick(KUWAIT_PACK.advice);
-    if(includesAny(t,["مدح", "امدحيني", "امدحني"])) return pick(KUWAIT_PACK.compliments)+" يا بعد حيي.";
+    if(includesAny(t,["مدح", "امدحيني", "امدحني"])) return pick(KUWAIT_PACK.compliments);
     const slangKey = Object.keys(KUWAIT_PACK.slang).find(k=>t.includes(normalize(k)));
     if(slangKey) return `كلمة «${slangKey}» بالكويتي:\n${KUWAIT_PACK.slang[slangKey]}`;
     if(includesAny(t,["احبج", "احبچ", "احبك", "فديتج", "فديتچ"])) return "يا بعد جبدي 🥺 بس لا تكثر حچي حلو ترى أستحي.";
     if(includesAny(t,["زعلان", "ضايق", "مالي خلق", "متضايق"])) return "تعال، فضفض لي. لا تكتم بقلبك، ترى بيلا تسمعك بدون حكم 😌🇰🇼";
-    if(t.length>25 && t.includes("؟")) return "سؤالك واضح. خلني أجاوبك كويتي وباختصار: عطِ الموضوع خطوة خطوة، وقل لي أهم شي تبيه بالضبط وأنا أرتبه لك.";
+    if(t.length>25 && (t.includes("؟")||t.includes("?"))) return "سؤالك واضح. خلني أرتبه لك: عطِني أهم نقطة تبيها، وأنا أجاوبك خطوة خطوة.";
     return null;
   }
 
@@ -92,7 +112,7 @@
       if(el) el.value="";
       if(typeof addMsg==="function") addMsg(text,"user");
       reward();
-      setTimeout(()=>say(ans),220);
+      setTimeout(()=>say(withName(ans)),220);
       if(typeof updateSuggestions==="function") updateSuggestions(text);
       return;
     }
