@@ -916,6 +916,25 @@ function angryServiceBlock(msg) {
   return null;
 }
 
+/* دالة الاتصال بالذكاء الاصطناعي عبر Vercel */
+async function getAIReply(text) {
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: text,
+        mode: s.mode,
+        userName: s.userName
+      })
+    });
+    const data = await res.json();
+    return data.reply || "ما فهمت عدل، عيدها؟";
+  } catch (e) {
+    return "الواير معلق عندي الحين، جرب تسألني بعد شوي 😅";
+  }
+}
+
 function getReply(text) {
   const msg = text.toLowerCase().trim();
 
@@ -995,42 +1014,12 @@ function getReply(text) {
   const dict = dictionaryReply(msg);
   if (dict) return addNameFlavor(dict);
 
-  if (s.mode === "angry") {
-    return addNameFlavor(random([
-      "تكلم سنع.. لا أهفك ببلوك يطيرك للسادس!",
-      "هااا؟ شنو تبي بالضبط؟ اخلص 😡",
-      "لا تخليني أطلع من طوري 😡",
-      "لا تقعد تتفلسف فوق راسي."
-    ]));
-  }
-
-  if (s.mode === "cute") {
-    return addNameFlavor(random([
-      "ما فهمت بس أحب سوالفك 🥺",
-      "عيدها لي بطريقة أسهل يا لبييييه.",
-      "مممم وضح أكثر 🥺",
-      "أبي أفهمك بس عطيني تفاصيل."
-    ]));
-  }
-
-  if (s.mode === "chill") {
-    return addNameFlavor(random([
-      "تمام… كمل، أنا أسمعك 😌",
-      "وضح لي أكثر شوي.",
-      "خلنا ناخذها بهدوء.",
-      "فاهم عليك تقريبًا، عطيني تفاصيل أكثر."
-    ]));
-  }
-
-  return addNameFlavor(random([
-    "ما فهمت عليك عدل 😅 جرّب تقولها بطريقة ثانية.",
-    "وضح لي أكثر، شنو تقصد؟",
-    "عطني تفاصيل أكثر عشان أرد عليك صح.",
-    "إذا تبي قهوة اكتب: ابي اتقهوى ☕"
-  ]));
+  // إذا لم يتطابق مع أي رد جاهز، يُرجع null ليتم تحويله للذكاء الاصطناعي
+  return null;
 }
 
-function send() {
+/* تم تعديل الدالة لتصبح Async لانتظار رد الذكاء الاصطناعي */
+async function send() {
   const text = inp.value.trim();
   if (!text) return;
 
@@ -1042,10 +1031,15 @@ function send() {
 
   addMsg("يكتب...", "bot");
 
+  let reply = getReply(text);
+
+  // إذا لم يكن هناك رد محلي مسجل، نطلب الرد من الذكاء الاصطناعي
+  if (reply === null) {
+    reply = await getAIReply(text);
+  }
+
   setTimeout(() => {
     removeTyping();
-
-    const reply = getReply(text);
 
     if (reply) {
       addMsg(reply, "bot");
@@ -1063,7 +1057,7 @@ function send() {
     updateUI();
 
     if (s.lvl > oldLvl) showLevelCard();
-  }, 600);
+  }, 400);
 }
 
 /* Effects */
