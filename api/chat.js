@@ -31,7 +31,8 @@ export default async function handler(req, res) {
 ${modeInstruction}
 افهم اللهجات والأخطاء الإملائية والاختصارات والكلام المكتوب بطريقة غير واضحة، وحاول فهم المقصود من السياق بدل التوقف عند الكلمات الحرفية.
 إذا كان السؤال غير واضح تماماً، اسأل سؤال توضيحي قصير بدل اختراع معلومة.
-إذا كان المستخدم يسأل سؤالاً معرفياً، أجب بوضوح وباختصار، وإذا لم تكن متأكدة من معلومة قل إنك غير متأكدة.
+إذا كان المستخدم يسأل سؤالاً معرفياً أو يطلب نصيحة، أجب بشكل مفيد وواضح.
+إذا لم تكن متأكدة من معلومة، قولي إنك مو متأكدة.
 لا تدّعي أنك إنسانة حقيقية أو أنك تعرف أشياء عن المستخدم لم يقلها لك.
 خلي ردودك قصيرة ومناسبة للشات، عادةً من سطر إلى 4 أسطر، وتجنبي الفصحى الثقيلة.`;
 
@@ -46,7 +47,12 @@ ${modeInstruction}
         model: "gpt-5-mini",
         instructions,
         input: message,
-        max_output_tokens: 300
+        reasoning: { effort: "low" },
+        text: {
+          verbosity: "low",
+          format: { type: "text" }
+        },
+        max_output_tokens: 600
       })
     });
 
@@ -54,10 +60,29 @@ ${modeInstruction}
 
     if (!response.ok) {
       console.error("OpenAI API error:", data?.error?.message || response.status);
-      return res.status(502).json({ error: "فشل الاتصال بالذكاء الاصطناعي" });
+      return res.status(502).json({ error: data?.error?.message || "فشل الاتصال بالذكاء الاصطناعي" });
     }
 
-    const reply = data.output_text?.trim() || "ما قدرت أفهمها عدل، عيدها لي بطريقة ثانية؟ 😅";
+    const textParts = [];
+    for (const item of data.output || []) {
+      if (item?.type !== "message") continue;
+      for (const part of item.content || []) {
+        if (part?.type === "output_text" && typeof part.text === "string") {
+          textParts.push(part.text);
+        }
+      }
+    }
+
+    const reply = textParts.join("\n").trim();
+
+    if (!reply) {
+      console.error("OpenAI returned no text output", {
+        status: data.status,
+        incomplete: data.incomplete_details || null
+      });
+      return res.status(502).json({ error: "الذكاء الاصطناعي ما رجع نص، جرب مرة ثانية" });
+    }
+
     return res.status(200).json({ reply });
   } catch (error) {
     console.error("AI request failed:", error);
