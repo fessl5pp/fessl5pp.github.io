@@ -54,6 +54,31 @@
       : null;
   };
 
+  function getRecentHistory(currentText) {
+    const nodes = [...document.querySelectorAll("#box .m")];
+    const history = [];
+
+    for (const node of nodes) {
+      const text = (node.innerText || "").trim();
+      if (!text || text === "يكتب...") continue;
+
+      if (node.classList.contains("user")) {
+        history.push({ role: "user", content: text });
+      } else if (node.classList.contains("bot")) {
+        history.push({ role: "assistant", content: text });
+      }
+    }
+
+    // send() adds the current user message before calling getAIReply,
+    // so remove it here to avoid sending the same turn twice.
+    if (history.length) {
+      const last = history[history.length - 1];
+      if (last.role === "user" && last.content === currentText) history.pop();
+    }
+
+    return history.slice(-10);
+  }
+
   window.getAIReply = async function getAIReplyFixed(text) {
     try {
       const res = await fetch("/api/chat", {
@@ -65,7 +90,8 @@
         body: JSON.stringify({
           message: text,
           mode: window.s?.mode || (typeof s !== "undefined" ? s.mode : "auto"),
-          userName: window.s?.userName || (typeof s !== "undefined" ? s.userName : "")
+          userName: window.s?.userName || (typeof s !== "undefined" ? s.userName : ""),
+          history: getRecentHistory(text)
         })
       });
 
