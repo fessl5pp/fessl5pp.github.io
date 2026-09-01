@@ -4,6 +4,7 @@ const assert = require('assert');
 const read = file => fs.readFileSync(file, 'utf8');
 const mustExist = [
   'index.html',
+  'app.js',
   'script.js',
   'bella-context.js',
   'bella-routing.js',
@@ -26,6 +27,7 @@ assert.ok(!fs.existsSync('bella-send-guard.js'), 'obsolete bella-send-guard.js m
 assert.ok(!fs.existsSync('bella-personality.js'), 'duplicate bella-personality.js mood engine must stay deleted');
 
 const index = read('index.html');
+const app = read('app.js');
 const context = read('bella-context.js');
 const routing = read('bella-routing.js');
 const style = read('bella-style.js');
@@ -39,7 +41,7 @@ const build = read('build.js');
 const manifest = read('manifest.json');
 const sw = read('sw.js');
 
-assert.ok(index.includes('/app.js?v=11'), 'index.html must load the unified app.js bundle');
+assert.ok(index.includes('/app.js?v=11'), 'index.html must load the unified app.js entry');
 assert.ok(index.includes('/sw.js?v=11'), 'index.html must register the service worker once');
 assert.ok(index.includes('window.__bellaSubmit'), 'index.html must include the critical send recovery wrapper');
 assert.ok(index.includes('window.__bellaEmergencySend'), 'index.html must include direct API fallback for sending');
@@ -50,6 +52,11 @@ assert.ok(!index.includes('<script src="/script.js'), 'index.html must not load 
 assert.ok(!index.includes('<script src="/ai-fix.js'), 'index.html must not load obsolete ai-fix.js');
 assert.ok(!index.includes('<script src="/bella-vnext.js'), 'index.html must not load vNext directly');
 assert.ok(index.includes('id="quickSuggestions" hidden'), 'quick suggestions should remain hidden by default');
+
+assert.ok(app.includes('bella-style.js'), 'tracked app entry must know the style module');
+assert.ok(app.includes('bella-vnext.js'), 'tracked app entry must know the main conversation module');
+assert.ok(app.includes('window.__bellaBoot'), 'tracked app entry must expose boot completion');
+assert.ok(app.includes('?v=12'), 'tracked app entry must cache-bust source modules');
 
 assert.ok(/window\.send\s*=(?!=)/.test(vnext), 'vNext must own active send flow');
 assert.ok(/window\.getAIReply\s*=(?!=)/.test(vnext), 'vNext must own active AI reply flow');
@@ -96,8 +103,11 @@ assert.ok(ui.includes('randomSuggestions: false'), 'suggestions setting should d
 assert.ok(ui.includes('longContext: true'), 'long context setting should default to on');
 assert.ok(manifest.includes('"orientation": "any"'), 'PWA must allow tablet rotation');
 
-assert.ok(sw.includes('bella-pwa-v11-stable-1'), 'service worker cache must use the stabilization cache');
-assert.ok(sw.includes('/app.js?v=11'), 'service worker must cache the exact app asset requested by index.html');
+assert.ok(sw.includes('bella-pwa-v11-stable-2'), 'service worker cache must use the current stabilization cache');
+assert.ok(sw.includes('/app.js?v=11'), 'service worker must cache the exact app entry requested by index.html');
+for (const moduleName of ['script.js', 'bella-context.js', 'bella-routing.js', 'bella-style.js', 'bella-runtime.js', 'bella-vnext.js', 'bella-speed.js', 'bella-ui.js', 'bella-install.js']) {
+  assert.ok(sw.includes(`/${moduleName}?v=12`), `service worker must cache loader module ${moduleName}`);
+}
 assert.ok(sw.includes('request.mode === "navigate"'), 'offline HTML fallback must be navigation-only');
 assert.ok(!sw.includes("cached || caches.match(\"/index.html\")"), 'static assets must never fall back to index.html');
 
@@ -105,4 +115,4 @@ for (const moduleName of ['bella-context.js', 'bella-routing.js', 'bella-style.j
   assert.ok(build.includes(moduleName), `build.js must bundle ${moduleName}`);
 }
 
-console.log('Bella stabilization smoke tests passed: send flow, single mood owner, style learning, streamed context, cost guards, Safari safety, PWA fallback, Dira, and bundle wiring are valid.');
+console.log('Bella stabilization smoke tests passed: tracked boot entry, send flow, single mood owner, style learning, streamed context, cost guards, Safari safety, PWA fallback, Dira, and bundle wiring are valid.');
