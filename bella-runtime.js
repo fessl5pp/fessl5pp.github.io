@@ -5,8 +5,12 @@
   const API_TIMEOUT_MS = 18000;
   const RETRIES = 1;
 
+  function requestUrl(input) {
+    return typeof input === "string" ? input : (input && input.url) || "";
+  }
+
   function isGuardedUrl(input) {
-    const url = typeof input === "string" ? input : (input && input.url) || "";
+    const url = requestUrl(input);
     return url.startsWith("/api/chat") || url.startsWith("/api/dira");
   }
 
@@ -29,14 +33,31 @@
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
+  function enrichChatRequest(input, init = {}) {
+    if (!requestUrl(input).startsWith("/api/chat")) return init;
+    if (!window.BellaContext || typeof init.body !== "string") return init;
+
+    try {
+      const body = JSON.parse(init.body);
+      body.history = window.BellaContext.buildHistory(body.message, body.history);
+      body.recentReplies = window.BellaContext.getRecentReplies(body.recentReplies);
+      body.contextRepeat = window.BellaContext.repeatInfo(body.message);
+      return { ...init, body: JSON.stringify(body) };
+    } catch (error) {
+      console.warn("Bella context enrichment skipped:", error);
+      return init;
+    }
+  }
+
   async function guardedFetch(input, init = {}) {
     if (!isGuardedUrl(input)) return nativeFetch(input, init);
     if (navigator.onLine === false) return syntheticErrorResponse();
 
+    const preparedInit = enrichChatRequest(input, init);
     let lastError = null;
     for (let attempt = 0; attempt <= RETRIES; attempt++) {
       const controller = new AbortController();
-      const externalSignal = init.signal;
+      const externalSignal = preparedInit.signal;
       const abortFromOutside = () => controller.abort();
       if (externalSignal) {
         if (externalSignal.aborted) controller.abort();
@@ -45,7 +66,7 @@
       const timer = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
 
       try {
-        const response = await nativeFetch(input, { ...init, signal: controller.signal });
+        const response = await nativeFetch(input, { ...preparedInit, signal: controller.signal });
         clearTimeout(timer);
         externalSignal?.removeEventListener?.("abort", abortFromOutside);
 
@@ -207,7 +228,8 @@
     fetch: guardedFetch,
     isErrorText,
     retryBotMessage,
-    updateConnectionState
+    updateConnectionState,
+    enrichChatRequest
   });
 
   window.addEventListener("online", updateConnectionState);
