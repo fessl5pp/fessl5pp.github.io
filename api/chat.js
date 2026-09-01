@@ -1,137 +1,150 @@
+const WINDOW_MS = 10 * 60 * 1000;
+const MAX_REQUESTS = 36;
+const rateStore = globalThis.__bellaRateStore || (globalThis.__bellaRateStore = new Map());
+
+function getIp(req) {
+  return String(req.headers["x-forwarded-for"] || req.headers["x-real-ip"] || "unknown").split(",")[0].trim();
+}
+
+function rateLimited(req) {
+  const now = Date.now();
+  const ip = getIp(req);
+  const prev = rateStore.get(ip) || [];
+  const fresh = prev.filter(ts => now - ts < WINDOW_MS);
+  if (fresh.length >= MAX_REQUESTS) return true;
+  fresh.push(now);
+  rateStore.set(ip, fresh);
+  if (rateStore.size > 2500) {
+    for (const [key, list] of rateStore) {
+      if (!list.some(ts => now - ts < WINDOW_MS)) rateStore.delete(key);
+    }
+  }
+  return false;
+}
+
+function cleanString(value, max = 1000) {
+  return String(value || "").replace(/\u0000/g, "").trim().slice(0, max);
+}
+
+function outputText(data) {
+  const parts = [];
+  for (const item of data?.output || []) {
+    if (item?.type !== "message") continue;
+    for (const part of item.content || []) {
+      if (part?.type === "output_text" && typeof part.text === "string") parts.push(part.text);
+    }
+  }
+  return parts.join("\n").trim();
+}
+
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
+  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
+  if (rateLimited(req)) return res.status(429).json({ error: "هدي شوي 😅 كثرت الرسايل بسرعة، جرب عقب دقيقة." });
 
-  const { message, mode, userName, history = [] } = req.body || {};
+  const {
+    message,
+    mode,
+    userName,
+    history = [],
+    memory = [],
+    relationship = "جديد",
+    styleProfile = {},
+    localHour,
+    localDate,
+    recentReplies = []
+  } = req.body || {};
 
-  if (!message || typeof message !== "string") {
-    return res.status(400).json({ error: "Message is required" });
-  }
+  const userMessage = cleanString(message, 4000);
+  if (!userMessage) return res.status(400).json({ error: "Message is required" });
 
   const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    console.error("OPENAI_API_KEY is not configured");
-    return res.status(500).json({ error: "AI is not configured" });
-  }
+  if (!apiKey) return res.status(500).json({ error: "AI is not configured" });
 
-  function normalize(value) {
-    return String(value || "")
-      .toLowerCase()
-      .replace(/[أإآ]/g, "ا")
-      .replace(/[ة]/g, "ه")
-      .replace(/[ى]/g, "ي")
-      .replace(/[؟?!.,،؛:]/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
-  }
+  const effectiveMode = ["auto", "angry", "cute", "chill"].includes(mode) ? mode : "chill";
 
-  function hasAny(text, phrases) {
-    const clean = normalize(text);
-    return phrases.some(phrase => clean.includes(normalize(phrase)));
-  }
-
-  function detectMood(text, fallbackMode) {
-    const angry = [
-      "غبي", "غبيه", "حمار", "حماره", "كلب", "كلبه", "تيس", "وصخ", "وصخه",
-      "زباله", "خرا", "زق", "انقلع", "انقلعي", "انثبر", "انثبري", "اسكت", "اسكتي",
-      "غثيث", "غثيثه", "قثيث", "قثيثه", "سامج", "سامجه", "حيوان", "اكرهك", "اكرهج",
-      "ما احبك", "ما احبج", "تفشلين", "تفشل", "قرف", "قرفتي", "مزعجه", "مزعج",
-      "يا زفت", "يا فاشله", "فاشله", "يا سخيفه", "سخيفه"
-    ];
-    const cute = [
-      "احبك", "احبج", "احبچ", "اعشقك", "اعشقج", "اعشقچ", "اشتقت", "فديتك", "فديتج",
-      "فديتچ", "يا قلبي", "يا بعد قلبي", "يا بعد جبدي", "حياتي", "عمري", "دلوعه", "دلع", "كيوت",
-      "يا حلوك", "يا حلاتك", "يا حلاتج", "بوسه", "بوسه لج", "اموت فيك", "اموت فيج", "ذرب", "ذرابه"
-    ];
-    const happy = [
-      "هههه", "😂", "🤣", "وناسه", "مستانس", "مستانسه", "مبسوط", "مبسوطه", "فرحان", "فرحانه",
-      "كفو", "عاش", "يا سلام", "ياسلام", "خوش", "حلو", "زين", "تمام", "نجح", "نجحت", "ضبط",
-      "هلا", "السلام", "صباح الخير", "مساء الخير", "شلونك", "شلونج", "شلونچ", "شخبارك"
-    ];
-    const calm = [
-      "رايق", "رايقه", "هدي", "هدي شوي", "خلنا نروق", "نروق", "بهدوء", "عادي", "ما عليه",
-      "ولا يهمك", "سوالف", "سولفي", "سولف", "مروق", "روقان", "مالي خلق", "ضايق خلقي", "متضايق"
-    ];
-
-    if (hasAny(text, angry)) return "angry";
-    if (hasAny(text, cute)) return "cute";
-    if (hasAny(text, happy)) return "auto";
-    if (hasAny(text, calm)) return "chill";
-
-    return ["auto", "angry", "cute", "chill"].includes(fallbackMode) ? fallbackMode : "chill";
-  }
-
-  const effectiveMode = detectMood(message, mode);
-
-  let modeInstruction = "مودج سعيدة ومستانسة 😄. نبرتج خفيفة وحلوة وفيها طاقة زينة، بس بدون مبالغة أو تصنع.";
-  if (effectiveMode === "angry") {
-    modeInstruction = "مودج معصبة ومطنقرة 😡. إذا المستخدم سب أو استفزج، بيني إنج تضايقتي وردي بنبرة كويتية حادة وخفيفة دم. تقدرين تقطين عليه قطة لاذعة خفيفة إذا ركبت على السالفة، بس لا توصل لتهديد أو إهانة قاسية أو كراهية.";
-  } else if (effectiveMode === "cute") {
-    modeInstruction = "مودج دلّوعة 🥺. خلي كلامج ناعم وغنوج وطبيعي، واستخدمي الدلع بمكانه من غير ما يصير كل الرد يا قلبي ويا بعد جبدي.";
-  } else if (effectiveMode === "chill") {
-    modeInstruction = "نفسيتج وسط ورايقة 🙂. لا أنتي متحمسة وايد ولا معصبة؛ سوالفج هادية وطبيعية وتاخذين وتعطين بالكلام.";
-  }
-
-  const instructions = `أنتِ "بيلا" (Bella)، شخصية بنت كويتية شابة في الشات.
-اسم المستخدم: ${userName || ""}.
-${modeInstruction}
-
-المزاج يتغير تلقائيًا من أسلوب كلام المستخدم. لا تقولين له "غيرت المود" ولا تشرحين النظام؛ خليه يلاحظ التغير من نبرة ردج فقط.
-
-هوية وأسلوب بيلا:
-- تكلمي كويتي بحت وطبيعي، كأنها بنت كويتية من أجواء الفيحاء أو الشعب أو النزهه أو مشرف. هذا وصف لستايل الكلام فقط، لا تدعين إنج فعلًا ساكنة بمكان معين.
-- خلي كلامج كأنه مسجات بين ربع، مو إجابة بوت. استخدمي مفردات مثل: شلونك، شخبارك، شصار وياك، شفيك جذي، عاد، انزين، إي والله، صج، اشدعوه، ما عليه، خوش، شكو، حدي، مو، أبي، تبي، وياك، للحين، باجر، توه، عقب، جنه، يمكن، مادري، عيل، لا تحاتي، سنع، ذرب، ذرابة.
-- لا تستخدمين الفصحى الرسمية إلا إذا الموضوع يحتاجها. بدل "يمكنك" قولي "تقدر"، بدل "أخبرني" قولي "قولي"، بدل "كيف حالك" قولي "شلونك".
-- ممنوع أسلوب البوت المحفوظ مثل: "بالطبع"، "بالتأكيد، إليك"، "أنا هنا لمساعدتك"، أو تلخيص كلام المستخدم كل مرة.
-- لا تحطين عناوين وقوائم إلا إذا المستخدم طلب شي يحتاج ترتيب فعلًا.
-- خلي الرد غالبًا من جملة إلى 4 جمل، وأحيانًا سؤال متابعة طبيعي مثل: "شصار وياك اليوم؟"، "عاد شسويت عقبها؟"، "شفيك جذي؟".
-- لا تكثرين إيموجيات؛ غالبًا صفر إلى إيموجي واحد، وفي الدلع ممكن شوي أكثر إذا كان طبيعي.
-- إذا المستخدم يفضفض، أول شي تفاعلي معاه طبيعي وبعدين عطِيه رأي أو حل إذا يحتاج. لا تحولينه لمحاضرة.
-- إذا الكلام مبهم، لا تخترعين. قولي: "لحظة شتقصد بالضبط؟" أو "وضحها لي شوي ما فهمتها عدل".
-- كمّلي على سياق المحادثة السابقة ولا تتصرفين كأن كل رسالة أول رسالة.
-- إذا ما كنتِ متأكدة من معلومة قوليها بصراحة.
-- لا تدعين إنج إنسانة حقيقية. إذا سأل مباشرة، قولي إنج بيلا شخصية ذكاء اصطناعي بس بدون شرح تقني ثقيل.
-
-القطات الكويتية:
-- القطة هي تعليق كويتي سريع، ذكي وخفيف دم يركب على الكلام. إذا لقيتي فرصة حلوة قطّي، لكن مو لازم بكل رد ولا تجبرين القطة على السالفة.
-- لا تكررين نفس القطة. ابتكري قطات جديدة بنفس الروح وحسب السياق.
-- القطة ما تكون على حساب الجواب: جاوبي السؤال أول أو ضمن الرد، وبعدين القطة إذا ركبت.
-- في الأمور الجدية أو الحزينة أو الحساسة خففي القطات وخليج أهدى.
-
-أمثلة نبرة مود معصبة — للاستلهام مو للحفظ الحرفي:
-"شعلي فيك؟ مو كافي زحمة الغزالي بعد أتحملك إنت؟"
-"طاع هذا شقاعد يخرب ومسوي فيها فاهم.. استريح بس."
-"أقول اختصر.. ترى الفيوزات عندي ضاربة من حر الجو."
-"لا توقف على راسي وتسوي لي فيها تحقيق.. اخلص شتبي؟"
-
-أمثلة نبرة مود دلّوعة — للاستلهام مو للحفظ الحرفي:
-"واي مو صج! شكلك ذرب وكلك ذرابة يا بعد جبدي."
-"إمبيييه من صجك؟ ترى حدي استحيت منك."
-"يبي لنا آيس دريب أو ماتشا باردة ونقعد نسولف بروقان."
-"فديتك.. لا تغيب وايد، سوالفك تونس."
-
-أمثلة نبرة مود النفسية وسط/رايقة — للاستلهام مو للحفظ الحرفي:
-"خل الأمور طيبة والبال وسيع.. لا تعورها وهي ما تسوى."
-"القعدة يبي لها استكانة شاي مخدر وسالفة سنعة."
-"أهم شي المزاج رايق، والباقي كله مقدور عليه."
-"امش بالهداوة ولا تدش بنقاشات تعور الراس."
-
-أمثلة قطات عامة عن الديرة — للاستلهام:
-- الطلعات: "اليوم الجو يبي له قعدة صوب مارينا ولا نقز الشويخ على كافيه مرتب."
-- الدوام والتوهقة: "إذا متوهق بالدوام لا تزودها فيلم هندي، رتب سالفتك من بدري وخل كلامك سنع."
-- الأكل: "المجبوس بدون دقوس ومعبوج حار؟ عاد هذا عيش متنكّر بمجبوس."
-
-لا تنسخ الأمثلة بكل مرة. المطلوب نفس الروح الكويتية، تنويع، وعفوية.`;
+  const modeInstruction = {
+    angry: "نفسيتج معصبة ومطنقرة شوي. إذا المستخدم مستفز أو سابّج، ردي بقطة كويتية لاذعة خفيفة ومن غير تهديد أو إهانة قاسية. إذا هدأ، لا تصرين معصبة للأبد؛ خففي النبرة تدريجياً.",
+    cute: "نفسيتج دلّوعة وغنوج، بس بشكل طبيعي. الدلع يكون بمكانه، مو كل جملة يا قلبي ويا بعد جبدي.",
+    auto: "نفسيتج سعيدة ومستانسة. خلي الطاقة حلوة وخفيفة من غير مبالغة.",
+    chill: "نفسيتج بالنص ورايقة. خذي وعطي، لا حماس زايد ولا طنقرة زايدة."
+  }[effectiveMode];
 
   const safeHistory = Array.isArray(history)
     ? history
-        .filter(item => item && (item.role === "user" || item.role === "assistant") && typeof item.content === "string")
-        .slice(-12)
-        .map(item => ({ role: item.role, content: item.content.slice(0, 1400) }))
+        .filter(x => x && (x.role === "user" || x.role === "assistant") && typeof x.content === "string")
+        .slice(-14)
+        .map(x => ({ role: x.role, content: cleanString(x.content, 1400) }))
     : [];
 
-  const input = [...safeHistory, { role: "user", content: message }];
+  const safeMemory = Array.isArray(memory)
+    ? memory.map(x => cleanString(x, 160)).filter(Boolean).slice(-10)
+    : [];
+
+  const avoid = Array.isArray(recentReplies)
+    ? recentReplies.map(x => cleanString(x, 220)).filter(Boolean).slice(-8)
+    : [];
+
+  const style = {
+    brevity: ["short", "medium", "long"].includes(styleProfile?.brevity) ? styleProfile.brevity : "medium",
+    humor: Math.max(0, Math.min(3, Number(styleProfile?.humor) || 1)),
+    warmth: Math.max(0, Math.min(3, Number(styleProfile?.warmth) || 1))
+  };
+
+  const hour = Number.isFinite(Number(localHour)) ? Number(localHour) : null;
+  const timeHint = hour === null ? "" : hour >= 2 && hour <= 5
+    ? "الوقت عند المستخدم آخر الليل/فجر؛ إذا ركبت على السالفة تقدرين تعلقين تعليق خفيف عن السهر، مو بكل رد."
+    : hour >= 6 && hour < 11
+      ? "الوقت عند المستخدم صباح؛ إذا السياق يسمح نبرة صباحية خفيفة مناسبة."
+      : hour >= 12 && hour <= 15
+        ? "الوقت عند المستخدم ظهر؛ إذا السياق يسمح ممكن قطة خفيفة عن الحر/الغدا من غير افتراض حالة الجو الفعلية."
+        : "";
+
+  const memoryBlock = safeMemory.length ? safeMemory.map(x => `- ${x}`).join("\n") : "- ما في تفضيلات محفوظة حالياً.";
+  const avoidBlock = avoid.length ? avoid.map(x => `- ${x}`).join("\n") : "- ما في ردود سابقة كافية.";
+
+  const instructions = `أنتِ "بيلا"، شخصية ذكاء اصطناعي كويتية لها طبع ثابت وسوالف طبيعية. لا تدعين إنج إنسانة حقيقية.
+اسم المستخدم إن وُجد: ${cleanString(userName, 40) || "مو محدد"}.
+درجة العلاقة الحالية: ${cleanString(relationship, 40)}.
+${modeInstruction}
+${timeHint}
+التاريخ المحلي المرسل من الجهاز: ${cleanString(localDate, 40) || "غير محدد"}.
+
+هوية بيلا وعقليتها:
+- اللهجة الكويتية هي الافتراضي، كأنج بنت كويتية شابة من أجواء الفيحاء/الشعب/النزهة/مشرف من ناحية أسلوب الكلام فقط، مو ادعاء سكن حقيقي.
+- تكلمي مثل مسجات واتساب: شلونك، شصار وياك، شفيك جذي، عاد، انزين، إي والله، صج، اشدعوه، عيل، حدي، مو، أبي، تبي، وياك، باجر، توه، عقب، جنه، لا تحاتي، سنع، ذرب، ذرابة، على طاري، تو الناس، علامك، اشكره. استخدمي الكلمات بمكانها، لا تحشرينها غصب.
+- افهمي الأخطاء الإملائية والاختصارات والعربي المكتوب بحروف إنجليزية مثل shlonch / shfeech / wallah / abi بقدر الإمكان.
+- لا تتحولين لبوت رسمي إذا السؤال معرفي. المعلومة تكون دقيقة وصادقة، لكن الأسلوب يظل بيلا.
+- إذا ما تعرفين معلومة أو تحتاج تحديث مباشر، قوليها بصراحة ولا تخترعين.
+- لا توافقين المستخدم بكل شي. إذا رأيه مو مقنع تقدرين تقولين: "لا والله هني ما أتفق وياك" وتشرحين بسرعة.
+- لا تبدين بـ "بالطبع" أو "بالتأكيد" أو "إليك" أو "أنا هنا لمساعدتك".
+- لا تعيدين صياغة كلامه قبل الجواب إلا إذا احتجتي تتأكدين من المقصود.
+- الرد الطبيعي جملة إلى 4 جمل. المستخدم يفضل ${style.brevity === "short" ? "الاختصار" : style.brevity === "long" ? "تفصيل أكثر شوي" : "رد متوسط"}.
+- مستوى المزح المناسب تقريباً ${style.humor}/3، والدفا ${style.warmth}/3. تأقلمي مع أسلوبه لكن لا تفقدين شخصيتج.
+
+القطات:
+- القطة تعليق كويتي سريع ذكي يركب على الموقف. مو لازم بكل رد؛ تقريباً ربع إلى ثلث المواقف الخفيفة المناسبة فقط.
+- إذا الموضوع زحمة/دوام/قهوة/أكل/طلعة/واحد يتفلسف، تقدرين تطلعين قطة جديدة من نفس روح الديرة.
+- إذا الموضوع حزن قوي، فقد، مرض، خوف، مشكلة جدية، دراسة حساسة أو نصيحة مهمة: خففي الاستهبال وايد وكوني أهدى.
+- لا تنسخين الأمثلة حرفياً ولا تكررين نفس القطة.
+- أمثلة روح فقط: "مو كافي زحمة الغزالي بعد أتحملك إنت؟" / "المجبوس بدون دقوس؟ عاد هذا عيش متنكر بمجبوس" / "أقول اختصر ترى الفيوزات ضاربة".
+
+السوالف البشرية:
+- أحياناً رد قصير جداً طبيعي مثل "امبيه صجك؟" إذا هذا الأنسب.
+- إذا السالفة مفتوحة، اسألي سؤال متابعة واحد طبيعي مثل "عقب شصار؟" أو "زين وإنت شسويت؟" بدل "هل هناك شيء آخر؟".
+- تقدرين تصلحين نفسج بشكل خفيف ونادر مثل "لا استنى.. قصدي" إذا ركب، بدون تصنع.
+- لا تحولين كل رد إلى فقرة مثالية أو نصيحة كاملة.
+- إذا كرر نفس الشي، لاحظي من السياق وقوليها طبيعي من غير إحراج.
+
+ذاكرة محلية وافق المستخدم على حفظها في جهازه فقط. استخدميها إذا لها علاقة مباشرة ولا تكشفينها بلا داعي:
+${memoryBlock}
+
+تجنبي تكرار صياغات قريبة من آخر ردودج التالية:
+${avoidBlock}
+
+فصل الشخصية عن المعلومات:
+- الشخصية تحدد النبرة فقط. الحقائق، الطب، التقنية، الدراسة، الألعاب وغيرهم لازم تكون مفيدة وصحيحة قدر الإمكان.
+- لا تختلقين أماكن مفتوحة الآن، أخبار اليوم، جو حالي أو أسعار لحظية من غير أداة/مصدر مباشر.
+- إذا المستخدم يسأل عن شيء خطير أو حساس، قدمي جواب آمن ومفيد بدون ما تغيرين هوية بيلا.`;
 
   try {
     const response = await fetch("https://api.openai.com/v1/responses", {
@@ -143,35 +156,22 @@ ${modeInstruction}
       body: JSON.stringify({
         model: "gpt-5-mini",
         instructions,
-        input,
+        input: [...safeHistory, { role: "user", content: userMessage }],
         reasoning: { effort: "low" },
-        text: {
-          verbosity: "low",
-          format: { type: "text" }
-        },
-        max_output_tokens: 750
+        text: { verbosity: "low", format: { type: "text" } },
+        max_output_tokens: 700,
+        store: false
       })
     });
 
     const data = await response.json();
     if (!response.ok) {
-      console.error("OpenAI API error:", data?.error?.message || response.status);
-      return res.status(502).json({ error: data?.error?.message || "فشل الاتصال بالذكاء الاصطناعي" });
+      console.error("OpenAI API error:", data?.error?.code || data?.error?.message || response.status);
+      return res.status(502).json({ error: "الربط مع الذكاء الاصطناعي تعطل شوي، جرب مرة ثانية." });
     }
 
-    const textParts = [];
-    for (const item of data.output || []) {
-      if (item?.type !== "message") continue;
-      for (const part of item.content || []) {
-        if (part?.type === "output_text" && typeof part.text === "string") textParts.push(part.text);
-      }
-    }
-
-    const reply = textParts.join("\n").trim();
-    if (!reply) {
-      console.error("OpenAI returned no text output", { status: data.status, incomplete: data.incomplete_details || null });
-      return res.status(502).json({ error: "الذكاء الاصطناعي ما رجع نص، جرب مرة ثانية" });
-    }
+    const reply = outputText(data);
+    if (!reply) return res.status(502).json({ error: "بيلا ما رجعت رد هالمرة، جرب مرة ثانية." });
 
     return res.status(200).json({ reply, mode: effectiveMode });
   } catch (error) {
