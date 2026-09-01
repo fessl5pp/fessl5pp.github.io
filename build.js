@@ -20,19 +20,18 @@ const loaded = sources.map(([file, label]) => {
   return { file, label, source };
 });
 
-// Keep critical responsibilities owned by one modern module. The old
-// script.js still contains legacy function declarations, but only vNext is
-// allowed to publish the active browser handlers for these flows.
+// Critical active handlers must have one owner. Match actual assignments only,
+// not comparisons such as `window.updateMood === "function"`.
 const ownershipRules = [
-  { marker: 'window.send =', owner: 'bella-vnext.js', label: 'send flow' },
-  { marker: 'window.getAIReply =', owner: 'bella-vnext.js', label: 'AI reply flow' },
-  { marker: 'window.updateMood =', owner: 'bella-vnext.js', label: 'mood UI' },
-  { marker: 'window.fetch =', owner: 'bella-runtime.js', label: 'network guard' },
-  { marker: 'window.openBellaSettings =', owner: 'bella-ui.js', label: 'settings UI' }
+  { pattern: /window\.send\s*=(?!=)/, owner: 'bella-vnext.js', label: 'send flow' },
+  { pattern: /window\.getAIReply\s*=(?!=)/, owner: 'bella-vnext.js', label: 'AI reply flow' },
+  { pattern: /window\.updateMood\s*=(?!=)/, owner: 'bella-vnext.js', label: 'mood UI' },
+  { pattern: /window\.fetch\s*=(?!=)/, owner: 'bella-runtime.js', label: 'network guard' },
+  { pattern: /window\.openBellaSettings\s*=(?!=)/, owner: 'bella-ui.js', label: 'settings UI' }
 ];
 
 for (const rule of ownershipRules) {
-  const owners = loaded.filter(item => item.source.includes(rule.marker)).map(item => item.file);
+  const owners = loaded.filter(item => rule.pattern.test(item.source)).map(item => item.file);
   if (owners.length !== 1 || owners[0] !== rule.owner) {
     console.error(`Bella ownership validation failed for ${rule.label}. Expected ${rule.owner}; found: ${owners.join(', ') || 'none'}`);
     process.exit(1);
