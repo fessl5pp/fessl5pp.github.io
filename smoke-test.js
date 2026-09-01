@@ -15,6 +15,7 @@ const mustExist = [
   'bella-install.js',
   'api/chat.js',
   'api/dira.js',
+  'manifest.json',
   'sw.js'
 ];
 
@@ -22,6 +23,7 @@ for (const file of mustExist) {
   assert.ok(fs.existsSync(file), `Missing required Bella file: ${file}`);
 }
 assert.ok(!fs.existsSync('bella-send-guard.js'), 'obsolete bella-send-guard.js must stay deleted');
+assert.ok(!fs.existsSync('bella-personality.js'), 'duplicate bella-personality.js mood engine must stay deleted');
 
 const index = read('index.html');
 const context = read('bella-context.js');
@@ -34,6 +36,7 @@ const ui = read('bella-ui.js');
 const chatApi = read('api/chat.js');
 const diraApi = read('api/dira.js');
 const build = read('build.js');
+const manifest = read('manifest.json');
 const sw = read('sw.js');
 
 assert.ok(index.includes('/app.js?v=11'), 'index.html must load the unified app.js bundle');
@@ -67,6 +70,7 @@ assert.ok(build.includes('bella-style.js'), 'style-only adaptive module must be 
 
 assert.ok(context.includes('buildHistory'), 'context module must build smart history');
 assert.ok(context.includes('shouldUseAIForRepeat'), 'context module must detect repeated short messages');
+assert.ok(context.includes('recordTurn,'), 'context module must expose safe turn recording');
 assert.ok(style.includes('getStyleProfile'), 'style module must build an adaptive style profile');
 assert.ok(style.includes('Mood is owned by bella-vnext.js'), 'style module must not own Bella mood');
 assert.ok(!style.includes('s.mode ='), 'style module must never mutate Bella mood');
@@ -76,6 +80,7 @@ assert.ok(runtime.includes('consumeChatStream'), 'runtime must keep desktop stre
 assert.ok(runtime.includes('const API_TIMEOUT_MS = 30000'), 'browser timeout must exceed the server OpenAI timeout');
 assert.ok(runtime.includes('const RETRIES = 0'), 'paid POST requests must not auto-retry');
 assert.ok(speed.includes('isAppleSafari'), 'speed module must disable unstable Apple Safari streaming');
+assert.ok(speed.includes('BellaContext?.recordTurn?.("assistant", full)'), 'completed streamed replies must be persisted to context');
 
 assert.ok(chatApi.includes('stream: wantsStream'), 'chat API must support streaming when requested');
 assert.ok(chatApi.includes('OPENAI_TIMEOUT_MS = 25000'), 'chat API must keep a bounded OpenAI timeout');
@@ -89,6 +94,7 @@ assert.ok(diraApi.includes('AbortController'), 'Dira API must abort slow upstrea
 assert.ok(routing.includes('shouldUseAIForRepeat'), 'routing must escalate repeated short messages to AI');
 assert.ok(ui.includes('randomSuggestions: false'), 'suggestions setting should default to off');
 assert.ok(ui.includes('longContext: true'), 'long context setting should default to on');
+assert.ok(manifest.includes('"orientation": "any"'), 'PWA must allow tablet rotation');
 
 assert.ok(sw.includes('bella-pwa-v11-stable-1'), 'service worker cache must use the stabilization cache');
 assert.ok(sw.includes('/app.js?v=11'), 'service worker must cache the exact app asset requested by index.html');
@@ -99,4 +105,4 @@ for (const moduleName of ['bella-context.js', 'bella-routing.js', 'bella-style.j
   assert.ok(build.includes(moduleName), `build.js must bundle ${moduleName}`);
 }
 
-console.log('Bella stabilization smoke tests passed: send flow, single mood owner, style learning, cost guards, Safari safety, PWA fallback, context, Dira, and bundle wiring are valid.');
+console.log('Bella stabilization smoke tests passed: send flow, single mood owner, style learning, streamed context, cost guards, Safari safety, PWA fallback, Dira, and bundle wiring are valid.');
