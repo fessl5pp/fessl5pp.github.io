@@ -8,6 +8,7 @@ const sources = [
   ['bella-runtime.js', 'Network reliability and streaming runtime'],
   ['bella-vnext.js', 'Conversation mood memory and send flow'],
   ['bella-speed.js', 'Live reply rendering and perceived latency'],
+  ['bella-send-guard.js', 'Send button recovery and Safari safety'],
   ['bella-ui.js', 'Settings and chat controls'],
   ['bella-install.js', 'PWA install experience']
 ];
@@ -33,7 +34,8 @@ const ownershipRules = [
   { pattern: /window\.openBellaSettings\s*=(?!=)/, owner: 'bella-ui.js', label: 'settings UI' },
   { pattern: /window\.BellaContext\s*=(?!=)/, owner: 'bella-context.js', label: 'long context memory' },
   { pattern: /window\.BellaPersonality\s*=(?!=)/, owner: 'bella-personality.js', label: 'adaptive personality' },
-  { pattern: /window\.BellaSpeed\s*=(?!=)/, owner: 'bella-speed.js', label: 'streaming UI bridge' }
+  { pattern: /window\.BellaSpeed\s*=(?!=)/, owner: 'bella-speed.js', label: 'streaming UI bridge' },
+  { pattern: /window\.BellaSendGuard\s*=(?!=)/, owner: 'bella-send-guard.js', label: 'send recovery guard' }
 ];
 
 for (const rule of ownershipRules) {
@@ -57,4 +59,4 @@ try {
 
 fs.writeFileSync('app.js', bundle, 'utf8');
 console.log(`Bella bundle generated: app.js (${sources.length} modules, ${bundle.length} chars)`);
-console.log('Bella ownership validated: context/routing/personality/runtime/conversation/speed/UI are separated.');
+console.log('Bella ownership validated: context/routing/personality/runtime/conversation/speed/send-guard/UI are separated.');
