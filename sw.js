@@ -1,4 +1,4 @@
-const CACHE_NAME = "bella-pwa-v9";
+const CACHE_NAME = "bella-pwa-v10";
 const CORE = [
   "/",
   "/index.html",
@@ -35,8 +35,10 @@ self.addEventListener("fetch", event => {
   event.respondWith(
     fetch(request)
       .then(response => {
-        const copy = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(request, copy));
+        if (response && response.ok) {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(request, copy));
+        }
         return response;
       })
       .catch(() => caches.match(request).then(cached => cached || caches.match("/index.html")))
