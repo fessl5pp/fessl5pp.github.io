@@ -34,8 +34,8 @@
   <meta name="twitter:description" content="ذكاء اصطناعي كويتي يسولف وياك بمزاج وذاكرة وقطات.">
   <meta name="twitter:image" content="https://fessl5pp-github-io-fessl5pps-projects.vercel.app/api/icon?size=512">
 
-  <link rel="stylesheet" href="/style.css?v=10">
-  <link rel="stylesheet" href="/bella-vnext.css?v=10">
+  <link rel="stylesheet" href="/style.css?v=11">
+  <link rel="stylesheet" href="/bella-vnext.css?v=11">
   <style>
     #quickSuggestions[hidden],#bellaMoreMenu[hidden],#bellaConnectionState[hidden]{display:none!important}
     .bella-setting-row{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.08)}
@@ -132,9 +132,9 @@
   <div class="msg-box" id="box"></div>
   <div class="mode-panel"><div class="mode-head"><span>مزاج بيلا يتغير تلقائيًا وبشكل تدريجي</span><b id="mode-status">🙂 النفسية وسط</b></div></div>
   <div class="quick-suggestions" id="quickSuggestions" hidden aria-label="اقتراحات سريعة">
-    <button onclick="quickSend('شلونچ؟')">شلونچ؟</button><button onclick="quickSend('شنو تتذكرين عني؟')">شنو تتذكرين؟</button><button onclick="quickSend('ابي اتقهوى')">أبي أتقهوى</button><button onclick="quickSend('نكتة')">نكتة</button><button onclick="openDira()">شكو ماكو؟</button>
+    <button onclick="document.getElementById('inp').value='شلونچ؟';window.__bellaSubmit()">شلونچ؟</button><button onclick="document.getElementById('inp').value='شنو تتذكرين عني؟';window.__bellaSubmit()">شنو تتذكرين؟</button><button onclick="document.getElementById('inp').value='ابي اتقهوى';window.__bellaSubmit()">أبي أتقهوى</button><button onclick="document.getElementById('inp').value='نكتة';window.__bellaSubmit()">نكتة</button><button onclick="openDira()">شكو ماكو؟</button>
   </div>
-  <div class="input-area"><input id="inp" maxlength="4000" aria-label="رسالتك إلى بيلا" placeholder="اكتب لبيلا..."><button class="send" type="button" onclick="window.__bellaSubmit(event)" aria-label="إرسال الرسالة">إرسال</button></div>
+  <div class="input-area"><input id="inp" maxlength="4000" aria-label="رسالتك إلى بيلا" placeholder="اكتب لبيلا..."><button class="send" type="button" onclick="window.__bellaSubmit()" aria-label="إرسال الرسالة">إرسال</button></div>
 </div>
 
 <div class="modal hidden" id="themeModal"><div class="card"><h2>الثيم</h2><div class="theme-box"><div class="theme-swatch sw1" onclick="setTheme('theme-blue')" title="أزرق"></div><div class="theme-swatch sw2" onclick="setTheme('theme-pink')" title="وردي"></div><div class="theme-swatch sw3" onclick="setTheme('theme-gold')" title="ذهبي / قديم"></div><div class="theme-swatch sw4" onclick="setTheme('theme-night')" title="مود السهارى"></div></div><button class="ghost" onclick="hideTheme()">إغلاق</button></div></div>
@@ -143,7 +143,7 @@
   window.__openBella = function () { const win = document.getElementById('win'); if (win) win.classList.add('active'); };
   window.__closeBella = function () { const win = document.getElementById('win'); if (win) win.classList.remove('active'); };
 
-  window.__bellaEmergencyBusy = false;
+  window.__bellaSubmitBusy = false;
   window.__bellaBasicAdd = function (text, type) {
     if (typeof window.addMsg === 'function') return window.addMsg(text, type);
     const box = document.getElementById('box');
@@ -160,11 +160,10 @@
     if (last && (last.textContent || '').trim().indexOf('بيلا تكتب') === 0) last.remove();
   };
   window.__bellaEmergencySend = async function (text) {
-    if (window.__bellaEmergencyBusy || !text) return;
-    window.__bellaEmergencyBusy = true;
+    if (!text) return;
     const input = document.getElementById('inp');
     const btn = document.querySelector('.send');
-    if (btn) btn.removeAttribute('disabled');
+    if (btn) btn.disabled = true;
     try {
       window.__bellaRemoveBasicTyping();
       window.__bellaBasicAdd(text, 'user');
@@ -182,40 +181,41 @@
       window.__bellaRemoveBasicTyping();
       window.__bellaBasicAdd('النت أو الشات علق شوي، جرّب مرة ثانية.', 'bot');
     } finally {
-      window.__bellaEmergencyBusy = false;
-      if (btn) btn.removeAttribute('disabled');
+      if (btn) btn.disabled = false;
     }
   };
   window.__bellaSubmit = async function () {
+    if (window.__bellaSubmitBusy) return;
     const input = document.getElementById('inp');
     const text = (input && input.value || '').trim();
     if (!text) return;
+    window.__bellaSubmitBusy = true;
     const before = document.querySelectorAll('#box .m.user').length;
     const beforeValue = input.value;
     const btn = document.querySelector('.send');
-    if (btn) btn.removeAttribute('disabled');
-
-    if (typeof window.send === 'function') {
-      try { window.send(); } catch (error) { console.error('Bella primary send failed:', error); }
-      await new Promise(function (resolve) { setTimeout(resolve, 180); });
-      const accepted = document.querySelectorAll('#box .m.user').length > before || input.value !== beforeValue;
-      if (accepted) {
-        setTimeout(function () { if (btn) btn.removeAttribute('disabled'); }, 12000);
-        return;
+    if (btn) btn.disabled = true;
+    try {
+      if (typeof window.send === 'function') {
+        try { await window.send(); } catch (error) { console.error('Bella primary send failed:', error); }
+        const accepted = document.querySelectorAll('#box .m.user').length > before || input.value !== beforeValue;
+        if (accepted) return;
       }
+      await window.__bellaEmergencySend(text);
+    } finally {
+      window.__bellaSubmitBusy = false;
+      if (btn) btn.disabled = false;
     }
-    await window.__bellaEmergencySend(text);
   };
   document.addEventListener('keydown', function (event) {
     if (event.key !== 'Enter' || event.shiftKey || event.isComposing || event.target?.id !== 'inp') return;
     event.preventDefault();
-    window.__bellaSubmit(event);
+    window.__bellaSubmit();
   });
 </script>
-<script src="/app.js?v=10"></script>
+<script src="/app.js?v=11"></script>
 <script defer src="/_vercel/insights/script.js"></script>
 <script>
-  if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js?v=10', { updateViaCache: 'none' }).catch(function () {});
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js?v=11', { updateViaCache: 'none' }).catch(function () {});
 </script>
 </body>
 </html>
