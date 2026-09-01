@@ -315,69 +315,83 @@
   }
 
   window.send = async function vNextSend() {
-    if (sending) return;
+    if (sending) return false;
     const input = document.getElementById("inp");
     const text = (input?.value || "").trim();
-    if (!text) return;
+    if (!text) return false;
     if (text.length > 4000) {
       showToast("اختصرها شوي، الرسالة طويلة حيل 😅");
-      return;
+      return false;
     }
 
     sending = true;
     const sendBtn = document.querySelector(".send");
     if (sendBtn) sendBtn.disabled = true;
+    let typingVisible = false;
 
-    trackStyle(text);
-    learnFromText(text);
-    updateMoodFromText(text);
-    if (typeof handleTypingBehavior === "function") handleTypingBehavior(text);
-    if (typeof detectAvatarReaction === "function") detectAvatarReaction(text);
+    try {
+      trackStyle(text);
+      learnFromText(text);
+      updateMoodFromText(text);
+      if (typeof handleTypingBehavior === "function") handleTypingBehavior(text);
+      if (typeof detectAvatarReaction === "function") detectAvatarReaction(text);
 
-    addMsg(text, "user");
-    input.value = "";
-    showTyping();
+      addMsg(text, "user");
+      input.value = "";
+      showTyping();
+      typingVisible = true;
 
-    let reply = repeatedReply(text);
-    if (!reply && hasAny(text, ["شنو تتذكرين عني", "شنو حافظه عني", "ذاكرتج", "ذاكرتك"])) {
+      let reply = repeatedReply(text);
+      if (!reply && hasAny(text, ["شنو تتذكرين عني", "شنو حافظه عني", "ذاكرتج", "ذاكرتك"])) {
+        hideTyping();
+        typingVisible = false;
+        openMemoryPanel();
+        return true;
+      }
+      if (!reply && hasAny(text, ["انس كل شي", "انسي كل شي", "امسحي ذاكرتج", "امسح الذاكره"])) {
+        v.memory = [];
+        persist();
+        reply = "تم، مسحت الأشياء اللي كنت حافظتها عنك من هالجهاز.";
+      }
+      if (!reply && typeof getReply === "function") {
+        try { reply = getReply(text); } catch { reply = null; }
+      }
+      if (reply === null || reply === undefined) reply = await getAIReply(text);
+
+      const minDelay = Math.min(800, 180 + String(reply).length * 3);
+      await new Promise(r => setTimeout(r, minDelay));
       hideTyping();
-      openMemoryPanel();
+      typingVisible = false;
+      if (reply) await renderReply(reply, seriousText(text));
+
+      if (typeof s !== "undefined") {
+        const oldLvl = s.lvl || 1;
+        s.messages = (s.messages || 0) + 1;
+        s.xp = (s.xp || 0) + 10;
+        s.lvl = Math.floor(s.xp / 100) + 1;
+        if (typeof updateBadges === "function") updateBadges();
+        if (typeof updateUI === "function") updateUI();
+        if (s.lvl > oldLvl) {
+          if (typeof showLevelCard === "function") showLevelCard();
+          levelFx();
+        }
+        if (typeof save === "function") save();
+      }
+      updateMoodUI();
+      if (typeof updateSuggestions === "function") updateSuggestions(reply || text);
+      return true;
+    } catch (error) {
+      console.error("Bella send flow failed:", error);
+      if (typingVisible) {
+        try { hideTyping(); } catch {}
+        typingVisible = false;
+      }
+      try { addMsg("صار تعليق بسيط بالشات، جرّب ترسلها مرة ثانية.", "bot"); } catch {}
+      return false;
+    } finally {
       sending = false;
       if (sendBtn) sendBtn.disabled = false;
-      return;
     }
-    if (!reply && hasAny(text, ["انس كل شي", "انسي كل شي", "امسحي ذاكرتج", "امسح الذاكره"])) {
-      v.memory = [];
-      persist();
-      reply = "تم، مسحت الأشياء اللي كنت حافظتها عنك من هالجهاز.";
-    }
-    if (!reply && typeof getReply === "function") {
-      try { reply = getReply(text); } catch { reply = null; }
-    }
-    if (reply === null || reply === undefined) reply = await getAIReply(text);
-
-    const minDelay = Math.min(1000, 280 + String(reply).length * 5);
-    await new Promise(r => setTimeout(r, minDelay));
-    hideTyping();
-    if (reply) await renderReply(reply, seriousText(text));
-
-    if (typeof s !== "undefined") {
-      const oldLvl = s.lvl || 1;
-      s.messages = (s.messages || 0) + 1;
-      s.xp = (s.xp || 0) + 10;
-      s.lvl = Math.floor(s.xp / 100) + 1;
-      if (typeof updateBadges === "function") updateBadges();
-      if (typeof updateUI === "function") updateUI();
-      if (s.lvl > oldLvl) {
-        if (typeof showLevelCard === "function") showLevelCard();
-        levelFx();
-      }
-      if (typeof save === "function") save();
-    }
-    updateMoodUI();
-    if (typeof updateSuggestions === "function") updateSuggestions(reply || text);
-    sending = false;
-    if (sendBtn) sendBtn.disabled = false;
   };
 
   function ensureAudio() {
@@ -749,6 +763,5 @@
     }
     injectUI();
     refreshAchievements();
-    if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js?v=5").catch(() => {});
   });
 })();
