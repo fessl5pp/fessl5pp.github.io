@@ -1,4 +1,4 @@
-const CACHE_NAME = "bella-pwa-v5";
+const CACHE_NAME = "bella-pwa-v6";
 const CORE = [
   "/",
   "/index.html",
@@ -7,6 +7,7 @@ const CORE = [
   "/script.js",
   "/ai-fix.js",
   "/bella-vnext.js",
+  "/bella-install.js",
   "/manifest.json",
   "/favicon.svg"
 ];
