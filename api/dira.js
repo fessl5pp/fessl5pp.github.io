@@ -1,0 +1,72 @@
+function outputText(data) {
+  const parts = [];
+  for (const item of data?.output || []) {
+    if (item?.type !== "message") continue;
+    for (const part of item.content || []) {
+      if (part?.type === "output_text" && typeof part.text === "string") parts.push(part.text);
+    }
+  }
+  return parts.join("\n").trim();
+}
+
+function collectSources(data) {
+  const seen = new Set();
+  const sources = [];
+  for (const item of data?.output || []) {
+    if (item?.type !== "message") continue;
+    for (const part of item.content || []) {
+      for (const ann of part?.annotations || []) {
+        const url = ann?.url || ann?.url_citation?.url;
+        const title = ann?.title || ann?.url_citation?.title || "المصدر";
+        if (url && !seen.has(url)) {
+          seen.add(url);
+          sources.push({ title: String(title).slice(0, 100), url: String(url) });
+        }
+      }
+    }
+  }
+  return sources.slice(0, 4);
+}
+
+export default async function handler(req, res) {
+  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) return res.status(500).json({ error: "AI is not configured" });
+
+  const topic = String(req.body?.topic || "سوالف الديرة").slice(0, 300);
+
+  try {
+    const response = await fetch("https://api.openai.com/v1/responses", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: "gpt-5-mini",
+        tools: [{ type: "web_search_preview" }],
+        tool_choice: "auto",
+        input: `أعطني تحديثاً خفيفاً ومفيداً للكويت عن: ${topic}. ركز على فعاليات، أماكن، مطاعم/قهوة، رياضة أو ترندات اجتماعية الخفيفة المناسبة. تجنب السياسة والإشاعات والحوادث. استخدم معلومات حديثة من الويب. اكتب باللهجة الكويتية الطبيعية وبحد أقصى 5 نقاط قصيرة، ولا تختلق معلومة غير موجودة بالمصادر.`,
+        reasoning: { effort: "low" },
+        text: { verbosity: "low", format: { type: "text" } },
+        max_output_tokens: 800,
+        include: ["web_search_call.action.sources"],
+        store: false
+      })
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      console.error("Dira search error:", data?.error?.code || data?.error?.message || response.status);
+      return res.status(502).json({ error: "ما قدرت أجيب سوالف الديرة الحين." });
+    }
+
+    return res.status(200).json({
+      reply: outputText(data) || "ما لقيت شي يستاهل ينقال الحين.",
+      sources: collectSources(data)
+    });
+  } catch (error) {
+    console.error("Dira request failed:", error);
+    return res.status(500).json({ error: "تعذر تحديث سوالف الديرة." });
+  }
+}
