@@ -36,6 +36,15 @@
 
   <link rel="stylesheet" href="/style.css?v=5">
   <link rel="stylesheet" href="/bella-vnext.css?v=5">
+  <style>
+    .suggestion-drawer{flex-shrink:0;background:var(--panel);border-top:1px solid var(--line)}
+    .suggestion-drawer summary{list-style:none;cursor:pointer;padding:8px 14px;color:var(--muted);font-size:12px;font-weight:800;user-select:none}
+    .suggestion-drawer summary::-webkit-details-marker{display:none}
+    .suggestion-drawer summary::before{content:'＋ ';color:var(--accent)}
+    .suggestion-drawer[open] summary::before{content:'− '}
+    .suggestion-drawer:not([open]) .quick-suggestions{display:none}
+    .suggestion-drawer .quick-suggestions{border-top:0;padding-top:4px}
+  </style>
 </head>
 <body class="theme-blue">
 <div class="wrap">
@@ -91,9 +100,12 @@
   </div>
   <div class="msg-box" id="box"></div>
   <div class="mode-panel"><div class="mode-head"><span>مزاج بيلا يتغير تلقائيًا وبشكل تدريجي</span><b id="mode-status">🙂 النفسية وسط</b></div></div>
-  <div class="quick-suggestions" id="quickSuggestions">
-    <button onclick="quickSend('شلونچ؟')">شلونچ؟</button><button onclick="quickSend('شنو تتذكرين عني؟')">شنو تتذكرين؟</button><button onclick="quickSend('ابي اتقهوى')">أبي أتقهوى</button><button onclick="quickSend('نكتة')">نكتة</button><button onclick="openDira()">شكو ماكو؟</button>
-  </div>
+  <details class="suggestion-drawer">
+    <summary>اقتراحات سريعة</summary>
+    <div class="quick-suggestions" id="quickSuggestions">
+      <button onclick="quickSend('شلونچ؟')">شلونچ؟</button><button onclick="quickSend('شنو تتذكرين عني؟')">شنو تتذكرين؟</button><button onclick="quickSend('ابي اتقهوى')">أبي أتقهوى</button><button onclick="quickSend('نكتة')">نكتة</button><button onclick="openDira()">شكو ماكو؟</button>
+    </div>
+  </details>
   <div class="input-area"><input id="inp" maxlength="4000" placeholder="اكتب لبيلا..." onkeydown="if(event.key==='Enter') send()"><button class="send" onclick="send()">إرسال</button></div>
 </div>
 
