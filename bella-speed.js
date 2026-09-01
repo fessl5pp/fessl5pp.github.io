@@ -29,7 +29,17 @@
     return last && cleanNodeText(last).startsWith("بيلا تكتب") ? last : null;
   }
 
+  function isAppleSafari() {
+    const ua = navigator.userAgent || "";
+    const appleTouch = /iPad|iPhone|iPod/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    const safari = /Safari/i.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS|Chrome|Chromium|Edg/i.test(ua);
+    return appleTouch || safari;
+  }
+
   function supportsStreaming() {
+    // Safari/iPadOS had intermittent stuck-send behavior with the streamed proxy.
+    // Keep the normal JSON reply path there until the transport is proven stable.
+    if (isAppleSafari()) return false;
     return typeof ReadableStream !== "undefined" && typeof TextDecoder !== "undefined" && !!typingNode();
   }
 
@@ -137,7 +147,8 @@
     begin,
     delta,
     complete,
-    fail
+    fail,
+    isAppleSafari
   });
 
   if (document.readyState === "loading") {
