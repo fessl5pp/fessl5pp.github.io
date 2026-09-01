@@ -1,0 +1,28 @@
+{
+  "name": "Bella | بيلا الكويتية",
+  "short_name": "Bella",
+  "description": "سولف مع بيلا.. ذكاء اصطناعي كويتي بمزاج يتغير حسب كلامك، رادار قز وألعاب تراثية.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0c1018",
+  "theme_color": "#0c1018",
+  "lang": "ar-KW",
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
