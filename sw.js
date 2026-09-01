@@ -1,10 +1,12 @@
-const CACHE_NAME = "bella-pwa-v4";
+const CACHE_NAME = "bella-pwa-v5";
 const CORE = [
   "/",
   "/index.html",
   "/style.css",
+  "/bella-vnext.css",
   "/script.js",
   "/ai-fix.js",
+  "/bella-vnext.js",
   "/manifest.json",
   "/favicon.svg"
 ];
@@ -29,7 +31,6 @@ self.addEventListener("activate", event => {
 self.addEventListener("fetch", event => {
   const request = event.request;
   if (request.method !== "GET") return;
-
   const url = new URL(request.url);
   if (url.origin !== self.location.origin || url.pathname.startsWith("/api/")) return;
 
