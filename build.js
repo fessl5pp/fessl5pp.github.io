@@ -49,10 +49,12 @@ const bundle = loaded.map(({ file, label, source }) =>
 try {
   new Function(bundle);
 } catch (error) {
-  console.error('Bella bundle syntax/declaration validation failed:', error);
+  console.error('Bella combined source validation failed:', error);
   process.exit(1);
 }
 
-fs.writeFileSync('app.js', bundle, 'utf8');
-console.log(`Bella bundle generated: app.js (${sources.length} modules, ${bundle.length} chars)`);
+// app.js is a tracked, resilient static boot loader. Do not overwrite it here:
+// Vercel can execute vercel-build multiple times while compiling functions.
+// We validate the combined source in memory instead, keeping the deployed entry immutable.
+console.log(`Bella combined source validated (${sources.length} modules, ${bundle.length} chars)`);
 console.log('Bella ownership validated: context/routing/style/runtime/mood/send/speed/UI are separated.');
