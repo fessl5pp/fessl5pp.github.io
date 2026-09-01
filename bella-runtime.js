@@ -2,8 +2,8 @@
   "use strict";
 
   const nativeFetch = window.fetch.bind(window);
-  const API_TIMEOUT_MS = 18000;
-  const RETRIES = 1;
+  const API_TIMEOUT_MS = 30000;
+  const RETRIES = 0;
 
   function requestUrl(input) {
     return typeof input === "string" ? input : (input && input.url) || "";
@@ -188,7 +188,8 @@
   }
 
   // One network owner for Bella. Other modules keep using fetch normally,
-  // while this layer owns timeout/retry/offline/stream behavior for Bella APIs only.
+  // while this layer owns timeout/offline/stream behavior for Bella APIs only.
+  // Paid POST requests are never auto-retried; the user-facing retry button is explicit.
   window.fetch = guardedFetch;
 
   const errorPhrases = [
