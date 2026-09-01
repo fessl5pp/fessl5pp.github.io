@@ -34,16 +34,22 @@
   <meta name="twitter:description" content="ذكاء اصطناعي كويتي يسولف وياك بمزاج وذاكرة وقطات.">
   <meta name="twitter:image" content="https://fessl5pp-github-io-fessl5pps-projects.vercel.app/api/icon?size=512">
 
-  <link rel="stylesheet" href="/style.css?v=5">
-  <link rel="stylesheet" href="/bella-vnext.css?v=5">
+  <link rel="stylesheet" href="/style.css?v=6">
+  <link rel="stylesheet" href="/bella-vnext.css?v=6">
   <style>
-    .suggestion-drawer{flex-shrink:0;background:var(--panel);border-top:1px solid var(--line)}
-    .suggestion-drawer summary{list-style:none;cursor:pointer;padding:8px 14px;color:var(--muted);font-size:12px;font-weight:800;user-select:none}
-    .suggestion-drawer summary::-webkit-details-marker{display:none}
-    .suggestion-drawer summary::before{content:'＋ ';color:var(--accent)}
-    .suggestion-drawer[open] summary::before{content:'− '}
-    .suggestion-drawer:not([open]) .quick-suggestions{display:none}
-    .suggestion-drawer .quick-suggestions{border-top:0;padding-top:4px}
+    #quickSuggestions[hidden]{display:none!important}
+    .bella-setting-row{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.08)}
+    .bella-setting-row:last-of-type{border-bottom:0}
+    .bella-setting-copy{display:flex;flex-direction:column;gap:4px;text-align:right}
+    .bella-setting-copy b{font-size:14px}
+    .bella-setting-copy span{font-size:12px;color:var(--muted)}
+    .bella-switch{position:relative;display:inline-flex;width:50px;height:28px;flex:0 0 auto}
+    .bella-switch input{position:absolute;opacity:0;pointer-events:none}
+    .bella-switch-track{position:absolute;inset:0;border-radius:999px;background:#353b47;border:1px solid rgba(255,255,255,.1);transition:.2s}
+    .bella-switch-track::after{content:"";position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 2px 7px rgba(0,0,0,.35)}
+    .bella-switch input:checked + .bella-switch-track{background:var(--accent)}
+    .bella-switch input:checked + .bella-switch-track::after{transform:translateX(-22px)}
+    .bella-settings-note{font-size:11px;color:var(--muted);margin-top:12px;line-height:1.7}
   </style>
 </head>
 <body class="theme-blue">
@@ -65,6 +71,7 @@
     <div class="sub">مو بس تجاوبك — تتذكر سوالفك بهالجهاز، تفهم أسلوبك، ومزاجها يتغير معاك شوي شوي.</div>
     <div class="hero-actions">
       <button class="btn" onclick="(window.openChat || window.__openBella)()">دش سولف وياها ⚡</button>
+      <button class="ghost" onclick="openBellaSettings()">الإعدادات ⚙️</button>
       <button class="ghost" onclick="showTheme()">الثيم 🎨</button>
       <button class="ghost" onclick="dailyWisdom()">حكمة اليوم 🧿</button>
       <button class="ghost" onclick="startBoxGame()">شنو بالصندوق 🎁</button>
@@ -88,25 +95,23 @@
   <div class="header">
     <div class="left"><div class="avatar" id="chatAvatar">B</div><div class="title"><b>Bella</b><span id="chat-status">تو نعرف بعض · النفسية وسط</span></div></div>
     <div class="header-actions">
-      <button class="tiny" onclick="dailyWisdom()">🧿</button>
-      <button class="tiny" onclick="startBoxGame()">🎁</button>
-      <button class="tiny" onclick="startProverbGame()">🧠</button>
-      <button class="tiny" onclick="openFazaa()">🚨</button>
-      <button class="tiny" onclick="shareChat()">📸</button>
-      <button class="tiny" onclick="giveGift('rose')">🌹</button>
-      <button class="tiny" onclick="giveGift('choco')">🍫</button>
-      <button class="tiny" onclick="(window.closeChat || window.__closeBella)()">✕</button>
+      <button class="tiny" onclick="openBellaSettings()" aria-label="إعدادات بيلا" title="الإعدادات">⚙️</button>
+      <button class="tiny" onclick="dailyWisdom()" aria-label="حكمة اليوم" title="حكمة اليوم">🧿</button>
+      <button class="tiny" onclick="startBoxGame()" aria-label="لعبة شنو بالصندوق" title="شنو بالصندوق">🎁</button>
+      <button class="tiny" onclick="startProverbGame()" aria-label="لعبة كمل المثل" title="كمل المثل">🧠</button>
+      <button class="tiny" onclick="openFazaa()" aria-label="فزعة" title="فزعة">🚨</button>
+      <button class="tiny" onclick="shareChat()" aria-label="مشاركة المحادثة" title="مشاركة">📸</button>
+      <button class="tiny" onclick="giveGift('rose')" aria-label="إهداء وردة" title="وردة">🌹</button>
+      <button class="tiny" onclick="giveGift('choco')" aria-label="إهداء كاكاو" title="كاكاو">🍫</button>
+      <button class="tiny" onclick="(window.closeChat || window.__closeBella)()" aria-label="إغلاق الشات" title="إغلاق">✕</button>
     </div>
   </div>
   <div class="msg-box" id="box"></div>
   <div class="mode-panel"><div class="mode-head"><span>مزاج بيلا يتغير تلقائيًا وبشكل تدريجي</span><b id="mode-status">🙂 النفسية وسط</b></div></div>
-  <details class="suggestion-drawer">
-    <summary>اقتراحات سريعة</summary>
-    <div class="quick-suggestions" id="quickSuggestions">
-      <button onclick="quickSend('شلونچ؟')">شلونچ؟</button><button onclick="quickSend('شنو تتذكرين عني؟')">شنو تتذكرين؟</button><button onclick="quickSend('ابي اتقهوى')">أبي أتقهوى</button><button onclick="quickSend('نكتة')">نكتة</button><button onclick="openDira()">شكو ماكو؟</button>
-    </div>
-  </details>
-  <div class="input-area"><input id="inp" maxlength="4000" placeholder="اكتب لبيلا..." onkeydown="if(event.key==='Enter') send()"><button class="send" onclick="send()">إرسال</button></div>
+  <div class="quick-suggestions" id="quickSuggestions" hidden aria-label="اقتراحات سريعة">
+    <button onclick="quickSend('شلونچ؟')">شلونچ؟</button><button onclick="quickSend('شنو تتذكرين عني؟')">شنو تتذكرين؟</button><button onclick="quickSend('ابي اتقهوى')">أبي أتقهوى</button><button onclick="quickSend('نكتة')">نكتة</button><button onclick="openDira()">شكو ماكو؟</button>
+  </div>
+  <div class="input-area"><input id="inp" maxlength="4000" aria-label="رسالتك إلى بيلا" placeholder="اكتب لبيلا..." onkeydown="if(event.key==='Enter') send()"><button class="send" onclick="send()" aria-label="إرسال الرسالة">إرسال</button></div>
 </div>
 
 <div class="modal hidden" id="themeModal"><div class="card"><h2>الثيم</h2><div class="theme-box"><div class="theme-swatch sw1" onclick="setTheme('theme-blue')" title="أزرق"></div><div class="theme-swatch sw2" onclick="setTheme('theme-pink')" title="وردي"></div><div class="theme-swatch sw3" onclick="setTheme('theme-gold')" title="ذهبي / قديم"></div><div class="theme-swatch sw4" onclick="setTheme('theme-night')" title="مود السهارى"></div></div><button class="ghost" onclick="hideTheme()">إغلاق</button></div></div>
@@ -114,14 +119,100 @@
 <script>
   window.__openBella = function () { const win = document.getElementById('win'); if (win) win.classList.add('active'); };
   window.__closeBella = function () { const win = document.getElementById('win'); if (win) win.classList.remove('active'); };
+
+  (() => {
+    const SETTINGS_KEY = 'bella_ui_settings_v1';
+    const defaults = { randomSuggestions: false };
+
+    function getSettings() {
+      try {
+        return { ...defaults, ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}') };
+      } catch {
+        return { ...defaults };
+      }
+    }
+
+    function saveSettings(next) {
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(next));
+      applySettings(next);
+    }
+
+    function applySettings(settings = getSettings()) {
+      const suggestions = document.getElementById('quickSuggestions');
+      if (suggestions) suggestions.hidden = !settings.randomSuggestions;
+    }
+
+    window.openBellaSettings = function openBellaSettings() {
+      document.getElementById('bellaSettings')?.remove();
+      const settings = getSettings();
+      const modal = document.createElement('div');
+      modal.id = 'bellaSettings';
+      modal.className = 'vnext-modal';
+      modal.innerHTML = `
+        <div class="vnext-card" role="dialog" aria-modal="true" aria-labelledby="bellaSettingsTitle">
+          <h2 id="bellaSettingsTitle">إعدادات بيلا ⚙️</h2>
+          <div class="bella-setting-row">
+            <div class="bella-setting-copy">
+              <b>الكلمات والاقتراحات السريعة</b>
+              <span>إذا فعلتها تطلع اقتراحات مثل «شلونچ؟» و«نكتة»، وإذا طفيتها تختفي بالكامل.</span>
+            </div>
+            <label class="bella-switch">
+              <input id="bellaRandomSuggestions" type="checkbox" ${settings.randomSuggestions ? 'checked' : ''} aria-label="إظهار الكلمات والاقتراحات السريعة">
+              <span class="bella-switch-track"></span>
+            </label>
+          </div>
+          <p class="bella-settings-note">الإعداد ينحفظ على هالجهاز، وتقدر تغيره بأي وقت من ⚙️.</p>
+          <div class="vnext-actions"><button id="bellaSettingsClose" class="vnext-primary">تم</button></div>
+        </div>`;
+      document.body.appendChild(modal);
+      modal.querySelector('#bellaRandomSuggestions').addEventListener('change', e => {
+        const next = getSettings();
+        next.randomSuggestions = e.target.checked;
+        saveSettings(next);
+      });
+      modal.querySelector('#bellaSettingsClose').onclick = () => modal.remove();
+      modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+    };
+
+    const nativeFetch = window.fetch.bind(window);
+    window.fetch = async function bellaGuardedFetch(input, init = {}) {
+      const url = typeof input === 'string' ? input : (input && input.url) || '';
+      const guarded = url.startsWith('/api/chat') || url.startsWith('/api/dira');
+      if (!guarded) return nativeFetch(input, init);
+
+      let lastError = null;
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 18000);
+        try {
+          const response = await nativeFetch(input, { ...init, signal: controller.signal });
+          clearTimeout(timer);
+          if (response.status >= 500 && attempt === 0) continue;
+          return response;
+        } catch (error) {
+          clearTimeout(timer);
+          lastError = error;
+          if (attempt === 0) continue;
+        }
+      }
+
+      console.error('Bella request failed safely:', lastError);
+      return new Response(JSON.stringify({ error: 'النت أو السيرفر طول شوي، جرب مرة ثانية.' }), {
+        status: 503,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    };
+
+    document.addEventListener('DOMContentLoaded', () => applySettings());
+  })();
 </script>
-<script src="/script.js?v=5"></script>
-<script src="/ai-fix.js?v=5"></script>
-<script src="/bella-vnext.js?v=5"></script>
-<script src="/bella-install.js?v=5"></script>
+<script src="/script.js?v=6"></script>
+<script src="/ai-fix.js?v=6"></script>
+<script src="/bella-vnext.js?v=6"></script>
+<script src="/bella-install.js?v=6"></script>
 <script defer src="/_vercel/insights/script.js"></script>
 <script>
-  if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js?v=5').catch(() => {});
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js?v=6').catch(() => {});
 </script>
 </body>
 </html>
