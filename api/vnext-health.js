@@ -26,10 +26,11 @@ export default async function handler(req, res) {
     const r = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
-      body: JSON.stringify({ model: "gpt-5-mini", input: "رد بكلمة: شغال", reasoning: { effort: "low" }, max_output_tokens: 40, store: false })
+      body: JSON.stringify({ model: "gpt-5-mini", input: "رد فقط بكلمة: شغال", reasoning: { effort: "low" }, text: { verbosity: "low", format: { type: "text" } }, max_output_tokens: 220, store: false })
     });
     const data = await r.json().catch(() => ({}));
-    result.chat = { status: r.status, ok: r.ok, reply: textFrom(data) || null, error: data?.error?.code || data?.error?.message || null };
+    const reply = textFrom(data);
+    result.chat = { status: r.status, ok: r.ok && !!reply, reply: reply || null, error: data?.error?.code || data?.error?.message || null };
   } catch (e) {
     result.chat = { status: 0, ok: false, error: String(e?.message || e) };
   }
@@ -38,10 +39,11 @@ export default async function handler(req, res) {
     const r = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
-      body: JSON.stringify({ model: "gpt-5-mini", tools: [{ type: "web_search_preview" }], input: "ابحث عن معلومة حديثة خفيفة عن الكويت ورد بسطر واحد.", reasoning: { effort: "low" }, max_output_tokens: 120, store: false })
+      body: JSON.stringify({ model: "gpt-5-mini", tools: [{ type: "web_search_preview" }], input: "ابحث عن معلومة حديثة خفيفة عن الكويت ورد بسطر واحد فقط.", reasoning: { effort: "low" }, text: { verbosity: "low", format: { type: "text" } }, max_output_tokens: 500, store: false })
     });
     const data = await r.json().catch(() => ({}));
-    result.dira = { status: r.status, ok: r.ok, reply: textFrom(data)?.slice(0, 180) || null, error: data?.error?.code || data?.error?.message || null };
+    const reply = textFrom(data);
+    result.dira = { status: r.status, ok: r.ok && !!reply, reply: reply?.slice(0, 220) || null, error: data?.error?.code || data?.error?.message || null };
   } catch (e) {
     result.dira = { status: 0, ok: false, error: String(e?.message || e) };
   }
