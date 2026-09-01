@@ -1,3 +1,29 @@
+const WINDOW_MS = 10 * 60 * 1000;
+const MAX_REQUESTS = 12;
+const OPENAI_TIMEOUT_MS = 20000;
+const rateStore = globalThis.__bellaDiraRateStore || (globalThis.__bellaDiraRateStore = new Map());
+
+function getIp(req) {
+  return String(req.headers["x-forwarded-for"] || req.headers["x-real-ip"] || "unknown").split(",")[0].trim();
+}
+
+function rateLimited(req) {
+  const now = Date.now();
+  const ip = getIp(req);
+  const previous = rateStore.get(ip) || [];
+  const fresh = previous.filter(ts => now - ts < WINDOW_MS);
+  if (fresh.length >= MAX_REQUESTS) return true;
+  fresh.push(now);
+  rateStore.set(ip, fresh);
+
+  if (rateStore.size > 2500) {
+    for (const [key, list] of rateStore) {
+      if (!list.some(ts => now - ts < WINDOW_MS)) rateStore.delete(key);
+    }
+  }
+  return false;
+}
+
 function outputText(data) {
   const parts = [];
   for (const item of data?.output || []) {
@@ -11,12 +37,9 @@ function outputText(data) {
 
 function cleanVisibleReply(value) {
   return String(value || "")
-    // Keep useful anchor text but never show the underlying URL.
     .replace(/\[([^\]]+)\]\(https?:\/\/[^)]+\)/gi, "$1")
-    // Remove bare links and common tracking leftovers.
     .replace(/https?:\/\/[^\s)\]}]+/gi, "")
     .replace(/\(?\s*utm_source\s*=\s*openai\s*\)?/gi, "")
-    // Remove citation-looking domain labels such as [example.com].
     .replace(/\[[a-z0-9.-]+\.(?:com|net|org|io|co|kw|ae|app|me)\]/gi, "")
     .replace(/\(\s*\)/g, "")
     .replace(/[ \t]+\n/g, "\n")
@@ -27,10 +50,14 @@ function cleanVisibleReply(value) {
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
+  if (rateLimited(req)) return res.status(429).json({ error: "هدي شوي 😅 رادار الديرة عليه حد مؤقت، جرب عقب شوي." });
+
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) return res.status(500).json({ error: "AI is not configured" });
 
   const topic = String(req.body?.topic || "سوالف الديرة").slice(0, 300);
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), OPENAI_TIMEOUT_MS);
 
   try {
     const response = await fetch("https://api.openai.com/v1/responses", {
@@ -39,6 +66,7 @@ export default async function handler(req, res) {
         "Content-Type": "application/json",
         Authorization: `Bearer ${apiKey}`
       },
+      signal: controller.signal,
       body: JSON.stringify({
         model: "gpt-5-mini",
         tools: [{ type: "web_search_preview" }],
@@ -62,7 +90,13 @@ export default async function handler(req, res) {
       reply: reply || "ما لقيت شي يستاهل ينقال الحين."
     });
   } catch (error) {
+    if (error?.name === "AbortError") {
+      console.error("Dira search timed out");
+      return res.status(504).json({ error: "بحث الديرة طول أكثر من اللازم، جرب مرة ثانية." });
+    }
     console.error("Dira request failed:", error);
     return res.status(500).json({ error: "تعذر تحديث سوالف الديرة." });
+  } finally {
+    clearTimeout(timeout);
   }
 }
