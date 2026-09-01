@@ -1,10 +1,19 @@
-const CACHE_NAME = "bella-pwa-v11-stable-1";
+const CACHE_NAME = "bella-pwa-v11-stable-2";
 const CORE = [
   "/",
   "/index.html",
   "/style.css?v=11",
   "/bella-vnext.css?v=11",
   "/app.js?v=11",
+  "/script.js?v=12",
+  "/bella-context.js?v=12",
+  "/bella-routing.js?v=12",
+  "/bella-style.js?v=12",
+  "/bella-runtime.js?v=12",
+  "/bella-vnext.js?v=12",
+  "/bella-speed.js?v=12",
+  "/bella-ui.js?v=12",
+  "/bella-install.js?v=12",
   "/manifest.json",
   "/favicon.svg"
 ];
