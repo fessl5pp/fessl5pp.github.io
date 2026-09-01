@@ -4,6 +4,7 @@ const sources = [
   ['script.js', 'Legacy UI and local features'],
   ['bella-context.js', 'Long conversation context memory'],
   ['bella-routing.js', 'Local reply routing'],
+  ['bella-personality.js', 'Adaptive personality and mood intelligence'],
   ['bella-runtime.js', 'Network and reliability runtime'],
   ['bella-vnext.js', 'Conversation mood memory and send flow'],
   ['bella-ui.js', 'Settings and chat controls'],
@@ -29,7 +30,8 @@ const ownershipRules = [
   { pattern: /window\.updateMood\s*=(?!=)/, owner: 'bella-vnext.js', label: 'mood UI' },
   { pattern: /window\.fetch\s*=(?!=)/, owner: 'bella-runtime.js', label: 'network guard' },
   { pattern: /window\.openBellaSettings\s*=(?!=)/, owner: 'bella-ui.js', label: 'settings UI' },
-  { pattern: /window\.BellaContext\s*=(?!=)/, owner: 'bella-context.js', label: 'long context memory' }
+  { pattern: /window\.BellaContext\s*=(?!=)/, owner: 'bella-context.js', label: 'long context memory' },
+  { pattern: /window\.BellaPersonality\s*=(?!=)/, owner: 'bella-personality.js', label: 'adaptive personality' }
 ];
 
 for (const rule of ownershipRules) {
@@ -53,4 +55,4 @@ try {
 
 fs.writeFileSync('app.js', bundle, 'utf8');
 console.log(`Bella bundle generated: app.js (${sources.length} modules, ${bundle.length} chars)`);
-console.log('Bella ownership validated: context/routing/runtime/conversation/UI are separated.');
+console.log('Bella ownership validated: context/routing/personality/runtime/conversation/UI are separated.');
