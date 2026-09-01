@@ -1,4 +1,4 @@
-const CACHE_NAME = "bella-pwa-v10";
+const CACHE_NAME = "bella-pwa-v11";
 const CORE = [
   "/",
   "/index.html",
