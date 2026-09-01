@@ -1,11 +1,25 @@
 const fs = require('fs');
 
-const parts = [
-  fs.readFileSync('script.js', 'utf8'),
-  '\n;/* ---- Bella automatic AI/mood layer ---- */\n',
-  fs.readFileSync('ai-fix.js', 'utf8'),
-  `\n;/* ---- Bella PWA + subtle interaction layer ---- */\n(() => {\n  let audioCtx = null;\n  let audioReady = false;\n\n  function ensureAudio() {\n    try {\n      if (!audioCtx) {\n        const Ctx = window.AudioContext || window.webkitAudioContext;\n        if (!Ctx) return null;\n        audioCtx = new Ctx();\n      }\n      if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});\n      audioReady = true;\n      return audioCtx;\n    } catch {\n      return null;\n    }\n  }\n\n  function tone(freq = 560, duration = 0.045, volume = 0.014, delay = 0) {\n    const ctx = ensureAudio();\n    if (!ctx || !audioReady) return;\n    try {\n      const osc = ctx.createOscillator();\n      const gain = ctx.createGain();\n      const start = ctx.currentTime + delay;\n      osc.type = 'sine';\n      osc.frequency.setValueAtTime(freq, start);\n      gain.gain.setValueAtTime(0.0001, start);\n      gain.gain.exponentialRampToValueAtTime(volume, start + 0.008);\n      gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);\n      osc.connect(gain);\n      gain.connect(ctx.destination);\n      osc.start(start);\n      osc.stop(start + duration + 0.01);\n    } catch {}\n  }\n\n  function haptic(pattern = 10) {\n    try {\n      if (navigator.vibrate) navigator.vibrate(pattern);\n    } catch {}\n  }\n\n  function clickFx() {\n    tone(430, 0.025, 0.008);\n  }\n\n  function replyFx() {\n    tone(610, 0.04, 0.013);\n    tone(790, 0.05, 0.01, 0.035);\n    haptic(10);\n  }\n\n  function levelFx() {\n    tone(520, 0.05, 0.016);\n    tone(660, 0.06, 0.014, 0.055);\n    tone(850, 0.075, 0.012, 0.115);\n    haptic([12, 35, 18]);\n  }\n\n  document.addEventListener('pointerdown', event => {\n    if (event.target.closest('button, .theme-swatch')) {\n      ensureAudio();\n      clickFx();\n    }\n  }, { passive: true });\n\n  document.addEventListener('keydown', event => {\n    if (event.key === 'Enter') ensureAudio();\n  }, { passive: true });\n\n  window.addEventListener('load', () => {\n    const box = document.getElementById('box');\n    if (box) {\n      const observer = new MutationObserver(records => {\n        for (const record of records) {\n          for (const node of record.addedNodes) {\n            if (!(node instanceof HTMLElement)) continue;\n            if (node.classList.contains('bot') && node.innerText.trim() !== 'يكتب...') {\n              replyFx();\n            }\n          }\n        }\n      });\n      observer.observe(box, { childList: true });\n    }\n\n    const lvl = document.getElementById('lvl-val');\n    if (lvl) {\n      let previous = Number(lvl.textContent || 1);\n      const levelObserver = new MutationObserver(() => {\n        const current = Number(lvl.textContent || previous);\n        if (current > previous) levelFx();\n        previous = current;\n      });\n      levelObserver.observe(lvl, { childList: true, characterData: true, subtree: true });\n    }\n\n    if ('serviceWorker' in navigator) {\n      navigator.serviceWorker.register('/sw.js').catch(error => {\n        console.warn('Bella service worker:', error);\n      });\n    }\n  });\n})();\n`
+const sources = [
+  ['script.js', 'Bella core'],
+  ['ai-fix.js', 'Bella AI routing'],
+  ['bella-vnext.js', 'Bella personality and experience'],
+  ['bella-install.js', 'Bella install experience']
 ];
 
-fs.writeFileSync('app.js', parts.join('\n'), 'utf8');
-console.log('Bella bundle generated: app.js');
+const bundle = sources.map(([file, label]) => {
+  const source = fs.readFileSync(file, 'utf8');
+  return `\n;/* ---- ${label}: ${file} ---- */\n${source}\n`;
+}).join('\n');
+
+// Catch syntax/declaration collisions during the Vercel build instead of
+// shipping a broken browser bundle to users.
+try {
+  new Function(bundle);
+} catch (error) {
+  console.error('Bella bundle syntax validation failed:', error);
+  process.exit(1);
+}
+
+fs.writeFileSync('app.js', bundle, 'utf8');
+console.log(`Bella bundle generated: app.js (${sources.length} source files, ${bundle.length} chars)`);
