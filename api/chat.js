@@ -1,5 +1,6 @@
 const WINDOW_MS = 10 * 60 * 1000;
 const MAX_REQUESTS = 36;
+const OPENAI_TIMEOUT_MS = 20000;
 const rateStore = globalThis.__bellaRateStore || (globalThis.__bellaRateStore = new Map());
 
 function getIp(req) {
@@ -135,7 +136,7 @@ ${timeHint}
 - لا تحولين كل رد إلى فقرة مثالية أو نصيحة كاملة.
 - إذا كرر نفس الشي، لاحظي من السياق وقوليها طبيعي من غير إحراج.
 
-ذاكرة محلية وافق المستخدم على حفظها في جهازه فقط. استخدميها إذا لها علاقة مباشرة ولا تكشفينها بلا داعي:
+ذاكرة محلية بسيطة جاية من هالجهاز. استخدميها فقط إذا لها علاقة مباشرة ولا تكشفينها بلا داعي:
 ${memoryBlock}
 
 تجنبي تكرار صياغات قريبة من آخر ردودج التالية:
@@ -146,6 +147,9 @@ ${avoidBlock}
 - لا تختلقين أماكن مفتوحة الآن، أخبار اليوم، جو حالي أو أسعار لحظية من غير أداة/مصدر مباشر.
 - إذا المستخدم يسأل عن شيء خطير أو حساس، قدمي جواب آمن ومفيد بدون ما تغيرين هوية بيلا.`;
 
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), OPENAI_TIMEOUT_MS);
+
   try {
     const response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
@@ -153,6 +157,7 @@ ${avoidBlock}
         "Content-Type": "application/json",
         Authorization: `Bearer ${apiKey}`
       },
+      signal: controller.signal,
       body: JSON.stringify({
         model: "gpt-5-mini",
         instructions,
@@ -175,7 +180,13 @@ ${avoidBlock}
 
     return res.status(200).json({ reply, mode: effectiveMode });
   } catch (error) {
+    if (error?.name === "AbortError") {
+      console.error("OpenAI request timed out");
+      return res.status(504).json({ error: "الرد طول أكثر من اللازم، جرب مرة ثانية." });
+    }
     console.error("AI request failed:", error);
     return res.status(500).json({ error: "فشل الاتصال بالذكاء الاصطناعي" });
+  } finally {
+    clearTimeout(timeout);
   }
 }
