@@ -34,7 +34,7 @@
   <meta name="twitter:description" content="سولف مع بيلا.. ذكاء اصطناعي كويتي بمزاج يتغير حسب كلامك.">
   <meta name="twitter:image" content="https://fessl5pp-github-io-fessl5pps-projects.vercel.app/api/icon?size=512">
 
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="/style.css?v=4">
 </head>
 <body class="theme-blue">
 <div class="wrap">
@@ -50,7 +50,7 @@
     <h1>بيلا الكويتية 🇰🇼</h1>
     <div class="sub">مزاج Bella يتغير تلقائيًا حسب طريقتك بالكلام.</div>
     <div class="hero-actions">
-      <button class="btn" onclick="openChat()">ابدأ الحين ⚡</button>
+      <button class="btn" onclick="(window.openChat || window.__openBella)()">ابدأ الحين ⚡</button>
       <button class="ghost" onclick="showTheme()">الثيم 🎨</button>
       <button class="ghost" onclick="dailyWisdom()">حكمة اليوم 🧿</button>
       <button class="ghost" onclick="startBoxGame()">شنو بالصندوق 🎁</button>
@@ -62,13 +62,30 @@
   <section class="badges-wrap"><div class="badges-head"><b>الأوسمة</b><span id="ach-count">0 / 5</span></div><div class="badges"><div class="badge" id="b1">🌱 بداية</div><div class="badge" id="b2">💬 سوالف</div><div class="badge" id="b3">📍 مستكشف</div><div class="badge" id="b4">☕ مزاج</div><div class="badge" id="b5">🌙 الغبقة</div></div></section>
 </div>
 <div class="chat-win" id="win">
-  <div class="header"><div class="left"><div class="avatar" id="chatAvatar">B</div><div class="title"><b>Bella</b><span id="chat-status">النفسية وسط 🙂</span></div></div><div class="header-actions"><button class="tiny" onclick="dailyWisdom()">🧿</button><button class="tiny" onclick="startBoxGame()">🎁</button><button class="tiny" onclick="startProverbGame()">🧠</button><button class="tiny" onclick="openFazaa()">🚨</button><button class="tiny" onclick="shareChat()">📸</button><button class="tiny" onclick="giveGift('rose')">🌹</button><button class="tiny" onclick="giveGift('choco')">🍫</button><button class="tiny" onclick="closeChat()">✕</button></div></div>
+  <div class="header"><div class="left"><div class="avatar" id="chatAvatar">B</div><div class="title"><b>Bella</b><span id="chat-status">النفسية وسط 🙂</span></div></div><div class="header-actions"><button class="tiny" onclick="dailyWisdom()">🧿</button><button class="tiny" onclick="startBoxGame()">🎁</button><button class="tiny" onclick="startProverbGame()">🧠</button><button class="tiny" onclick="openFazaa()">🚨</button><button class="tiny" onclick="shareChat()">📸</button><button class="tiny" onclick="giveGift('rose')">🌹</button><button class="tiny" onclick="giveGift('choco')">🍫</button><button class="tiny" onclick="(window.closeChat || window.__closeBella)()">✕</button></div></div>
   <div class="msg-box" id="box"></div>
   <div class="mode-panel"><div class="mode-head"><span>مزاج Bella يتغير تلقائيًا</span><b id="mode-status">🙂 النفسية وسط</b></div></div>
   <div class="quick-suggestions" id="quickSuggestions"><button onclick="quickSend('شلونچ؟')">شلونچ؟</button><button onclick="quickSend('ابي اتقهوى')">ابي اتقهوى</button><button onclick="quickSend('غير هالقهوة')">غير هالقهوة</button><button onclick="quickSend('نكتة')">نكتة</button><button onclick="quickSend('شنو الجو؟')">شنو الجو؟</button></div>
   <div class="input-area"><input id="inp" placeholder="اكتب..." onkeydown="if(event.key==='Enter') send()"><button class="send" onclick="send()">إرسال</button></div>
 </div>
 <div class="modal hidden" id="themeModal"><div class="card"><h2>الثيم</h2><div class="theme-box"><div class="theme-swatch sw1" onclick="setTheme('theme-blue')" title="أزرق"></div><div class="theme-swatch sw2" onclick="setTheme('theme-pink')" title="وردي"></div><div class="theme-swatch sw3" onclick="setTheme('theme-gold')" title="ذهبي / قديم"></div><div class="theme-swatch sw4" onclick="setTheme('theme-night')" title="مود السهارى"></div></div><button class="ghost" onclick="hideTheme()">إغلاق</button></div></div>
-<script src="/app.js?v=1"></script>
+
+<script>
+  window.__openBella = function () {
+    const win = document.getElementById('win');
+    if (win) win.classList.add('active');
+  };
+  window.__closeBella = function () {
+    const win = document.getElementById('win');
+    if (win) win.classList.remove('active');
+  };
+</script>
+<script src="/script.js?v=4"></script>
+<script src="/ai-fix.js?v=4"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js?v=4').catch(() => {});
+  }
+</script>
 </body>
 </html>
