@@ -1,6 +1,6 @@
 const WINDOW_MS = 10 * 60 * 1000;
 const MAX_REQUESTS = 36;
-const OPENAI_TIMEOUT_MS = 20000;
+const OPENAI_TIMEOUT_MS = 25000;
 const rateStore = globalThis.__bellaRateStore || (globalThis.__bellaRateStore = new Map());
 
 function getIp(req) {
@@ -38,6 +38,15 @@ function outputText(data) {
   return parts.join("\n").trim();
 }
 
+function streamError(res, message) {
+  if (!res.headersSent) return false;
+  try {
+    res.write(`\ndata: ${JSON.stringify({ type: "error", message })}\n\n`);
+    res.end();
+  } catch {}
+  return true;
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
   if (rateLimited(req)) return res.status(429).json({ error: "هدي شوي 😅 كثرت الرسايل بسرعة، جرب عقب دقيقة." });
@@ -61,6 +70,7 @@ export default async function handler(req, res) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) return res.status(500).json({ error: "AI is not configured" });
 
+  const wantsStream = req.body?.stream === true || String(req.headers.accept || "").includes("text/event-stream");
   const effectiveMode = ["auto", "angry", "cute", "chill"].includes(mode) ? mode : "chill";
 
   const modeInstruction = {
@@ -88,7 +98,9 @@ export default async function handler(req, res) {
   const style = {
     brevity: ["short", "medium", "long"].includes(styleProfile?.brevity) ? styleProfile.brevity : "medium",
     humor: Math.max(0, Math.min(3, Number(styleProfile?.humor) || 1)),
-    warmth: Math.max(0, Math.min(3, Number(styleProfile?.warmth) || 1))
+    warmth: Math.max(0, Math.min(3, Number(styleProfile?.warmth) || 1)),
+    directness: Math.max(0, Math.min(1, Number(styleProfile?.directness) || 0)),
+    dialect: Math.max(0, Math.min(1, Number(styleProfile?.dialect) || 0.5))
   };
 
   const hour = Number.isFinite(Number(localHour)) ? Number(localHour) : null;
@@ -120,7 +132,8 @@ ${timeHint}
 - لا تبدين بـ "بالطبع" أو "بالتأكيد" أو "إليك" أو "أنا هنا لمساعدتك".
 - لا تعيدين صياغة كلامه قبل الجواب إلا إذا احتجتي تتأكدين من المقصود.
 - الرد الطبيعي جملة إلى 4 جمل. المستخدم يفضل ${style.brevity === "short" ? "الاختصار" : style.brevity === "long" ? "تفصيل أكثر شوي" : "رد متوسط"}.
-- مستوى المزح المناسب تقريباً ${style.humor}/3، والدفا ${style.warmth}/3. تأقلمي مع أسلوبه لكن لا تفقدين شخصيتج.
+- مستوى المزح المناسب تقريباً ${style.humor}/3، والدفا ${style.warmth}/3. ${style.directness >= 0.6 ? "هو يميل للكلام المباشر؛ ادخلي بالجواب بسرعة." : "خذي وعطي بشكل طبيعي قبل الزبدة إذا الموقف يسمح."}
+- حافظي على لهجة كويتية طبيعية بمستوى قريب من أسلوب المستخدم، من غير حشر كلمات لهجية بكل جملة.
 
 القطات:
 - القطة تعليق كويتي سريع ذكي يركب على الموقف. مو لازم بكل رد؛ تقريباً ربع إلى ثلث المواقف الخفيفة المناسبة فقط.
@@ -165,16 +178,42 @@ ${avoidBlock}
         reasoning: { effort: "low" },
         text: { verbosity: "low", format: { type: "text" } },
         max_output_tokens: 700,
-        store: false
+        store: false,
+        stream: wantsStream
       })
     });
 
-    const data = await response.json();
     if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
       console.error("OpenAI API error:", data?.error?.code || data?.error?.message || response.status);
       return res.status(502).json({ error: "الربط مع الذكاء الاصطناعي تعطل شوي، جرب مرة ثانية." });
     }
 
+    if (wantsStream) {
+      if (!response.body?.getReader) return res.status(502).json({ error: "البث المباشر مو متاح الحين، جرب مرة ثانية." });
+
+      res.statusCode = 200;
+      res.setHeader("Content-Type", "text/event-stream; charset=utf-8");
+      res.setHeader("Cache-Control", "no-cache, no-transform");
+      res.setHeader("X-Content-Type-Options", "nosniff");
+      res.setHeader("X-Bella-Stream", "1");
+      res.flushHeaders?.();
+
+      const reader = response.body.getReader();
+      try {
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          res.write(Buffer.from(value));
+        }
+        res.end();
+        return;
+      } finally {
+        try { reader.releaseLock(); } catch {}
+      }
+    }
+
+    const data = await response.json();
     const reply = outputText(data);
     if (!reply) return res.status(502).json({ error: "بيلا ما رجعت رد هالمرة، جرب مرة ثانية." });
 
@@ -182,9 +221,11 @@ ${avoidBlock}
   } catch (error) {
     if (error?.name === "AbortError") {
       console.error("OpenAI request timed out");
+      if (streamError(res, "الرد طول أكثر من اللازم، جرب مرة ثانية.")) return;
       return res.status(504).json({ error: "الرد طول أكثر من اللازم، جرب مرة ثانية." });
     }
     console.error("AI request failed:", error);
+    if (streamError(res, "الرد انقطع بالنص، جرب مرة ثانية.")) return;
     return res.status(500).json({ error: "فشل الاتصال بالذكاء الاصطناعي" });
   } finally {
     clearTimeout(timeout);
