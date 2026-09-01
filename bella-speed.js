@@ -37,8 +37,6 @@
   }
 
   function supportsStreaming() {
-    // Safari/iPadOS had intermittent stuck-send behavior with the streamed proxy.
-    // Keep the normal JSON reply path there until the transport is proven stable.
     if (isAppleSafari()) return false;
     return typeof ReadableStream !== "undefined" && typeof TextDecoder !== "undefined" && !!typingNode();
   }
@@ -94,7 +92,10 @@
     const full = String(fullText || pending.full || "").trim();
     pending.full = full;
     pending.accumulated = "";
-    if (full) setNodeText(pending.node, full);
+    if (full) {
+      setNodeText(pending.node, full);
+      window.BellaContext?.recordTurn?.("assistant", full);
+    }
 
     clearFinishTimer();
     finishTimer = setTimeout(() => {
