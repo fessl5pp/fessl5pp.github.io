@@ -19,22 +19,28 @@
     return "النت أو السيرفر طول شوي، جرّب مرة ثانية.";
   }
 
-  function syntheticErrorResponse(message = friendlyNetworkMessage()) {
-    return new Response(JSON.stringify({ error: message, retryable: true }), {
-      status: 503,
+  function jsonResponse(payload, status = 200, extraHeaders = {}) {
+    return new Response(JSON.stringify(payload), {
+      status,
       headers: {
         "Content-Type": "application/json",
-        "X-Bella-Network-Error": "1"
+        ...extraHeaders
       }
     });
+  }
+
+  function syntheticErrorResponse(message = friendlyNetworkMessage()) {
+    return jsonResponse({ error: message, retryable: true }, 503, { "X-Bella-Network-Error": "1" });
   }
 
   function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  function enrichChatRequest(input, init = {}) {
-    if (!requestUrl(input).startsWith("/api/chat") || typeof init.body !== "string") return init;
+  function prepareChatRequest(input, init = {}) {
+    if (!requestUrl(input).startsWith("/api/chat") || typeof init.body !== "string") {
+      return { init, streamRequested: false, mode: null };
+    }
 
     try {
       let body = JSON.parse(init.body);
@@ -46,10 +52,89 @@
       if (window.BellaPersonality?.enrichPayload) {
         body = window.BellaPersonality.enrichPayload(body);
       }
-      return { ...init, body: JSON.stringify(body) };
+
+      const streamRequested = window.BellaSpeed?.supportsStreaming?.() === true;
+      const headers = new Headers(init.headers || {});
+      if (streamRequested) {
+        body.stream = true;
+        headers.set("Accept", "text/event-stream");
+      }
+
+      return {
+        init: { ...init, headers, body: JSON.stringify(body) },
+        streamRequested,
+        mode: body.mode || null
+      };
     } catch (error) {
       console.warn("Bella request enrichment skipped:", error);
-      return init;
+      return { init, streamRequested: false, mode: null };
+    }
+  }
+
+  function parseSseBlock(block) {
+    const dataLines = String(block || "")
+      .split(/\r?\n/)
+      .filter(line => line.startsWith("data:"))
+      .map(line => line.slice(5).trimStart());
+    if (!dataLines.length) return null;
+    const raw = dataLines.join("\n").trim();
+    if (!raw || raw === "[DONE]") return null;
+    try { return JSON.parse(raw); } catch { return null; }
+  }
+
+  async function consumeChatStream(response, mode) {
+    if (!response.body?.getReader) return response;
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    let reply = "";
+    let sawDelta = false;
+    window.BellaSpeed?.begin?.();
+
+    const handleEvent = event => {
+      if (!event || typeof event !== "object") return;
+      if (event.type === "response.output_text.delta" && typeof event.delta === "string") {
+        reply += event.delta;
+        sawDelta = true;
+        window.BellaSpeed?.delta?.(reply);
+        return;
+      }
+      if (event.type === "response.output_text.done" && typeof event.text === "string") {
+        if (!reply || event.text.length >= reply.length) reply = event.text;
+        if (reply) window.BellaSpeed?.delta?.(reply);
+        return;
+      }
+      if (event.type === "error" || event.type === "response.failed") {
+        const message = event.message || event.error?.message || "الرد انقطع بالنص، جرّب مرة ثانية.";
+        throw new Error(message);
+      }
+    };
+
+    try {
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const blocks = buffer.split(/\r?\n\r?\n/);
+        buffer = blocks.pop() || "";
+        for (const block of blocks) handleEvent(parseSseBlock(block));
+      }
+
+      buffer += decoder.decode();
+      if (buffer.trim()) handleEvent(parseSseBlock(buffer));
+
+      reply = reply.trim();
+      if (!reply) throw new Error("Bella stream completed without text");
+      window.BellaSpeed?.complete?.(reply);
+      return jsonResponse({ reply, mode, streamed: true }, 200, { "X-Bella-Streamed": "1" });
+    } catch (error) {
+      console.error("Bella streamed reply failed:", error);
+      window.BellaSpeed?.fail?.();
+      const message = sawDelta ? "الرد انقطع بالنص، جرّب مرة ثانية." : friendlyNetworkMessage();
+      return syntheticErrorResponse(message);
+    } finally {
+      try { reader.releaseLock(); } catch {}
     }
   }
 
@@ -57,8 +142,10 @@
     if (!isGuardedUrl(input)) return nativeFetch(input, init);
     if (navigator.onLine === false) return syntheticErrorResponse();
 
-    const preparedInit = enrichChatRequest(input, init);
+    const prepared = prepareChatRequest(input, init);
+    const preparedInit = prepared.init;
     let lastError = null;
+
     for (let attempt = 0; attempt <= RETRIES; attempt++) {
       const controller = new AbortController();
       const externalSignal = preparedInit.signal;
@@ -78,6 +165,11 @@
           await sleep(320 + attempt * 280);
           continue;
         }
+
+        const contentType = response.headers.get("content-type") || "";
+        if (prepared.streamRequested && response.ok && contentType.includes("text/event-stream")) {
+          return await consumeChatStream(response, prepared.mode);
+        }
         return response;
       } catch (error) {
         clearTimeout(timer);
@@ -91,11 +183,12 @@
     }
 
     console.error("Bella network request failed safely:", lastError);
+    window.BellaSpeed?.fail?.();
     return syntheticErrorResponse();
   }
 
   // One network owner for Bella. Other modules keep using fetch normally,
-  // while this layer owns timeout/retry/offline behavior for Bella APIs only.
+  // while this layer owns timeout/retry/offline/stream behavior for Bella APIs only.
   window.fetch = guardedFetch;
 
   const errorPhrases = [
@@ -106,7 +199,8 @@
     "فشل الاتصال بالذكاء الاصطناعي",
     "صار شي بالربط الحين",
     "الواير لعب فيني",
-    "ما قدرت أجيب شي الحين"
+    "ما قدرت أجيب شي الحين",
+    "الرد انقطع بالنص"
   ];
 
   function cleanMessageText(node) {
@@ -233,7 +327,8 @@
     isErrorText,
     retryBotMessage,
     updateConnectionState,
-    enrichChatRequest
+    prepareChatRequest,
+    consumeChatStream
   });
 
   window.addEventListener("online", updateConnectionState);
