@@ -34,17 +34,21 @@
   }
 
   function enrichChatRequest(input, init = {}) {
-    if (!requestUrl(input).startsWith("/api/chat")) return init;
-    if (!window.BellaContext || typeof init.body !== "string") return init;
+    if (!requestUrl(input).startsWith("/api/chat") || typeof init.body !== "string") return init;
 
     try {
-      const body = JSON.parse(init.body);
-      body.history = window.BellaContext.buildHistory(body.message, body.history);
-      body.recentReplies = window.BellaContext.getRecentReplies(body.recentReplies);
-      body.contextRepeat = window.BellaContext.repeatInfo(body.message);
+      let body = JSON.parse(init.body);
+      if (window.BellaContext) {
+        body.history = window.BellaContext.buildHistory(body.message, body.history);
+        body.recentReplies = window.BellaContext.getRecentReplies(body.recentReplies);
+        body.contextRepeat = window.BellaContext.repeatInfo(body.message);
+      }
+      if (window.BellaPersonality?.enrichPayload) {
+        body = window.BellaPersonality.enrichPayload(body);
+      }
       return { ...init, body: JSON.stringify(body) };
     } catch (error) {
-      console.warn("Bella context enrichment skipped:", error);
+      console.warn("Bella request enrichment skipped:", error);
       return init;
     }
   }
