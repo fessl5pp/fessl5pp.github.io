@@ -6,6 +6,7 @@ const mustExist = [
   'index.html',
   'app.js',
   'script.js',
+  'bella-legacy-plus.js',
   'bella-context.js',
   'bella-routing.js',
   'bella-style.js',
@@ -28,6 +29,8 @@ assert.ok(!fs.existsSync('bella-personality.js'), 'duplicate bella-personality.j
 
 const index = read('index.html');
 const app = read('app.js');
+const legacy = read('script.js');
+const legacyPlus = read('bella-legacy-plus.js');
 const context = read('bella-context.js');
 const routing = read('bella-routing.js');
 const style = read('bella-style.js');
@@ -53,10 +56,27 @@ assert.ok(!index.includes('<script src="/ai-fix.js'), 'index.html must not load 
 assert.ok(!index.includes('<script src="/bella-vnext.js'), 'index.html must not load vNext directly');
 assert.ok(index.includes('id="quickSuggestions" hidden'), 'quick suggestions should remain hidden by default');
 
+assert.ok(app.includes('bella-legacy-plus.js'), 'tracked app entry must load legacy improvements');
 assert.ok(app.includes('bella-style.js'), 'tracked app entry must know the style module');
 assert.ok(app.includes('bella-vnext.js'), 'tracked app entry must know the main conversation module');
 assert.ok(app.includes('window.__bellaBoot'), 'tracked app entry must expose boot completion');
-assert.ok(app.includes('?v=12'), 'tracked app entry must cache-bust source modules');
+assert.ok(app.includes('?v=13'), 'tracked app entry must cache-bust source modules');
+
+for (const feature of ['coffeeRadar', 'socialRadarReply', 'dailyWisdom', 'startBoxGame', 'startProverbGame', 'checkGameAnswer', 'openFazaa', 'fazaaReply', 'shareChat', 'showRumor']) {
+  assert.ok(legacy.includes(`function ${feature}`), `legacy feature ${feature} must remain present`);
+}
+assert.ok(legacyPlus.includes('window.BellaLegacyPlus'), 'legacy enhancement module must expose one debug/status namespace');
+assert.ok(legacyPlus.includes('MAX_RADAR_HISTORY = 6'), 'radar must avoid recent repeated places');
+assert.ok(legacyPlus.includes('MAX_GAME_HISTORY = 4'), 'games must avoid recent repeated challenges');
+assert.ok(legacyPlus.includes('مو إحصائية حقيقية'), 'social radar must be clearly labeled as playful, not live analytics');
+assert.ok(legacyPlus.includes('سوالف بيلا — مزح'), 'rumor feature must be clearly labeled as playful content');
+assert.ok(legacyPlus.includes('navigator.share'), 'share card must support native device sharing when available');
+assert.ok(legacyPlus.includes('robustCopy'), 'share copy must include a clipboard fallback');
+assert.ok(legacyPlus.includes('gameStreak'), 'legacy games must keep a lightweight win streak');
+assert.ok(legacyPlus.includes('إذا تبي شي حي استخدم «شكو ماكو؟»'), 'static radar must route live requests to Dira instead of pretending to be current');
+assert.ok(!/window\.send\s*=(?!=)/.test(legacyPlus), 'legacy enhancement module must never own send flow');
+assert.ok(!/window\.getAIReply\s*=(?!=)/.test(legacyPlus), 'legacy enhancement module must never own AI flow');
+assert.ok(!/window\.updateMood\s*=(?!=)/.test(legacyPlus), 'legacy enhancement module must never own mood flow');
 
 assert.ok(/window\.send\s*=(?!=)/.test(vnext), 'vNext must own active send flow');
 assert.ok(/window\.getAIReply\s*=(?!=)/.test(vnext), 'vNext must own active AI reply flow');
@@ -74,6 +94,7 @@ assert.ok(/window\.BellaSpeed\s*=(?!=)/.test(speed), 'speed module must own stre
 assert.ok(!build.includes('bella-personality.js'), 'old duplicate mood/personality module must not be bundled');
 assert.ok(!build.includes('bella-send-guard.js'), 'conflicting capture-phase send guard must not be bundled');
 assert.ok(build.includes('bella-style.js'), 'style-only adaptive module must be bundled');
+assert.ok(build.includes('bella-legacy-plus.js'), 'cleaned legacy enhancement module must be validated by the build');
 
 assert.ok(context.includes('buildHistory'), 'context module must build smart history');
 assert.ok(context.includes('shouldUseAIForRepeat'), 'context module must detect repeated short messages');
@@ -103,16 +124,16 @@ assert.ok(ui.includes('randomSuggestions: false'), 'suggestions setting should d
 assert.ok(ui.includes('longContext: true'), 'long context setting should default to on');
 assert.ok(manifest.includes('"orientation": "any"'), 'PWA must allow tablet rotation');
 
-assert.ok(sw.includes('bella-pwa-v11-stable-2'), 'service worker cache must use the current stabilization cache');
+assert.ok(sw.includes('bella-pwa-v11-stable-3'), 'service worker cache must use the legacy refresh cache');
 assert.ok(sw.includes('/app.js?v=11'), 'service worker must cache the exact app entry requested by index.html');
-for (const moduleName of ['script.js', 'bella-context.js', 'bella-routing.js', 'bella-style.js', 'bella-runtime.js', 'bella-vnext.js', 'bella-speed.js', 'bella-ui.js', 'bella-install.js']) {
-  assert.ok(sw.includes(`/${moduleName}?v=12`), `service worker must cache loader module ${moduleName}`);
+for (const moduleName of ['script.js', 'bella-legacy-plus.js', 'bella-context.js', 'bella-routing.js', 'bella-style.js', 'bella-runtime.js', 'bella-vnext.js', 'bella-speed.js', 'bella-ui.js', 'bella-install.js']) {
+  assert.ok(sw.includes(`/${moduleName}?v=13`), `service worker must cache loader module ${moduleName}`);
 }
 assert.ok(sw.includes('request.mode === "navigate"'), 'offline HTML fallback must be navigation-only');
 assert.ok(!sw.includes("cached || caches.match(\"/index.html\")"), 'static assets must never fall back to index.html');
 
-for (const moduleName of ['bella-context.js', 'bella-routing.js', 'bella-style.js', 'bella-runtime.js', 'bella-vnext.js', 'bella-speed.js', 'bella-ui.js', 'bella-install.js']) {
-  assert.ok(build.includes(moduleName), `build.js must bundle ${moduleName}`);
+for (const moduleName of ['bella-legacy-plus.js', 'bella-context.js', 'bella-routing.js', 'bella-style.js', 'bella-runtime.js', 'bella-vnext.js', 'bella-speed.js', 'bella-ui.js', 'bella-install.js']) {
+  assert.ok(build.includes(moduleName), `build.js must validate ${moduleName}`);
 }
 
-console.log('Bella stabilization smoke tests passed: tracked boot entry, send flow, single mood owner, style learning, streamed context, cost guards, Safari safety, PWA fallback, Dira, and bundle wiring are valid.');
+console.log('Bella smoke tests passed: legacy features preserved and enhanced, send/mood ownership intact, context/cost/Safari/PWA protections valid.');
