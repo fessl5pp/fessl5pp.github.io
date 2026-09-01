@@ -34,15 +34,14 @@
   <meta name="twitter:description" content="ذكاء اصطناعي كويتي يسولف وياك بمزاج وذاكرة وقطات.">
   <meta name="twitter:image" content="https://fessl5pp-github-io-fessl5pps-projects.vercel.app/api/icon?size=512">
 
-  <link rel="stylesheet" href="/style.css?v=6">
-  <link rel="stylesheet" href="/bella-vnext.css?v=6">
+  <link rel="stylesheet" href="/style.css?v=7">
+  <link rel="stylesheet" href="/bella-vnext.css?v=7">
   <style>
-    #quickSuggestions[hidden]{display:none!important}
+    #quickSuggestions[hidden],#bellaMoreMenu[hidden]{display:none!important}
     .bella-setting-row{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.08)}
     .bella-setting-row:last-of-type{border-bottom:0}
     .bella-setting-copy{display:flex;flex-direction:column;gap:4px;text-align:right}
-    .bella-setting-copy b{font-size:14px}
-    .bella-setting-copy span{font-size:12px;color:var(--muted)}
+    .bella-setting-copy b{font-size:14px}.bella-setting-copy span{font-size:12px;color:var(--muted)}
     .bella-switch{position:relative;display:inline-flex;width:50px;height:28px;flex:0 0 auto}
     .bella-switch input{position:absolute;opacity:0;pointer-events:none}
     .bella-switch-track{position:absolute;inset:0;border-radius:999px;background:#353b47;border:1px solid rgba(255,255,255,.1);transition:.2s}
@@ -50,6 +49,15 @@
     .bella-switch input:checked + .bella-switch-track{background:var(--accent)}
     .bella-switch input:checked + .bella-switch-track::after{transform:translateX(-22px)}
     .bella-settings-note{font-size:11px;color:var(--muted);margin-top:12px;line-height:1.7}
+
+    /* Keep the chat header focused. Legacy/injected feature buttons remain callable but hidden. */
+    .header-actions .tiny:not(.bella-core-action){display:none!important}
+    .header-actions{position:relative;gap:6px}
+    .bella-more-menu{position:absolute;top:58px;left:12px;right:12px;z-index:30;padding:10px;border:1px solid rgba(255,255,255,.11);border-radius:18px;background:rgba(14,18,27,.98);box-shadow:0 18px 50px rgba(0,0,0,.4);backdrop-filter:blur(18px)}
+    .bella-more-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+    .bella-more-grid button{min-height:46px;border:1px solid rgba(255,255,255,.09);border-radius:13px;background:rgba(255,255,255,.05);color:inherit;font:inherit;font-size:12px;font-weight:800;cursor:pointer}
+    .bella-more-grid button:active{transform:scale(.98)}
+    @media (max-width:520px){.bella-more-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.header-actions{gap:4px}}
   </style>
 </head>
 <body class="theme-blue">
@@ -73,9 +81,6 @@
       <button class="btn" onclick="(window.openChat || window.__openBella)()">دش سولف وياها ⚡</button>
       <button class="ghost" onclick="openBellaSettings()">الإعدادات ⚙️</button>
       <button class="ghost" onclick="showTheme()">الثيم 🎨</button>
-      <button class="ghost" onclick="dailyWisdom()">حكمة اليوم 🧿</button>
-      <button class="ghost" onclick="startBoxGame()">شنو بالصندوق 🎁</button>
-      <button class="ghost" onclick="startProverbGame()">كمّل المثل 🧠</button>
       <button class="ghost" onclick="openDira()">شكو ماكو؟ 🇰🇼</button>
       <button class="ghost" onclick="openRadarPlus()">رادار القز+ 📡</button>
       <button class="ghost" onclick="startKuwaitiChallenge()">تحدي كويتي 🧩</button>
@@ -95,17 +100,29 @@
   <div class="header">
     <div class="left"><div class="avatar" id="chatAvatar">B</div><div class="title"><b>Bella</b><span id="chat-status">تو نعرف بعض · النفسية وسط</span></div></div>
     <div class="header-actions">
-      <button class="tiny" onclick="openBellaSettings()" aria-label="إعدادات بيلا" title="الإعدادات">⚙️</button>
-      <button class="tiny" onclick="dailyWisdom()" aria-label="حكمة اليوم" title="حكمة اليوم">🧿</button>
-      <button class="tiny" onclick="startBoxGame()" aria-label="لعبة شنو بالصندوق" title="شنو بالصندوق">🎁</button>
-      <button class="tiny" onclick="startProverbGame()" aria-label="لعبة كمل المثل" title="كمل المثل">🧠</button>
-      <button class="tiny" onclick="openFazaa()" aria-label="فزعة" title="فزعة">🚨</button>
-      <button class="tiny" onclick="shareChat()" aria-label="مشاركة المحادثة" title="مشاركة">📸</button>
-      <button class="tiny" onclick="giveGift('rose')" aria-label="إهداء وردة" title="وردة">🌹</button>
-      <button class="tiny" onclick="giveGift('choco')" aria-label="إهداء كاكاو" title="كاكاو">🍫</button>
-      <button class="tiny" onclick="(window.closeChat || window.__closeBella)()" aria-label="إغلاق الشات" title="إغلاق">✕</button>
+      <button class="tiny bella-core-action" onclick="openBellaSettings()" aria-label="إعدادات بيلا" title="الإعدادات">⚙️</button>
+      <button class="tiny bella-core-action" id="bellaMoreBtn" onclick="toggleBellaMoreMenu()" aria-label="المزيد" title="المزيد">•••</button>
+      <button class="tiny bella-core-action" onclick="(window.closeChat || window.__closeBella)()" aria-label="إغلاق الشات" title="إغلاق">✕</button>
     </div>
   </div>
+
+  <div class="bella-more-menu" id="bellaMoreMenu" hidden>
+    <div class="bella-more-grid">
+      <button onclick="openMemoryPanel();closeBellaMoreMenu()">🧠 الذاكرة</button>
+      <button onclick="openDira();closeBellaMoreMenu()">🇰🇼 شكو ماكو؟</button>
+      <button onclick="openRadarPlus();closeBellaMoreMenu()">📡 رادار القز</button>
+      <button onclick="startKuwaitiChallenge();closeBellaMoreMenu()">🧩 تحدي كويتي</button>
+      <button onclick="dailyWisdom();closeBellaMoreMenu()">🧿 حكمة اليوم</button>
+      <button onclick="startBoxGame();closeBellaMoreMenu()">🎁 شنو بالصندوق</button>
+      <button onclick="startProverbGame();closeBellaMoreMenu()">🧠 كمّل المثل</button>
+      <button onclick="openFazaa();closeBellaMoreMenu()">🚨 فزعة</button>
+      <button onclick="shareChat();closeBellaMoreMenu()">📸 مشاركة</button>
+      <button onclick="giveGift('rose');closeBellaMoreMenu()">🌹 وردة</button>
+      <button onclick="giveGift('choco');closeBellaMoreMenu()">🍫 كاكاو</button>
+      <button onclick="document.getElementById('bellaVoiceToggle')?.click();closeBellaMoreMenu()">🔊 صوت بيلا</button>
+    </div>
+  </div>
+
   <div class="msg-box" id="box"></div>
   <div class="mode-panel"><div class="mode-head"><span>مزاج بيلا يتغير تلقائيًا وبشكل تدريجي</span><b id="mode-status">🙂 النفسية وسط</b></div></div>
   <div class="quick-suggestions" id="quickSuggestions" hidden aria-label="اقتراحات سريعة">
@@ -125,11 +142,8 @@
     const defaults = { randomSuggestions: false };
 
     function getSettings() {
-      try {
-        return { ...defaults, ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}') };
-      } catch {
-        return { ...defaults };
-      }
+      try { return { ...defaults, ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}') }; }
+      catch { return { ...defaults }; }
     }
 
     function saveSettings(next) {
@@ -143,6 +157,7 @@
     }
 
     window.openBellaSettings = function openBellaSettings() {
+      closeBellaMoreMenu();
       document.getElementById('bellaSettings')?.remove();
       const settings = getSettings();
       const modal = document.createElement('div');
@@ -166,12 +181,20 @@
         </div>`;
       document.body.appendChild(modal);
       modal.querySelector('#bellaRandomSuggestions').addEventListener('change', e => {
-        const next = getSettings();
-        next.randomSuggestions = e.target.checked;
-        saveSettings(next);
+        const next = getSettings(); next.randomSuggestions = e.target.checked; saveSettings(next);
       });
       modal.querySelector('#bellaSettingsClose').onclick = () => modal.remove();
       modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+    };
+
+    window.closeBellaMoreMenu = function closeBellaMoreMenu() {
+      const menu = document.getElementById('bellaMoreMenu');
+      if (menu) menu.hidden = true;
+    };
+
+    window.toggleBellaMoreMenu = function toggleBellaMoreMenu() {
+      const menu = document.getElementById('bellaMoreMenu');
+      if (menu) menu.hidden = !menu.hidden;
     };
 
     const nativeFetch = window.fetch.bind(window);
@@ -190,29 +213,27 @@
           if (response.status >= 500 && attempt === 0) continue;
           return response;
         } catch (error) {
-          clearTimeout(timer);
-          lastError = error;
+          clearTimeout(timer); lastError = error;
           if (attempt === 0) continue;
         }
       }
 
       console.error('Bella request failed safely:', lastError);
-      return new Response(JSON.stringify({ error: 'النت أو السيرفر طول شوي، جرب مرة ثانية.' }), {
-        status: 503,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return new Response(JSON.stringify({ error: 'النت أو السيرفر طول شوي، جرب مرة ثانية.' }), { status: 503, headers: { 'Content-Type': 'application/json' } });
     };
 
+    document.addEventListener('click', e => {
+      const menu = document.getElementById('bellaMoreMenu');
+      if (!menu || menu.hidden) return;
+      if (!menu.contains(e.target) && !e.target.closest('#bellaMoreBtn')) closeBellaMoreMenu();
+    });
     document.addEventListener('DOMContentLoaded', () => applySettings());
   })();
 </script>
-<script src="/script.js?v=6"></script>
-<script src="/ai-fix.js?v=6"></script>
-<script src="/bella-vnext.js?v=6"></script>
-<script src="/bella-install.js?v=6"></script>
+<script src="/app.js?v=7"></script>
 <script defer src="/_vercel/insights/script.js"></script>
 <script>
-  if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js?v=6').catch(() => {});
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js?v=7').catch(() => {});
 </script>
 </body>
 </html>
