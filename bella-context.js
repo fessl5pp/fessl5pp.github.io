@@ -137,6 +137,7 @@
 
   function recordTurn(role, text) {
     if (!enabled()) return;
+    if (role !== "user" && role !== "assistant") return;
     const clean = String(text || "").replace(/\s+/g, " ").trim().slice(0, MAX_CONTENT);
     if (role === "user" && isClearCommand(clean)) {
       clear();
@@ -282,6 +283,7 @@
     repeatInfo,
     shouldUseAIForRepeat,
     similarity,
+    recordTurn,
     clear,
     setEnabled,
     isEnabled: enabled,

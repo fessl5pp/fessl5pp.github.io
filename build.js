@@ -4,7 +4,7 @@ const sources = [
   ['script.js', 'Legacy UI and local features'],
   ['bella-context.js', 'Long conversation context memory'],
   ['bella-routing.js', 'Local reply routing'],
-  ['bella-personality.js', 'Adaptive personality and mood intelligence'],
+  ['bella-style.js', 'Adaptive user communication style'],
   ['bella-runtime.js', 'Network reliability and streaming runtime'],
   ['bella-vnext.js', 'Conversation mood memory and send flow'],
   ['bella-speed.js', 'Live reply rendering and perceived latency'],
@@ -30,7 +30,7 @@ const ownershipRules = [
   { pattern: /window\.fetch\s*=(?!=)/, owner: 'bella-runtime.js', label: 'network guard' },
   { pattern: /window\.openBellaSettings\s*=(?!=)/, owner: 'bella-ui.js', label: 'settings UI' },
   { pattern: /window\.BellaContext\s*=(?!=)/, owner: 'bella-context.js', label: 'long context memory' },
-  { pattern: /window\.BellaPersonality\s*=(?!=)/, owner: 'bella-personality.js', label: 'adaptive personality' },
+  { pattern: /window\.BellaPersonality\s*=(?!=)/, owner: 'bella-style.js', label: 'adaptive user style' },
   { pattern: /window\.BellaSpeed\s*=(?!=)/, owner: 'bella-speed.js', label: 'streaming UI bridge' }
 ];
 
@@ -49,10 +49,12 @@ const bundle = loaded.map(({ file, label, source }) =>
 try {
   new Function(bundle);
 } catch (error) {
-  console.error('Bella bundle syntax/declaration validation failed:', error);
+  console.error('Bella combined source validation failed:', error);
   process.exit(1);
 }
 
-fs.writeFileSync('app.js', bundle, 'utf8');
-console.log(`Bella bundle generated: app.js (${sources.length} modules, ${bundle.length} chars)`);
-console.log('Bella ownership validated: context/routing/personality/runtime/conversation/speed/UI are separated.');
+// app.js is a tracked, resilient static boot loader. Do not overwrite it here:
+// Vercel can execute vercel-build multiple times while compiling functions.
+// We validate the combined source in memory instead, keeping the deployed entry immutable.
+console.log(`Bella combined source validated (${sources.length} modules, ${bundle.length} chars)`);
+console.log('Bella ownership validated: context/routing/style/runtime/mood/send/speed/UI are separated.');

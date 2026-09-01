@@ -1,10 +1,19 @@
-const CACHE_NAME = "bella-pwa-v11";
+const CACHE_NAME = "bella-pwa-v11-stable-2";
 const CORE = [
   "/",
   "/index.html",
-  "/style.css",
-  "/bella-vnext.css",
-  "/app.js",
+  "/style.css?v=11",
+  "/bella-vnext.css?v=11",
+  "/app.js?v=11",
+  "/script.js?v=12",
+  "/bella-context.js?v=12",
+  "/bella-routing.js?v=12",
+  "/bella-style.js?v=12",
+  "/bella-runtime.js?v=12",
+  "/bella-vnext.js?v=12",
+  "/bella-speed.js?v=12",
+  "/bella-ui.js?v=12",
+  "/bella-install.js?v=12",
   "/manifest.json",
   "/favicon.svg"
 ];
@@ -29,18 +38,27 @@ self.addEventListener("activate", event => {
 self.addEventListener("fetch", event => {
   const request = event.request;
   if (request.method !== "GET") return;
+
   const url = new URL(request.url);
   if (url.origin !== self.location.origin || url.pathname.startsWith("/api/")) return;
 
-  event.respondWith(
-    fetch(request)
-      .then(response => {
-        if (response && response.ok) {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(request, copy));
-        }
-        return response;
-      })
-      .catch(() => caches.match(request).then(cached => cached || caches.match("/index.html")))
-  );
+  event.respondWith((async () => {
+    try {
+      const response = await fetch(request);
+      if (response?.ok) {
+        const copy = response.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(request, copy)).catch(() => {});
+      }
+      return response;
+    } catch {
+      const cached = await caches.match(request);
+      if (cached) return cached;
+
+      if (request.mode === "navigate") {
+        return (await caches.match("/index.html")) || (await caches.match("/")) || Response.error();
+      }
+
+      return Response.error();
+    }
+  })());
 });
