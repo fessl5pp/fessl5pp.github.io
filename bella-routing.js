@@ -41,7 +41,8 @@
       "شنو رأيج", "وش رايك", "وش رايج", "قولي رايج"
     ].some(phrase => clean.includes(normalizeText(phrase)));
 
-    return wordCount >= 5 || openEnded;
+    const repeatedShortMessage = !!window.BellaContext?.shouldUseAIForRepeat?.(msg);
+    return wordCount >= 5 || openEnded || repeatedShortMessage;
   }
 
   window.has = safeHas;
