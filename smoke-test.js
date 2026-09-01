@@ -31,6 +31,7 @@ const vnext = read('bella-vnext.js');
 const speed = read('bella-speed.js');
 const ui = read('bella-ui.js');
 const chatApi = read('api/chat.js');
+const diraApi = read('api/dira.js');
 const build = read('build.js');
 
 assert.ok(index.includes('/app.js?v='), 'index.html must load the unified app.js bundle');
@@ -63,6 +64,9 @@ assert.ok(speed.includes('installAddMsgBridge'), 'speed module must prevent dupl
 assert.ok(chatApi.includes('stream: wantsStream'), 'chat API must enable OpenAI streaming when requested');
 assert.ok(chatApi.includes('text/event-stream'), 'chat API must proxy SSE responses');
 assert.ok(chatApi.includes('response.body.getReader'), 'chat API must proxy the upstream response body');
+assert.ok(diraApi.includes('cleanVisibleReply'), 'Dira API must sanitize visible web-search text');
+assert.ok(diraApi.includes('الناتج الظاهر للمستخدم يكون كلام فقط'), 'Dira prompt must require plain visible text only');
+assert.ok(!diraApi.includes('sources: collectSources'), 'Dira API must not return source-link buttons');
 assert.ok(routing.includes('shouldUseAIForRepeat'), 'routing must escalate repeated short messages to AI');
 assert.ok(ui.includes('randomSuggestions: false'), 'suggestions setting should default to off');
 assert.ok(ui.includes('longContext: true'), 'long context setting should default to on');
@@ -71,4 +75,4 @@ for (const moduleName of ['bella-context.js', 'bella-routing.js', 'bella-persona
   assert.ok(build.includes(moduleName), `build.js must bundle ${moduleName}`);
 }
 
-console.log('Bella smoke tests passed: shell, context, personality, streaming, ownership, settings, and bundle wiring are valid.');
+console.log('Bella smoke tests passed: shell, context, personality, streaming, Dira text-only output, ownership, settings, and bundle wiring are valid.');
