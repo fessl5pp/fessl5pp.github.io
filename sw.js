@@ -1,14 +1,11 @@
-const CACHE_NAME = "bella-pwa-v1";
+const CACHE_NAME = "bella-pwa-v2";
 const CORE = [
   "/",
   "/index.html",
   "/style.css",
   "/script.js",
   "/manifest.json",
-  "/favicon.png",
-  "/apple-touch-icon.png",
-  "/icon-192.png",
-  "/icon-512.png"
+  "/favicon.svg"
 ];
 
 self.addEventListener("install", event => {
