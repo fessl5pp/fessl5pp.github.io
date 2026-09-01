@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 
   <title>Bella | بيلا الكويتية 🇰🇼</title>
-  <meta name="description" content="سولف مع بيلا.. ذكاء اصطناعي كويتي بمزاج يتغير حسب كلامك، رادار قز وألعاب تراثية!">
+  <meta name="description" content="سولف ويا بيلا.. ذكاء اصطناعي كويتي له مزاج وذاكرة وقطات، رادار قز وسوالف الديرة وألعاب!">
   <meta name="theme-color" content="#0c1018">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -21,7 +21,7 @@
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Bella">
   <meta property="og:title" content="Bella | بيلا الكويتية 🇰🇼">
-  <meta property="og:description" content="سولف مع بيلا.. ذكاء اصطناعي كويتي بمودات تلقائية ورادار قز وألعاب تراثية!">
+  <meta property="og:description" content="سولف ويا بيلا.. ذكاء اصطناعي كويتي له مزاج وذاكرة وقطات، رادار قز وسوالف الديرة!">
   <meta property="og:url" content="https://fessl5pp-github-io-fessl5pps-projects.vercel.app/">
   <meta property="og:image" content="https://fessl5pp-github-io-fessl5pps-projects.vercel.app/api/icon?size=512">
   <meta property="og:image:type" content="image/png">
@@ -31,10 +31,11 @@
 
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Bella | بيلا الكويتية 🇰🇼">
-  <meta name="twitter:description" content="سولف مع بيلا.. ذكاء اصطناعي كويتي بمزاج يتغير حسب كلامك.">
+  <meta name="twitter:description" content="ذكاء اصطناعي كويتي يسولف وياك بمزاج وذاكرة وقطات.">
   <meta name="twitter:image" content="https://fessl5pp-github-io-fessl5pps-projects.vercel.app/api/icon?size=512">
 
-  <link rel="stylesheet" href="/style.css?v=4">
+  <link rel="stylesheet" href="/style.css?v=5">
+  <link rel="stylesheet" href="/bella-vnext.css?v=5">
 </head>
 <body class="theme-blue">
 <div class="wrap">
@@ -42,50 +43,72 @@
     <div class="mini"><b id="xp-val">0</b><span>XP</span></div>
     <div class="mini"><b id="lvl-val">1</b><span>Level</span></div>
     <div class="mini"><b id="rank-val">مبتدئ</b><span>اللقب</span></div>
-    <div class="mini"><b id="streak-val">0</b><span>Streak</span></div>
+    <div class="mini"><b id="streak-val">0</b><span>سوالف</span></div>
     <div class="mood-pill" id="mood-pill">🙂 النفسية وسط</div>
   </div>
+
   <section class="hero">
-    <div class="hero-top"><div class="logo" id="heroAvatar">B</div><div class="txt"><b>Bella Ultra Pro</b><span>نسخة مطورة أقوى وأسرع</span></div></div>
-    <h1>بيلا الكويتية 🇰🇼</h1>
-    <div class="sub">مزاج Bella يتغير تلقائيًا حسب طريقتك بالكلام.</div>
+    <div class="hero-top">
+      <div class="logo" id="heroAvatar">B</div>
+      <div class="txt"><b>Bella</b><span>بيلا الكويتية</span></div>
+    </div>
+    <h1>بيلا 🇰🇼 سوالف، قطات، ومزاج على حسبك</h1>
+    <div class="sub">مو بس تجاوبك — تتذكر سوالفك بهالجهاز، تفهم أسلوبك، ومزاجها يتغير معاك شوي شوي.</div>
     <div class="hero-actions">
-      <button class="btn" onclick="(window.openChat || window.__openBella)()">ابدأ الحين ⚡</button>
+      <button class="btn" onclick="(window.openChat || window.__openBella)()">دش سولف وياها ⚡</button>
       <button class="ghost" onclick="showTheme()">الثيم 🎨</button>
       <button class="ghost" onclick="dailyWisdom()">حكمة اليوم 🧿</button>
       <button class="ghost" onclick="startBoxGame()">شنو بالصندوق 🎁</button>
       <button class="ghost" onclick="startProverbGame()">كمّل المثل 🧠</button>
-      <button class="ghost" onclick="openFazaa()">فزعة بيلا 🚨</button>
-      <button class="ghost" onclick="shareChat()">شارك الشات 📸</button>
+      <button class="ghost" onclick="openDira()">شكو ماكو؟ 🇰🇼</button>
+      <button class="ghost" onclick="openRadarPlus()">رادار القز+ 📡</button>
+      <button class="ghost" onclick="startKuwaitiChallenge()">تحدي كويتي 🧩</button>
+      <button class="ghost" onclick="shareChat()">شارك ستوري 📸</button>
     </div>
   </section>
-  <section class="badges-wrap"><div class="badges-head"><b>الأوسمة</b><span id="ach-count">0 / 5</span></div><div class="badges"><div class="badge" id="b1">🌱 بداية</div><div class="badge" id="b2">💬 سوالف</div><div class="badge" id="b3">📍 مستكشف</div><div class="badge" id="b4">☕ مزاج</div><div class="badge" id="b5">🌙 الغبقة</div></div></section>
+
+  <section class="badges-wrap">
+    <div class="badges-head"><b>الأوسمة</b><span id="ach-count">0 / 5</span></div>
+    <div class="badges">
+      <div class="badge" id="b1">🌱 بداية</div><div class="badge" id="b2">💬 سوالف</div><div class="badge" id="b3">📍 مستكشف</div><div class="badge" id="b4">☕ مزاج</div><div class="badge" id="b5">🌙 الغبقة</div>
+    </div>
+  </section>
 </div>
+
 <div class="chat-win" id="win">
-  <div class="header"><div class="left"><div class="avatar" id="chatAvatar">B</div><div class="title"><b>Bella</b><span id="chat-status">النفسية وسط 🙂</span></div></div><div class="header-actions"><button class="tiny" onclick="dailyWisdom()">🧿</button><button class="tiny" onclick="startBoxGame()">🎁</button><button class="tiny" onclick="startProverbGame()">🧠</button><button class="tiny" onclick="openFazaa()">🚨</button><button class="tiny" onclick="shareChat()">📸</button><button class="tiny" onclick="giveGift('rose')">🌹</button><button class="tiny" onclick="giveGift('choco')">🍫</button><button class="tiny" onclick="(window.closeChat || window.__closeBella)()">✕</button></div></div>
+  <div class="header">
+    <div class="left"><div class="avatar" id="chatAvatar">B</div><div class="title"><b>Bella</b><span id="chat-status">تو نعرف بعض · النفسية وسط</span></div></div>
+    <div class="header-actions">
+      <button class="tiny" onclick="dailyWisdom()">🧿</button>
+      <button class="tiny" onclick="startBoxGame()">🎁</button>
+      <button class="tiny" onclick="startProverbGame()">🧠</button>
+      <button class="tiny" onclick="openFazaa()">🚨</button>
+      <button class="tiny" onclick="shareChat()">📸</button>
+      <button class="tiny" onclick="giveGift('rose')">🌹</button>
+      <button class="tiny" onclick="giveGift('choco')">🍫</button>
+      <button class="tiny" onclick="(window.closeChat || window.__closeBella)()">✕</button>
+    </div>
+  </div>
   <div class="msg-box" id="box"></div>
-  <div class="mode-panel"><div class="mode-head"><span>مزاج Bella يتغير تلقائيًا</span><b id="mode-status">🙂 النفسية وسط</b></div></div>
-  <div class="quick-suggestions" id="quickSuggestions"><button onclick="quickSend('شلونچ؟')">شلونچ؟</button><button onclick="quickSend('ابي اتقهوى')">ابي اتقهوى</button><button onclick="quickSend('غير هالقهوة')">غير هالقهوة</button><button onclick="quickSend('نكتة')">نكتة</button><button onclick="quickSend('شنو الجو؟')">شنو الجو؟</button></div>
-  <div class="input-area"><input id="inp" placeholder="اكتب..." onkeydown="if(event.key==='Enter') send()"><button class="send" onclick="send()">إرسال</button></div>
+  <div class="mode-panel"><div class="mode-head"><span>مزاج بيلا يتغير تلقائيًا وبشكل تدريجي</span><b id="mode-status">🙂 النفسية وسط</b></div></div>
+  <div class="quick-suggestions" id="quickSuggestions">
+    <button onclick="quickSend('شلونچ؟')">شلونچ؟</button><button onclick="quickSend('شنو تتذكرين عني؟')">شنو تتذكرين؟</button><button onclick="quickSend('ابي اتقهوى')">أبي أتقهوى</button><button onclick="quickSend('نكتة')">نكتة</button><button onclick="openDira()">شكو ماكو؟</button>
+  </div>
+  <div class="input-area"><input id="inp" maxlength="4000" placeholder="اكتب لبيلا..." onkeydown="if(event.key==='Enter') send()"><button class="send" onclick="send()">إرسال</button></div>
 </div>
+
 <div class="modal hidden" id="themeModal"><div class="card"><h2>الثيم</h2><div class="theme-box"><div class="theme-swatch sw1" onclick="setTheme('theme-blue')" title="أزرق"></div><div class="theme-swatch sw2" onclick="setTheme('theme-pink')" title="وردي"></div><div class="theme-swatch sw3" onclick="setTheme('theme-gold')" title="ذهبي / قديم"></div><div class="theme-swatch sw4" onclick="setTheme('theme-night')" title="مود السهارى"></div></div><button class="ghost" onclick="hideTheme()">إغلاق</button></div></div>
 
 <script>
-  window.__openBella = function () {
-    const win = document.getElementById('win');
-    if (win) win.classList.add('active');
-  };
-  window.__closeBella = function () {
-    const win = document.getElementById('win');
-    if (win) win.classList.remove('active');
-  };
+  window.__openBella = function () { const win = document.getElementById('win'); if (win) win.classList.add('active'); };
+  window.__closeBella = function () { const win = document.getElementById('win'); if (win) win.classList.remove('active'); };
 </script>
-<script src="/script.js?v=4"></script>
-<script src="/ai-fix.js?v=4"></script>
+<script src="/script.js?v=5"></script>
+<script src="/ai-fix.js?v=5"></script>
+<script src="/bella-vnext.js?v=5"></script>
+<script defer src="/_vercel/insights/script.js"></script>
 <script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js?v=4').catch(() => {});
-  }
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js?v=5').catch(() => {});
 </script>
 </body>
 </html>
