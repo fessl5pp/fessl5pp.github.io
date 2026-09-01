@@ -2,14 +2,38 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Bella Ultra Pro</title>
-  <meta name="description" content="بوت كويتي ذكي - نسخة مطورة">
-  <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/4712/4712027.png">
-  <meta property="og:title" content="Bella Ultra Pro">
-  <meta property="og:description" content="بوت كويتي ذكي">
-  <meta property="og:image" content="https://cdn-icons-png.flaticon.com/512/4712/4712027.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+
+  <title>Bella | بيلا الكويتية 🇰🇼</title>
+  <meta name="description" content="سولف مع بيلا.. ذكاء اصطناعي كويتي بمزاج يتغير حسب كلامك، رادار قز وألعاب تراثية!">
+  <meta name="theme-color" content="#0c1018">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Bella">
+
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="apple-touch-icon" href="/api/icon?size=192">
+  <link rel="canonical" href="https://fessl5pp-github-io-fessl5pps-projects.vercel.app/">
+
+  <meta property="og:locale" content="ar_KW">
   <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Bella">
+  <meta property="og:title" content="Bella | بيلا الكويتية 🇰🇼">
+  <meta property="og:description" content="سولف مع بيلا.. ذكاء اصطناعي كويتي بمودات تلقائية ورادار قز وألعاب تراثية!">
+  <meta property="og:url" content="https://fessl5pp-github-io-fessl5pps-projects.vercel.app/">
+  <meta property="og:image" content="https://fessl5pp-github-io-fessl5pps-projects.vercel.app/api/icon?size=512">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="512">
+  <meta property="og:image:height" content="512">
+  <meta property="og:image:alt" content="Bella | بيلا الكويتية">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Bella | بيلا الكويتية 🇰🇼">
+  <meta name="twitter:description" content="سولف مع بيلا.. ذكاء اصطناعي كويتي بمزاج يتغير حسب كلامك.">
+  <meta name="twitter:image" content="https://fessl5pp-github-io-fessl5pps-projects.vercel.app/api/icon?size=512">
+
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="theme-blue">
@@ -23,7 +47,7 @@
   </div>
   <section class="hero">
     <div class="hero-top"><div class="logo" id="heroAvatar">B</div><div class="txt"><b>Bella Ultra Pro</b><span>نسخة مطورة أقوى وأسرع</span></div></div>
-    <h1>بوت كويتي ذكي 🔥</h1>
+    <h1>بيلا الكويتية 🇰🇼</h1>
     <div class="sub">مزاج Bella يتغير تلقائيًا حسب طريقتك بالكلام.</div>
     <div class="hero-actions">
       <button class="btn" onclick="openChat()">ابدأ الحين ⚡</button>
@@ -45,7 +69,6 @@
   <div class="input-area"><input id="inp" placeholder="اكتب..." onkeydown="if(event.key==='Enter') send()"><button class="send" onclick="send()">إرسال</button></div>
 </div>
 <div class="modal hidden" id="themeModal"><div class="card"><h2>الثيم</h2><div class="theme-box"><div class="theme-swatch sw1" onclick="setTheme('theme-blue')" title="أزرق"></div><div class="theme-swatch sw2" onclick="setTheme('theme-pink')" title="وردي"></div><div class="theme-swatch sw3" onclick="setTheme('theme-gold')" title="ذهبي / قديم"></div><div class="theme-swatch sw4" onclick="setTheme('theme-night')" title="مود السهارى"></div></div><button class="ghost" onclick="hideTheme()">إغلاق</button></div></div>
-<script src="script.js"></script>
-<script src="ai-fix.js?v=3"></script>
+<script src="/app.js?v=1"></script>
 </body>
 </html>
