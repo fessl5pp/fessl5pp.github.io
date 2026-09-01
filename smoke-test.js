@@ -35,11 +35,12 @@ const diraApi = read('api/dira.js');
 const build = read('build.js');
 const sw = read('sw.js');
 
-assert.ok(index.includes('/app.js?v=10'), 'index.html must load the latest unified app.js bundle');
-assert.ok(index.includes('/sw.js?v=10'), 'index.html must force the latest service worker');
+assert.ok(index.includes('/app.js?v=11'), 'index.html must load the latest unified app.js bundle');
+assert.ok(index.includes('/sw.js?v=11'), 'index.html must force the latest service worker');
 assert.ok(index.includes('window.__bellaSubmit'), 'index.html must include the critical send recovery wrapper');
 assert.ok(index.includes('window.__bellaEmergencySend'), 'index.html must include direct API fallback for sending');
-assert.ok(index.includes('onclick="window.__bellaSubmit(event)"'), 'send button must use the critical submit wrapper');
+assert.ok(index.includes('onclick="window.__bellaSubmit()"'), 'send button must use the critical submit wrapper');
+assert.ok(index.includes('await window.send()'), 'critical submit wrapper must await the real send promise');
 assert.ok(!index.includes('onkeydown="if(event.key'), 'legacy inline Enter handler must not remain');
 assert.ok(!index.includes('<script src="/script.js'), 'index.html must not load legacy script.js directly');
 assert.ok(!index.includes('<script src="/ai-fix.js'), 'index.html must not load obsolete ai-fix.js');
@@ -49,6 +50,9 @@ assert.ok(index.includes('id="quickSuggestions" hidden'), 'quick suggestions sho
 assert.ok(/window\.send\s*=(?!=)/.test(vnext), 'vNext must own active send flow');
 assert.ok(/window\.getAIReply\s*=(?!=)/.test(vnext), 'vNext must own active AI reply flow');
 assert.ok(/window\.updateMood\s*=(?!=)/.test(vnext), 'vNext must own active mood UI');
+assert.ok(vnext.includes('finally {\n      sending = false;'), 'vNext send flow must always release the sending lock');
+assert.ok(vnext.includes('if (sending) return false;'), 'vNext send flow must report a busy send instead of silently swallowing it');
+assert.ok(!vnext.includes('serviceWorker.register'), 'vNext must not register a second service worker');
 assert.ok(!/window\.send\s*=(?!=)/.test(routing), 'routing module must not own send flow');
 assert.ok(/window\.fetch\s*=(?!=)/.test(runtime), 'runtime must own Bella network guard');
 assert.ok(/window\.openBellaSettings\s*=(?!=)/.test(ui), 'UI module must own settings');
@@ -73,10 +77,10 @@ assert.ok(!diraApi.includes('sources: collectSources'), 'Dira API must not retur
 assert.ok(routing.includes('shouldUseAIForRepeat'), 'routing must escalate repeated short messages to AI');
 assert.ok(ui.includes('randomSuggestions: false'), 'suggestions setting should default to off');
 assert.ok(ui.includes('longContext: true'), 'long context setting should default to on');
-assert.ok(sw.includes('bella-pwa-v10'), 'service worker cache must be bumped for send repair');
+assert.ok(sw.includes('bella-pwa-v11'), 'service worker cache must be bumped for the send-flow repair');
 
 for (const moduleName of ['bella-context.js', 'bella-routing.js', 'bella-personality.js', 'bella-runtime.js', 'bella-vnext.js', 'bella-speed.js', 'bella-ui.js', 'bella-install.js']) {
   assert.ok(build.includes(moduleName), `build.js must bundle ${moduleName}`);
 }
 
-console.log('Bella smoke tests passed: critical send recovery, Safari safety, context, personality, Dira text-only output, ownership, settings, and bundle wiring are valid.');
+console.log('Bella smoke tests passed: awaited send flow, lock recovery, Safari safety, single service-worker ownership, context, personality, Dira text-only output, and bundle wiring are valid.');
