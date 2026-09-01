@@ -11,6 +11,7 @@ const mustExist = [
   'bella-runtime.js',
   'bella-vnext.js',
   'bella-speed.js',
+  'bella-send-guard.js',
   'bella-ui.js',
   'bella-install.js',
   'api/chat.js',
@@ -29,6 +30,7 @@ const personality = read('bella-personality.js');
 const runtime = read('bella-runtime.js');
 const vnext = read('bella-vnext.js');
 const speed = read('bella-speed.js');
+const sendGuard = read('bella-send-guard.js');
 const ui = read('bella-ui.js');
 const chatApi = read('api/chat.js');
 const diraApi = read('api/dira.js');
@@ -49,6 +51,7 @@ assert.ok(/window\.openBellaSettings\s*=(?!=)/.test(ui), 'UI module must own set
 assert.ok(/window\.BellaContext\s*=(?!=)/.test(context), 'context module must own long conversation context');
 assert.ok(/window\.BellaPersonality\s*=(?!=)/.test(personality), 'personality module must own adaptive personality state');
 assert.ok(/window\.BellaSpeed\s*=(?!=)/.test(speed), 'speed module must own streaming UI bridge');
+assert.ok(/window\.BellaSendGuard\s*=(?!=)/.test(sendGuard), 'send guard must expose recovery bridge');
 assert.ok(context.includes('buildHistory'), 'context module must build smart history');
 assert.ok(context.includes('shouldUseAIForRepeat'), 'context module must detect repeated short messages');
 assert.ok(personality.includes('directInsult'), 'personality module must distinguish direct insults');
@@ -61,6 +64,9 @@ assert.ok(runtime.includes('consumeChatStream'), 'runtime must consume streamed 
 assert.ok(runtime.includes('text/event-stream'), 'runtime must request event-stream responses');
 assert.ok(speed.includes('bella-streaming'), 'speed module must render live streamed reply state');
 assert.ok(speed.includes('installAddMsgBridge'), 'speed module must prevent duplicate final bubbles');
+assert.ok(speed.includes('isAppleSafari'), 'speed module must disable streaming on Apple Safari');
+assert.ok(sendGuard.includes('fallbackSend'), 'send guard must contain an emergency send path');
+assert.ok(sendGuard.includes('stopImmediatePropagation'), 'send guard must capture broken send-button events safely');
 assert.ok(chatApi.includes('stream: wantsStream'), 'chat API must enable OpenAI streaming when requested');
 assert.ok(chatApi.includes('text/event-stream'), 'chat API must proxy SSE responses');
 assert.ok(chatApi.includes('response.body.getReader'), 'chat API must proxy the upstream response body');
@@ -71,8 +77,8 @@ assert.ok(routing.includes('shouldUseAIForRepeat'), 'routing must escalate repea
 assert.ok(ui.includes('randomSuggestions: false'), 'suggestions setting should default to off');
 assert.ok(ui.includes('longContext: true'), 'long context setting should default to on');
 
-for (const moduleName of ['bella-context.js', 'bella-routing.js', 'bella-personality.js', 'bella-runtime.js', 'bella-vnext.js', 'bella-speed.js', 'bella-ui.js', 'bella-install.js']) {
+for (const moduleName of ['bella-context.js', 'bella-routing.js', 'bella-personality.js', 'bella-runtime.js', 'bella-vnext.js', 'bella-speed.js', 'bella-send-guard.js', 'bella-ui.js', 'bella-install.js']) {
   assert.ok(build.includes(moduleName), `build.js must bundle ${moduleName}`);
 }
 
-console.log('Bella smoke tests passed: shell, context, personality, streaming, Dira text-only output, ownership, settings, and bundle wiring are valid.');
+console.log('Bella smoke tests passed: shell, context, personality, Safari send recovery, streaming, Dira text-only output, ownership, settings, and bundle wiring are valid.');
