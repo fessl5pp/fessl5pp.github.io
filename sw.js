@@ -13,6 +13,7 @@ const CORE = [
   "/bella-style.js?v=14",
   "/bella-runtime.js?v=14",
   "/bella-vnext.js?v=14",
+  "/bella-account-memory.js?v=14",
   "/bella-speed.js?v=14",
   "/bella-ui.js?v=14",
   "/bella-install.js?v=14",
