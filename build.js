@@ -1,6 +1,7 @@
 const fs = require('fs');
 
 const sources = [
+  ['bella-account.js', 'Accounts and cloud profile sync'],
   ['script.js', 'Legacy UI and local features'],
   ['bella-legacy-plus.js', 'Cleaned and enhanced legacy features'],
   ['bella-context.js', 'Long conversation context memory'],
@@ -25,6 +26,7 @@ const loaded = sources.map(([file, label]) => {
 });
 
 const ownershipRules = [
+  { pattern: /window\.BellaAccount\s*=(?!=)/, owner: 'bella-account.js', label: 'account and cloud profile' },
   { pattern: /window\.send\s*=(?!=)/, owner: 'bella-vnext.js', label: 'send flow' },
   { pattern: /window\.getAIReply\s*=(?!=)/, owner: 'bella-vnext.js', label: 'AI reply flow' },
   { pattern: /window\.updateMood\s*=(?!=)/, owner: 'bella-vnext.js', label: 'mood UI' },
@@ -59,4 +61,4 @@ try {
 // Vercel can execute vercel-build multiple times while compiling functions.
 // We validate the combined source in memory instead, keeping the deployed entry immutable.
 console.log(`Bella combined source validated (${sources.length} modules, ${bundle.length} chars)`);
-console.log('Bella ownership validated: legacy features/context/routing/style/runtime/mood/send/speed/UI are separated.');
+console.log('Bella ownership validated: account/legacy/context/routing/style/runtime/mood/send/speed/UI are separated.');
