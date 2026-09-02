@@ -2,6 +2,7 @@
   "use strict";
 
   const modules = [
+    "bella-account.js",
     "script.js",
     "bella-legacy-plus.js",
     "bella-context.js",
@@ -9,6 +10,7 @@
     "bella-style.js",
     "bella-runtime.js",
     "bella-vnext.js",
+    "bella-account-memory.js",
     "bella-speed.js",
     "bella-ui.js",
     "bella-install.js"
@@ -17,7 +19,7 @@
   function loadScript(file) {
     return new Promise((resolve, reject) => {
       const script = document.createElement("script");
-      script.src = `/${file}?v=13`;
+      script.src = `/${file}?v=14`;
       script.async = false;
       script.onload = resolve;
       script.onerror = () => reject(new Error(`Failed to load ${file}`));
