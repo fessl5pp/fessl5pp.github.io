@@ -5,6 +5,7 @@ const read = file => fs.readFileSync(file, 'utf8');
 const mustExist = [
   'index.html',
   'app.js',
+  'bella-account.js',
   'script.js',
   'bella-legacy-plus.js',
   'bella-context.js',
@@ -29,6 +30,7 @@ assert.ok(!fs.existsSync('bella-personality.js'), 'duplicate bella-personality.j
 
 const index = read('index.html');
 const app = read('app.js');
+const account = read('bella-account.js');
 const legacy = read('script.js');
 const legacyPlus = read('bella-legacy-plus.js');
 const context = read('bella-context.js');
@@ -56,11 +58,28 @@ assert.ok(!index.includes('<script src="/ai-fix.js'), 'index.html must not load 
 assert.ok(!index.includes('<script src="/bella-vnext.js'), 'index.html must not load vNext directly');
 assert.ok(index.includes('id="quickSuggestions" hidden'), 'quick suggestions should remain hidden by default');
 
+assert.ok(app.indexOf('bella-account.js') < app.indexOf('script.js'), 'account module must load before local profile modules so cached account name is available');
 assert.ok(app.includes('bella-legacy-plus.js'), 'tracked app entry must load legacy improvements');
 assert.ok(app.includes('bella-style.js'), 'tracked app entry must know the style module');
 assert.ok(app.includes('bella-vnext.js'), 'tracked app entry must know the main conversation module');
 assert.ok(app.includes('window.__bellaBoot'), 'tracked app entry must expose boot completion');
-assert.ok(app.includes('?v=13'), 'tracked app entry must cache-bust source modules');
+assert.ok(app.includes('?v=14'), 'tracked app entry must cache-bust account-aware source modules');
+
+assert.ok(account.includes('sb_publishable_'), 'account module must use a browser-safe Supabase publishable key');
+assert.ok(!account.includes('service_role'), 'account module must never contain a Supabase service-role credential');
+assert.ok(!account.includes('sb_secret_'), 'account module must never contain a Supabase secret key');
+assert.ok(account.includes('/auth/v1/signup'), 'account module must support sign-up');
+assert.ok(account.includes('grant_type=password'), 'account module must support password sign-in');
+assert.ok(account.includes('/auth/v1/user'), 'account module must verify the current user with Supabase Auth');
+assert.ok(account.includes('bella_profiles'), 'account module must use the protected Bella profile table');
+assert.ok(account.includes('has_synced'), 'account module must track first cloud adoption safely');
+assert.ok(account.includes('GUEST_BACKUP_KEY'), 'account sign-in must preserve guest progress for sign-out restoration');
+assert.ok(account.includes('ما نخزن نص محادثاتك بالسحابة تلقائيًا'), 'account UI must disclose that full chats are not automatically cloud-synced');
+assert.ok(/window\.BellaAccount\s*=(?!=)/.test(account), 'account module must expose one account namespace');
+assert.ok(!/window\.send\s*=(?!=)/.test(account), 'account module must never own send flow');
+assert.ok(!/window\.getAIReply\s*=(?!=)/.test(account), 'account module must never own AI flow');
+assert.ok(!/window\.updateMood\s*=(?!=)/.test(account), 'account module must never own mood flow');
+assert.ok(!/window\.fetch\s*=(?!=)/.test(account), 'account module must never replace the network guard');
 
 for (const feature of ['coffeeRadar', 'socialRadarReply', 'dailyWisdom', 'startBoxGame', 'startProverbGame', 'checkGameAnswer', 'openFazaa', 'fazaaReply', 'shareChat', 'showRumor']) {
   assert.ok(legacy.includes(`function ${feature}`), `legacy feature ${feature} must remain present`);
@@ -93,6 +112,7 @@ assert.ok(/window\.BellaSpeed\s*=(?!=)/.test(speed), 'speed module must own stre
 
 assert.ok(!build.includes('bella-personality.js'), 'old duplicate mood/personality module must not be bundled');
 assert.ok(!build.includes('bella-send-guard.js'), 'conflicting capture-phase send guard must not be bundled');
+assert.ok(build.includes('bella-account.js'), 'account/cloud-sync module must be validated by the build');
 assert.ok(build.includes('bella-style.js'), 'style-only adaptive module must be bundled');
 assert.ok(build.includes('bella-legacy-plus.js'), 'cleaned legacy enhancement module must be validated by the build');
 
@@ -124,16 +144,16 @@ assert.ok(ui.includes('randomSuggestions: false'), 'suggestions setting should d
 assert.ok(ui.includes('longContext: true'), 'long context setting should default to on');
 assert.ok(manifest.includes('"orientation": "any"'), 'PWA must allow tablet rotation');
 
-assert.ok(sw.includes('bella-pwa-v11-stable-3'), 'service worker cache must use the legacy refresh cache');
+assert.ok(sw.includes('bella-pwa-v11-stable-4'), 'service worker cache must use the account-sync cache');
 assert.ok(sw.includes('/app.js?v=11'), 'service worker must cache the exact app entry requested by index.html');
-for (const moduleName of ['script.js', 'bella-legacy-plus.js', 'bella-context.js', 'bella-routing.js', 'bella-style.js', 'bella-runtime.js', 'bella-vnext.js', 'bella-speed.js', 'bella-ui.js', 'bella-install.js']) {
-  assert.ok(sw.includes(`/${moduleName}?v=13`), `service worker must cache loader module ${moduleName}`);
+for (const moduleName of ['bella-account.js', 'script.js', 'bella-legacy-plus.js', 'bella-context.js', 'bella-routing.js', 'bella-style.js', 'bella-runtime.js', 'bella-vnext.js', 'bella-speed.js', 'bella-ui.js', 'bella-install.js']) {
+  assert.ok(sw.includes(`/${moduleName}?v=14`), `service worker must cache loader module ${moduleName}`);
 }
 assert.ok(sw.includes('request.mode === "navigate"'), 'offline HTML fallback must be navigation-only');
 assert.ok(!sw.includes("cached || caches.match(\"/index.html\")"), 'static assets must never fall back to index.html');
 
-for (const moduleName of ['bella-legacy-plus.js', 'bella-context.js', 'bella-routing.js', 'bella-style.js', 'bella-runtime.js', 'bella-vnext.js', 'bella-speed.js', 'bella-ui.js', 'bella-install.js']) {
+for (const moduleName of ['bella-account.js', 'bella-legacy-plus.js', 'bella-context.js', 'bella-routing.js', 'bella-style.js', 'bella-runtime.js', 'bella-vnext.js', 'bella-speed.js', 'bella-ui.js', 'bella-install.js']) {
   assert.ok(build.includes(moduleName), `build.js must validate ${moduleName}`);
 }
 
-console.log('Bella smoke tests passed: legacy features preserved and enhanced, send/mood ownership intact, context/cost/Safari/PWA protections valid.');
+console.log('Bella smoke tests passed: accounts/cloud sync, legacy features, send/mood ownership, context/cost/Safari/PWA protections are valid.');
