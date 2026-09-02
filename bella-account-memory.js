@@ -79,11 +79,25 @@
     return true;
   }
 
+  async function finishEmailConfirmation() {
+    const url = new URL(location.href);
+    if (url.searchParams.get("account") !== "confirmed") return;
+    try { await Promise.resolve(window.__bellaAccountReady); } catch {}
+    if (!window.BellaAccount?.isSignedIn?.()) return;
+    url.searchParams.delete("account");
+    url.hash = "";
+    location.replace(`${url.pathname}${url.search}` || "/");
+  }
+
   window.BellaAccountMemory = Object.freeze({ syncExactMemory, install });
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => setTimeout(install, 0), { once: true });
+    document.addEventListener("DOMContentLoaded", () => {
+      setTimeout(install, 0);
+      finishEmailConfirmation();
+    }, { once: true });
   } else {
     setTimeout(install, 0);
+    finishEmailConfirmation();
   }
 })();
