@@ -17,6 +17,8 @@ assert.ok(memorySync.includes('syncExactMemory'), 'account memory sync must expo
 assert.ok(memorySync.includes('method: "PATCH"'), 'memory deletion sync must patch the profile directly');
 assert.ok(memorySync.includes('body: JSON.stringify({ memory })'), 'memory deletion sync must treat the current local list as authoritative');
 assert.ok(memorySync.includes('[data-del],#clearBellaMemory'), 'individual and full memory deletion must sync to cloud');
+assert.ok(memorySync.includes('finishEmailConfirmation'), 'confirmed email sessions must reload after cloud profile bootstrap');
+assert.ok(memorySync.includes('searchParams.delete("account")'), 'confirmation reload must remove the one-time account marker');
 assert.ok(memorySync.includes('sb_publishable_'), 'memory sync may only use the browser-safe publishable key');
 assert.ok(!memorySync.includes('service_role'), 'memory sync must never contain a service-role key');
 assert.ok(!memorySync.includes('sb_secret_'), 'memory sync must never contain a secret key');
@@ -25,4 +27,4 @@ assert.ok(!/window\.getAIReply\s*=(?!=)/.test(memorySync), 'memory sync must nev
 assert.ok(!/window\.updateMood\s*=(?!=)/.test(memorySync), 'memory sync must never own mood');
 assert.ok(!/window\.fetch\s*=(?!=)/.test(memorySync), 'memory sync must never replace fetch');
 
-console.log('Bella account memory smoke tests passed: cloud deletions stay deleted without taking over chat ownership.');
+console.log('Bella account memory smoke tests passed: cloud deletions stay deleted, confirmation reload is clean, and chat ownership stays intact.');
