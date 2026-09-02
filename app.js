@@ -10,6 +10,7 @@
     "bella-style.js",
     "bella-runtime.js",
     "bella-vnext.js",
+    "bella-account-memory.js",
     "bella-speed.js",
     "bella-ui.js",
     "bella-install.js"
