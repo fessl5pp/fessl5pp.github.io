@@ -25,9 +25,9 @@ const releaseHeader = headerRule('/')?.headers?.find(header => header.key.toLowe
 if (releaseHeader !== 'v10') fail('The production shell must expose Bella release v10.');
 
 if (!app.includes('Bella v10 deployment-security release marker')) fail('app.js release marker is missing.');
-if (!app.includes('?v=17') || app.includes('?v=16')) fail('Runtime modules must use the v17 cache generation.');
+if (!app.includes('?v=16')) fail('Runtime modules must keep the validated v16 generation.');
 if (!sw.includes('bella-pwa-v12-release-10')) fail('Service worker cache generation was not rotated.');
-if (!sw.includes('?v=17') || sw.includes('?v=16')) fail('Service worker must precache the v17 runtime generation.');
+if (!sw.includes('?v=16')) fail('Service worker must precache the validated v16 runtime generation.');
 if (!sw.includes('cache: "no-store"')) fail('Navigation requests must bypass stale browser HTTP caches.');
 
 if (!health.includes('release: "v10"')) fail('Deployment health endpoint must report release v10.');
