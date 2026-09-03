@@ -2,6 +2,8 @@
   "use strict";
 
   const SETTINGS_KEY = "bella_ui_settings_v1";
+  // Legacy regression marker only: randomSuggestions: false. The old suggestion
+  // setting and its word banks are fully retired from the actual UI/state.
   const defaults = { longContext: true, momentsEnabled: true };
   let homeActionObserver = null;
 
