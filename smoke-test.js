@@ -15,6 +15,7 @@ const mustExist = [
   'bella-style.js',
   'bella-runtime.js',
   'bella-vnext.js',
+  'bella-moderator-center.js',
   'bella-speed.js',
   'bella-ui.js',
   'bella-install.js',
@@ -68,6 +69,7 @@ assert.ok(app.indexOf('bella-live-web.js') < app.indexOf('bella-account-memory.j
 assert.ok(app.includes('bella-legacy-plus.js'), 'tracked app entry must load legacy improvements');
 assert.ok(app.includes('bella-style.js'), 'tracked app entry must know the style module');
 assert.ok(app.includes('bella-vnext.js'), 'tracked app entry must know the main conversation module');
+assert.ok(app.includes('bella-moderator-center.js'), 'tracked app entry must load the moderator center');
 assert.ok(app.includes('window.__bellaBoot'), 'tracked app entry must expose boot completion');
 assert.ok(app.includes('?v=16'), 'tracked app entry must cache-bust live-web source modules');
 
@@ -150,6 +152,7 @@ assert.ok(!build.includes('bella-send-guard.js'), 'conflicting capture-phase sen
 assert.ok(build.includes('bella-account.js'), 'account/cloud-sync module must be validated by the build');
 assert.ok(build.includes('bella-account-memory.js'), 'cloud-memory module must be validated by the build');
 assert.ok(build.includes('bella-live-web.js'), 'live web citation module must be validated by the build');
+assert.ok(build.includes('bella-moderator-center.js'), 'moderator center must be validated by the build');
 assert.ok(build.includes('bella-style.js'), 'style-only adaptive module must be bundled');
 assert.ok(build.includes('bella-legacy-plus.js'), 'cleaned legacy enhancement module must be validated by the build');
 
@@ -187,16 +190,16 @@ assert.ok(ui.includes('randomSuggestions: false'), 'suggestions setting should d
 assert.ok(ui.includes('longContext: true'), 'long context setting should default to on');
 assert.ok(manifest.includes('"orientation": "any"'), 'PWA must allow tablet rotation');
 
-assert.ok(sw.includes('bella-pwa-v11-stable-6'), 'service worker cache must use the live-web release cache');
+assert.ok(sw.includes('bella-pwa-v11-stable-7'), 'service worker cache must use the moderator-center release cache');
 assert.ok(sw.includes('/app.js?v=11'), 'service worker must cache the exact app entry requested by index.html');
-for (const moduleName of ['bella-account.js', 'script.js', 'bella-legacy-plus.js', 'bella-context.js', 'bella-routing.js', 'bella-style.js', 'bella-runtime.js', 'bella-vnext.js', 'bella-live-web.js', 'bella-account-memory.js', 'bella-speed.js', 'bella-ui.js', 'bella-install.js']) {
+for (const moduleName of ['bella-account.js', 'script.js', 'bella-legacy-plus.js', 'bella-context.js', 'bella-routing.js', 'bella-style.js', 'bella-runtime.js', 'bella-vnext.js', 'bella-live-web.js', 'bella-account-memory.js', 'bella-moderator-center.js', 'bella-speed.js', 'bella-ui.js', 'bella-install.js']) {
   assert.ok(sw.includes(`/${moduleName}?v=16`), `service worker must cache loader module ${moduleName}`);
 }
 assert.ok(sw.includes('request.mode === "navigate"'), 'offline HTML fallback must be navigation-only');
 assert.ok(!sw.includes("cached || caches.match(\"/index.html\")"), 'static assets must never fall back to index.html');
 
-for (const moduleName of ['bella-account.js', 'bella-account-memory.js', 'bella-live-web.js', 'bella-legacy-plus.js', 'bella-context.js', 'bella-routing.js', 'bella-style.js', 'bella-runtime.js', 'bella-vnext.js', 'bella-speed.js', 'bella-ui.js', 'bella-install.js']) {
+for (const moduleName of ['bella-account.js', 'bella-account-memory.js', 'bella-live-web.js', 'bella-moderator-center.js', 'bella-legacy-plus.js', 'bella-context.js', 'bella-routing.js', 'bella-style.js', 'bella-runtime.js', 'bella-vnext.js', 'bella-speed.js', 'bella-ui.js', 'bella-install.js']) {
   assert.ok(build.includes(moduleName), `build.js must validate ${moduleName}`);
 }
 
-console.log('Bella smoke tests passed: selective live web search/clickable citations, cloud memory v2, accounts, legacy features, send/mood ownership, context/cost/Safari/PWA protections are valid.');
+console.log('Bella smoke tests passed: selective live web search/clickable citations, cloud memory v2, accounts, moderator center, legacy features, send/mood ownership, context/cost/Safari/PWA protections are valid.');

@@ -17,6 +17,7 @@ const sources = [
   ['bella-account-center.js', 'Signed-in account dashboard'],
   ['bella-owner-center.js', 'Owner-only account dashboard'],
   ['bella-owner-users.js', 'Owner-only user management and audit log'],
+  ['bella-moderator-center.js', 'Limited moderator account review center'],
   ['bella-owner-analytics.js', 'Owner-only activity analytics dashboard'],
   ['bella-owner-controls.js', 'Owner-only remote system controls'],
   ['bella-speed.js', 'Live reply rendering and perceived latency'],
@@ -44,6 +45,7 @@ const ownershipRules = [
   { pattern: /window\.BellaAccountCenter\s*=(?!=)/, owner: 'bella-account-center.js', label: 'account center UI' },
   { pattern: /window\.BellaOwnerCenter\s*=(?!=)/, owner: 'bella-owner-center.js', label: 'owner center UI' },
   { pattern: /window\.BellaOwnerUsers\s*=(?!=)/, owner: 'bella-owner-users.js', label: 'owner user management UI' },
+  { pattern: /window\.BellaModeratorCenter\s*=(?!=)/, owner: 'bella-moderator-center.js', label: 'moderator center UI' },
   { pattern: /window\.BellaOwnerAnalytics\s*=(?!=)/, owner: 'bella-owner-analytics.js', label: 'owner activity analytics UI' },
   { pattern: /window\.BellaOwnerControls\s*=(?!=)/, owner: 'bella-owner-controls.js', label: 'owner remote controls UI' },
   { pattern: /window\.BellaLiveWeb\s*=(?!=)/, owner: 'bella-live-web.js', label: 'live web citation UI' },
@@ -88,4 +90,4 @@ try {
 }
 
 console.log(`Bella combined source validated (${sources.length} modules, ${bundle.length} chars)`);
-console.log('Bella ownership validated: account/analytics/config/auth/owner-users/account-center/owner-center/owner-controls/owner-analytics/memory-sync/live-web/legacy/context/routing/style/runtime/mood/send/speed/UI are separated.');
+console.log('Bella ownership validated: account/analytics/config/auth/owner-users/moderator-center/account-center/owner-center/owner-controls/owner-analytics/memory-sync/live-web/legacy/context/routing/style/runtime/mood/send/speed/UI are separated.');
