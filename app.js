@@ -3,6 +3,7 @@
 
   const modules = [
     "bella-account.js",
+    "bella-analytics.js",
     "script.js",
     "bella-legacy-plus.js",
     "bella-context.js",
@@ -14,6 +15,7 @@
     "bella-account-memory.js",
     "bella-account-center.js",
     "bella-owner-center.js",
+    "bella-owner-analytics.js",
     "bella-speed.js",
     "bella-ui.js",
     "bella-install.js"
