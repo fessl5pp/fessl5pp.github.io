@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.2.0",
   "scripts": {
-    "test": "node smoke-test.js && node account-memory-smoke-test.js",
-    "vercel-build": "node smoke-test.js && node account-memory-smoke-test.js && node build.js"
+    "test": "node smoke-test.js && node account-memory-smoke-test.js && node account-center-smoke-test.js",
+    "vercel-build": "node smoke-test.js && node account-memory-smoke-test.js && node account-center-smoke-test.js && node build.js"
   }
 }

@@ -12,6 +12,7 @@
     "bella-vnext.js",
     "bella-live-web.js",
     "bella-account-memory.js",
+    "bella-account-center.js",
     "bella-speed.js",
     "bella-ui.js",
     "bella-install.js"
