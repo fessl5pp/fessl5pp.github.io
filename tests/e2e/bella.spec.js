@@ -28,10 +28,15 @@ test('boots cleanly and core chat controls open', async ({ page }) => {
   await page.evaluate(() => (window.openChat || window.__openBella)());
   await expect(page.locator('#win')).toHaveClass(/active/);
 
-  await page.evaluate(() => window.toggleBellaMoreMenu());
-  await expect(page.locator('#bellaMoreMenu')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'إرسال الرسالة' })).toBeVisible();
+  await page.getByRole('button', { name: 'فعاليات بيلا' }).click();
+  await expect(page.locator('#bellaActivities')).toBeVisible();
+  await expect(page.getByRole('button', { name: /رادار القز/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /تحدي كويتي/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /شنو بالصندوق/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /كمّل المثل/ })).toBeVisible();
+  await page.locator('#bellaActivitiesClose').click();
 
+  await expect(page.getByRole('button', { name: 'إرسال الرسالة' })).toBeVisible();
   expect(pageErrors).toEqual([]);
 });
 
