@@ -13,6 +13,7 @@
     "bella-auth-bridge.js",
     "bella-runtime.js",
     "bella-vnext.js",
+    "bella-avatar.js",
     "bella-live-web.js",
     "bella-account-memory.js",
     "bella-account-center.js",
