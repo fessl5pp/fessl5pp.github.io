@@ -1,3 +1,5 @@
+import { claimBellaAi } from "../lib/bella-control.js";
+
 const WINDOW_MS = 10 * 60 * 1000;
 const MAX_REQUESTS = 12;
 const OPENAI_TIMEOUT_MS = 20000;
@@ -54,6 +56,14 @@ export default async function handler(req, res) {
 
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) return res.status(500).json({ error: "AI is not configured" });
+
+  const claim = await claimBellaAi("live_web");
+  if (!claim.allowed) {
+    if (claim.reason === "maintenance") return res.status(503).json({ error: "بيلا تحت الصيانة شوي 🛠️ جرب عقب.", control: "maintenance" });
+    if (claim.reason === "daily_limit") return res.status(429).json({ error: "وصلنا حد استخدام بيلا لليوم. ترجع تفتح تلقائيًا باجر ✨", control: "daily_limit", used: claim.used, limit: claim.dailyLimit });
+    if (claim.reason === "live_web_disabled") return res.status(503).json({ error: "البحث الحي موقفه المالك مؤقتًا 🔎", control: "live_web_disabled" });
+    return res.status(503).json({ error: "البحث الحي موقوف مؤقتًا.", control: claim.reason || "disabled" });
+  }
 
   const topic = String(req.body?.topic || "سوالف الديرة").slice(0, 300);
   const controller = new AbortController();
