@@ -3,6 +3,7 @@
 
   const SETTINGS_KEY = "bella_ui_settings_v1";
   const defaults = { randomSuggestions: false, longContext: true };
+  let homeActionObserver = null;
 
   function getSettings() {
     try {
@@ -12,12 +13,39 @@
     }
   }
 
+  function organizeHomeActions() {
+    const heroActions = document.querySelector(".hero-actions");
+    if (!heroActions) return;
+
+    const isCoreAction = button => {
+      const onclick = String(button.getAttribute("onclick") || "");
+      return onclick.includes("openChat")
+        || onclick.includes("__openBella")
+        || onclick.includes("openBellaSettings")
+        || onclick.includes("openBellaActivities");
+    };
+
+    [...heroActions.querySelectorAll(":scope > button")].forEach(button => {
+      if (!isCoreAction(button)) button.remove();
+    });
+
+    if (!homeActionObserver) {
+      homeActionObserver = new MutationObserver(() => {
+        [...heroActions.querySelectorAll(":scope > button")].forEach(button => {
+          if (!isCoreAction(button)) button.remove();
+        });
+      });
+      homeActionObserver.observe(heroActions, { childList: true });
+    }
+  }
+
   function saveSettings(next) {
     try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(next)); } catch {}
     applySettings(next);
   }
 
   function applySettings(settings = getSettings()) {
+    organizeHomeActions();
     const suggestions = document.getElementById("quickSuggestions");
     if (suggestions) suggestions.hidden = !settings.randomSuggestions;
     window.BellaContext?.setEnabled?.(settings.longContext !== false);
@@ -174,5 +202,10 @@
     applySettings();
   }
 
-  window.BellaUI = Object.freeze({ getSettings, applySettings, openActivities: window.openBellaActivities });
+  window.BellaUI = Object.freeze({
+    getSettings,
+    applySettings,
+    organizeHomeActions,
+    openActivities: window.openBellaActivities
+  });
 })();
