@@ -3,7 +3,7 @@
   "rewrites": [
     {
       "source": "/api/icon",
-      "destination": "/api/icon-v2"
+      "destination": "/api/icon-v3"
     }
   ],
   "headers": [
