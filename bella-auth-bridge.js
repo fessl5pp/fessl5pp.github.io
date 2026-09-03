@@ -28,7 +28,7 @@
 
   function shouldAttach(input) {
     const path = requestPath(input);
-    return path === "/api/chat" || path === "/api/dira";
+    return path === "/api/chat" || path === "/api/dira" || path === "/api/voice";
   }
 
   function bridgedFetch(input, init = {}) {

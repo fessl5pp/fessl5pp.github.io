@@ -11,6 +11,7 @@ const sources = [
   ['bella-style.js', 'Adaptive user communication style'],
   ['bella-auth-bridge.js', 'Signed-in API authorization bridge'],
   ['bella-runtime.js', 'Network reliability and streaming runtime'],
+  ['bella-voice.js', 'Server-backed Bella voice with local fallback'],
   ['bella-vnext.js', 'Conversation mood memory and send flow'],
   ['bella-avatar.js', 'Mood-reactive Bella visual identity'],
   ['bella-live-web.js', 'Selective live web citation rendering'],
@@ -42,6 +43,7 @@ const ownershipRules = [
   { pattern: /window\.BellaAnalytics\s*=(?!=)/, owner: 'bella-analytics.js', label: 'privacy-safe usage analytics' },
   { pattern: /window\.BellaConfig\s*=(?!=)/, owner: 'bella-config.js', label: 'remote public configuration' },
   { pattern: /window\.BellaAuthBridge\s*=(?!=)/, owner: 'bella-auth-bridge.js', label: 'signed-in API authorization bridge' },
+  { pattern: /window\.BellaVoice\s*=(?!=)/, owner: 'bella-voice.js', label: 'server-backed voice UI' },
   { pattern: /window\.BellaAccountMemory\s*=(?!=)/, owner: 'bella-account-memory.js', label: 'cloud memory deletion sync' },
   { pattern: /window\.BellaAccountCenter\s*=(?!=)/, owner: 'bella-account-center.js', label: 'account center UI' },
   { pattern: /window\.BellaOwnerCenter\s*=(?!=)/, owner: 'bella-owner-center.js', label: 'owner center UI' },
@@ -75,7 +77,7 @@ if (!/window\.fetch\s*=(?!=)/.test(runtime)) {
   console.error('Bella runtime must remain the final network guard.');
   process.exit(1);
 }
-if (!/window\.fetch\s*=(?!=)/.test(bridge) || !bridge.includes('/api/chat') || !bridge.includes('/api/dira')) {
+if (!/window\.fetch\s*=(?!=)/.test(bridge) || !bridge.includes('/api/chat') || !bridge.includes('/api/dira') || !bridge.includes('/api/voice')) {
   console.error('Bella auth bridge must attach signed-in auth only to Bella API routes before runtime loads.');
   process.exit(1);
 }
@@ -92,4 +94,4 @@ try {
 }
 
 console.log(`Bella combined source validated (${sources.length} modules, ${bundle.length} chars)`);
-console.log('Bella ownership validated: account/analytics/config/auth/owner-users/moderator-center/account-center/owner-center/owner-controls/owner-analytics/avatar/memory-sync/live-web/legacy/context/routing/style/runtime/mood/send/speed/UI are separated.');
+console.log('Bella ownership validated: account/analytics/config/auth/voice/owner-users/moderator-center/account-center/owner-center/owner-controls/owner-analytics/avatar/memory-sync/live-web/legacy/context/routing/style/runtime/mood/send/speed/UI are separated.');

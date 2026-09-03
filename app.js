@@ -1,6 +1,6 @@
 (() => {
   "use strict";
-  // Bella visual identity v8 release marker.
+  // Bella voice v9 release marker.
 
   const modules = [
     "bella-account.js",
@@ -13,6 +13,7 @@
     "bella-style.js",
     "bella-auth-bridge.js",
     "bella-runtime.js",
+    "bella-voice.js",
     "bella-vnext.js",
     "bella-avatar.js",
     "bella-live-web.js",
