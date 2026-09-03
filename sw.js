@@ -1,5 +1,5 @@
-const CACHE_NAME = "bella-pwa-v13-release-11";
-// Previous validated cache markers retained for regression compatibility: bella-pwa-v12-release-10, bella-pwa-v11-stable-7
+const CACHE_NAME = "bella-pwa-v14-release-12";
+// Previous validated cache markers retained for regression compatibility: bella-pwa-v13-release-11, bella-pwa-v12-release-10, bella-pwa-v11-stable-7
 const CORE = [
   "/",
   "/index.html",
