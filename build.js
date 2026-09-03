@@ -5,6 +5,7 @@ const sources = [
   ['bella-analytics.js', 'Privacy-safe signed-in usage analytics'],
   ['script.js', 'Legacy UI and local features'],
   ['bella-legacy-plus.js', 'Cleaned and enhanced legacy features'],
+  ['bella-config.js', 'Public remote feature configuration'],
   ['bella-context.js', 'Long conversation context memory'],
   ['bella-routing.js', 'Local reply routing'],
   ['bella-style.js', 'Adaptive user communication style'],
@@ -15,6 +16,7 @@ const sources = [
   ['bella-account-center.js', 'Signed-in account dashboard'],
   ['bella-owner-center.js', 'Owner-only account dashboard'],
   ['bella-owner-analytics.js', 'Owner-only activity analytics dashboard'],
+  ['bella-owner-controls.js', 'Owner-only remote system controls'],
   ['bella-speed.js', 'Live reply rendering and perceived latency'],
   ['bella-ui.js', 'Settings and chat controls'],
   ['bella-install.js', 'PWA install experience']
@@ -34,10 +36,12 @@ const loaded = sources.map(([file, label]) => {
 const ownershipRules = [
   { pattern: /window\.BellaAccount\s*=(?!=)/, owner: 'bella-account.js', label: 'account and cloud profile' },
   { pattern: /window\.BellaAnalytics\s*=(?!=)/, owner: 'bella-analytics.js', label: 'privacy-safe usage analytics' },
+  { pattern: /window\.BellaConfig\s*=(?!=)/, owner: 'bella-config.js', label: 'remote public configuration' },
   { pattern: /window\.BellaAccountMemory\s*=(?!=)/, owner: 'bella-account-memory.js', label: 'cloud memory deletion sync' },
   { pattern: /window\.BellaAccountCenter\s*=(?!=)/, owner: 'bella-account-center.js', label: 'account center UI' },
   { pattern: /window\.BellaOwnerCenter\s*=(?!=)/, owner: 'bella-owner-center.js', label: 'owner center UI' },
   { pattern: /window\.BellaOwnerAnalytics\s*=(?!=)/, owner: 'bella-owner-analytics.js', label: 'owner activity analytics UI' },
+  { pattern: /window\.BellaOwnerControls\s*=(?!=)/, owner: 'bella-owner-controls.js', label: 'owner remote controls UI' },
   { pattern: /window\.BellaLiveWeb\s*=(?!=)/, owner: 'bella-live-web.js', label: 'live web citation UI' },
   { pattern: /window\.send\s*=(?!=)/, owner: 'bella-vnext.js', label: 'send flow' },
   { pattern: /window\.getAIReply\s*=(?!=)/, owner: 'bella-vnext.js', label: 'AI reply flow' },
@@ -70,4 +74,4 @@ try {
 }
 
 console.log(`Bella combined source validated (${sources.length} modules, ${bundle.length} chars)`);
-console.log('Bella ownership validated: account/analytics/account-center/owner-center/owner-analytics/memory-sync/live-web/legacy/context/routing/style/runtime/mood/send/speed/UI are separated.');
+console.log('Bella ownership validated: account/analytics/config/account-center/owner-center/owner-controls/owner-analytics/memory-sync/live-web/legacy/context/routing/style/runtime/mood/send/speed/UI are separated.');

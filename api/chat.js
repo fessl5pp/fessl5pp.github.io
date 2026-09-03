@@ -1,3 +1,5 @@
+import { claimBellaAi } from "../lib/bella-control.js";
+
 const WINDOW_MS = 10 * 60 * 1000;
 const MAX_REQUESTS = 36;
 const MAX_LIVE_WEB_REQUESTS = 10;
@@ -134,6 +136,16 @@ function streamError(res, message) {
   return true;
 }
 
+function controlError(res, claim) {
+  if (claim?.reason === "maintenance") {
+    return res.status(503).json({ error: "بيلا تحت الصيانة شوي 🛠️ جرب عقب." , control: "maintenance" });
+  }
+  if (claim?.reason === "daily_limit") {
+    return res.status(429).json({ error: "وصلنا حد استخدام بيلا لليوم. ترجع تفتح تلقائيًا باجر ✨", control: "daily_limit", used: claim.used, limit: claim.dailyLimit });
+  }
+  return res.status(503).json({ error: "بيلا موقوفة مؤقتًا من مركز المالك.", control: claim?.reason || "disabled" });
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
   if (rateLimited(req)) return res.status(429).json({ error: "هدي شوي 😅 كثرت الرسايل بسرعة، جرب عقب دقيقة." });
@@ -157,11 +169,19 @@ export default async function handler(req, res) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) return res.status(500).json({ error: "AI is not configured" });
 
-  const liveWebIntent = shouldUseLiveWebSearch(userMessage);
+  let liveWebIntent = shouldUseLiveWebSearch(userMessage);
   if (liveWebIntent && liveWebRateLimited(req)) {
     return res.status(429).json({ error: "البحث الحي عليه ضغط شوي 🔎 جرب بعد دقيقة، والسوالف العادية شغالة." });
   }
-  const useLiveWeb = liveWebIntent;
+
+  let claim = await claimBellaAi(liveWebIntent ? "live_web" : "chat");
+  if (!claim.allowed && claim.reason === "live_web_disabled" && liveWebIntent) {
+    liveWebIntent = false;
+    claim = await claimBellaAi("chat");
+  }
+  if (!claim.allowed) return controlError(res, claim);
+
+  const useLiveWeb = liveWebIntent && claim.liveWebEnabled !== false;
   const wantsStream = req.body?.stream === true || String(req.headers.accept || "").includes("text/event-stream");
   const upstreamStream = wantsStream && !useLiveWeb;
   const effectiveMode = ["auto", "angry", "cute", "chill"].includes(mode) ? mode : "chill";
