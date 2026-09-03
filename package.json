@@ -1,7 +1,7 @@
 {
   "name": "bella-kuwaiti",
   "private": true,
-  "version": "1.5.1",
+  "version": "1.5.2",
   "scripts": {
     "test": "node smoke-test.js && node persona-ui-smoke-test.js && node account-memory-smoke-test.js && node account-center-smoke-test.js && node owner-center-smoke-test.js && node owner-analytics-smoke-test.js && node owner-controls-smoke-test.js && node owner-users-smoke-test.js && node moderator-center-smoke-test.js && node avatar-smoke-test.js && node voice-smoke-test.js && node security-smoke-test.js && node runtime-cleanup-smoke-test.js && node deployment-smoke-test.js",
     "test:e2e": "playwright test",
