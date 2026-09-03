@@ -32,7 +32,7 @@
     return normalizeText(msg).length > 0;
   }
 
-  function disableLegacyConversationCopy() {
+  function installAIFirstConversation() {
     // Old dictionary / mood banks are never allowed to answer normal chat.
     window.dictionaryReply = function bellaAIOnlyDictionary() { return null; };
     window.angryServiceBlock = function bellaAIOnlyAngryService() { return null; };
@@ -47,13 +47,8 @@
       return null;
     };
 
-    // Remove the old random typing popups and rumor-bar copy completely.
-    window.handleTypingBehavior = function bellaNoLegacyTypingCopy() {};
-    window.initRumorBar = function bellaNoLegacyRumors() {};
-    window.startRumorCycle = function bellaNoLegacyRumorCycle() {};
-    window.showRumor = function bellaNoLegacyRumor() {};
-
-    // Old suggestion banks are retired. The composer stays clean.
+    // Old suggestion banks are retired. Ambient rumors / top-right Bella moments
+    // are intentionally preserved and enhanced by bella-moments.js.
     window.updateSuggestions = function bellaNoLegacySuggestions() {
       const suggestions = document.getElementById("quickSuggestions");
       if (!suggestions) return;
@@ -63,37 +58,30 @@
     window.refreshSuggestions = window.updateSuggestions;
   }
 
-  function clearLegacyAmbientUI() {
-    document.getElementById("rumor-bar")?.remove();
+  function clearLegacySuggestions() {
     const suggestions = document.getElementById("quickSuggestions");
     if (suggestions) {
       suggestions.hidden = true;
       suggestions.replaceChildren();
     }
-
-    try {
-      if (typeof rumorTimer !== "undefined" && rumorTimer) {
-        clearInterval(rumorTimer);
-        rumorTimer = null;
-      }
-    } catch {}
   }
 
   window.has = safeHas;
-  disableLegacyConversationCopy();
+  installAIFirstConversation();
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", clearLegacyAmbientUI, { once: true });
+    document.addEventListener("DOMContentLoaded", clearLegacySuggestions, { once: true });
   } else {
-    clearLegacyAmbientUI();
+    clearLegacySuggestions();
   }
-  window.addEventListener("load", clearLegacyAmbientUI, { once: true });
+  window.addEventListener("load", clearLegacySuggestions, { once: true });
 
   window.BellaRouting = Object.freeze({
     normalizeText,
     safeHas,
     shouldUseAI,
     aiFirst: true,
-    legacyConversationCopy: false
+    legacyConversationCopy: false,
+    ambientMomentsPreserved: true
   });
 })();
