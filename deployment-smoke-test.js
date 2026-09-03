@@ -25,16 +25,16 @@ for (const source of ['/', '/index.html', '/sw.js']) {
 }
 
 const releaseHeader = headerRule('/')?.headers?.find(header => header.key.toLowerCase() === 'x-bella-release')?.value;
-if (releaseHeader !== 'v10') fail('The production shell must expose Bella release v10.');
+if (releaseHeader !== 'v11') fail('The production shell must expose Bella release v11.');
 
-if (!app.includes('Bella v10 deployment-security release marker')) fail('app.js release marker is missing.');
+if (!app.includes('Bella v11 personality-activities release marker')) fail('app.js v11 release marker is missing.');
 if (!app.includes('?v=16')) fail('Runtime modules must keep the validated v16 generation.');
-if (!sw.includes('bella-pwa-v12-release-10')) fail('Service worker cache generation was not rotated.');
+if (!sw.includes('bella-pwa-v13-release-11')) fail('Service worker cache generation was not rotated for v11.');
 if (!sw.includes('?v=16')) fail('Service worker must precache the validated v16 runtime generation.');
 if (!sw.includes('cache: "no-store"')) fail('Navigation requests must bypass stale browser HTTP caches.');
 
-if (!health.includes('release: "v10"')) fail('Deployment health endpoint must report release v10.');
+if (!health.includes('release: "v11"')) fail('Deployment health endpoint must report release v11.');
 if (!health.includes('VERCEL_GIT_COMMIT_SHA')) fail('Deployment health endpoint must report the active Git commit.');
 if (!health.includes('Cache-Control')) fail('Deployment health endpoint must be non-cacheable.');
 
-console.log('Bella deployment regression checks passed: build gate, static output, release headers, cache rotation and health endpoint are active.');
+console.log('Bella v11 deployment regression checks passed: build gate, static output, release headers, cache rotation and health endpoint are active.');
