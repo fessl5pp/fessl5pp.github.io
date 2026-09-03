@@ -12,6 +12,7 @@ const sources = [
   ['bella-auth-bridge.js', 'Signed-in API authorization bridge'],
   ['bella-runtime.js', 'Network reliability and streaming runtime'],
   ['bella-vnext.js', 'Conversation mood memory and send flow'],
+  ['bella-avatar.js', 'Mood-reactive Bella visual identity'],
   ['bella-live-web.js', 'Selective live web citation rendering'],
   ['bella-account-memory.js', 'Cloud memory deletion synchronization'],
   ['bella-account-center.js', 'Signed-in account dashboard'],
@@ -48,6 +49,7 @@ const ownershipRules = [
   { pattern: /window\.BellaModeratorCenter\s*=(?!=)/, owner: 'bella-moderator-center.js', label: 'moderator center UI' },
   { pattern: /window\.BellaOwnerAnalytics\s*=(?!=)/, owner: 'bella-owner-analytics.js', label: 'owner activity analytics UI' },
   { pattern: /window\.BellaOwnerControls\s*=(?!=)/, owner: 'bella-owner-controls.js', label: 'owner remote controls UI' },
+  { pattern: /window\.BellaAvatar\s*=(?!=)/, owner: 'bella-avatar.js', label: 'visual identity UI' },
   { pattern: /window\.BellaLiveWeb\s*=(?!=)/, owner: 'bella-live-web.js', label: 'live web citation UI' },
   { pattern: /window\.send\s*=(?!=)/, owner: 'bella-vnext.js', label: 'send flow' },
   { pattern: /window\.getAIReply\s*=(?!=)/, owner: 'bella-vnext.js', label: 'AI reply flow' },
@@ -90,4 +92,4 @@ try {
 }
 
 console.log(`Bella combined source validated (${sources.length} modules, ${bundle.length} chars)`);
-console.log('Bella ownership validated: account/analytics/config/auth/owner-users/moderator-center/account-center/owner-center/owner-controls/owner-analytics/memory-sync/live-web/legacy/context/routing/style/runtime/mood/send/speed/UI are separated.');
+console.log('Bella ownership validated: account/analytics/config/auth/owner-users/moderator-center/account-center/owner-center/owner-controls/owner-analytics/avatar/memory-sync/live-web/legacy/context/routing/style/runtime/mood/send/speed/UI are separated.');
