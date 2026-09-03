@@ -53,7 +53,6 @@
     banner.hidden = false;
     banner.textContent = "تعذر تحميل بيلا بالكامل. حدّث الصفحة وجرب مرة ثانية.";
     const inputArea = document.querySelector(".input-area");
-    if (!banner.isConnected && inputArea) banner.insertAdjacentElement?.("beforebegin", banner);
     if (!banner.isConnected && inputArea) inputArea.insertAdjacentElement("beforebegin", banner);
   });
 })();
