@@ -2,6 +2,14 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
     {
+      "source": "/api/chat",
+      "destination": "/api/gated-chat"
+    },
+    {
+      "source": "/api/dira",
+      "destination": "/api/gated-dira"
+    },
+    {
       "source": "/api/icon",
       "destination": "/api/icon-v3"
     }
