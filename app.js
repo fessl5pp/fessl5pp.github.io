@@ -1,6 +1,6 @@
 (() => {
   "use strict";
-  // Bella v10 deployment-security release marker.
+  // Bella v11 personality-activities release marker.
 
   const modules = [
     "bella-account.js",
