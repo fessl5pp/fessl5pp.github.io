@@ -1,4 +1,4 @@
-const CACHE_NAME = "bella-pwa-v11-stable-6";
+const CACHE_NAME = "bella-pwa-v11-stable-7";
 const CORE = [
   "/",
   "/index.html",
@@ -21,6 +21,7 @@ const CORE = [
   "/bella-account-center.js?v=16",
   "/bella-owner-center.js?v=16",
   "/bella-owner-users.js?v=16",
+  "/bella-moderator-center.js?v=16",
   "/bella-owner-analytics.js?v=16",
   "/bella-owner-controls.js?v=16",
   "/bella-speed.js?v=16",
