@@ -1,5 +1,5 @@
-const CACHE_NAME = "bella-pwa-v13-release-11";
-// Previous validated cache markers retained for regression compatibility: bella-pwa-v12-release-10, bella-pwa-v11-stable-7
+const CACHE_NAME = "bella-pwa-v14-release-12";
+// Previous validated cache markers retained for regression compatibility: bella-pwa-v13-release-11, bella-pwa-v12-release-10, bella-pwa-v11-stable-7
 const CORE = [
   "/",
   "/index.html",
@@ -13,6 +13,7 @@ const CORE = [
   "/bella-config.js?v=16",
   "/bella-context.js?v=16",
   "/bella-routing.js?v=16",
+  "/bella-moments.js?v=16",
   "/bella-style.js?v=16",
   "/bella-auth-bridge.js?v=16",
   "/bella-runtime.js?v=16",

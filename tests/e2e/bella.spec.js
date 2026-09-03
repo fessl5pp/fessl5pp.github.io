@@ -62,6 +62,41 @@ test('account access survives home cleanup and opens the account center', async 
   expect(pageErrors).toEqual([]);
 });
 
+test('normal chat is AI-first while rumors and top-right moments stay coordinated', async ({ page }) => {
+  const pageErrors = await bootBella(page);
+
+  const routing = await page.evaluate(() => ({
+    aiFirst: window.BellaRouting?.aiFirst,
+    legacyConversationCopy: window.BellaRouting?.legacyConversationCopy,
+    dictionaryHello: window.dictionaryReply?.('هلا')
+  }));
+  expect(routing.aiFirst).toBe(true);
+  expect(routing.legacyConversationCopy).toBe(false);
+  expect(routing.dictionaryHello).toBeNull();
+
+  await expect(page.locator('#quickSuggestions')).toBeHidden();
+  await expect(page.locator('#quickSuggestions button')).toHaveCount(0);
+
+  await page.evaluate(() => window.BellaMoments?.showRumor?.());
+  await expect(page.locator('#rumor-bar')).toBeVisible();
+  await expect(page.locator('#rumor-text')).not.toHaveText('');
+
+  await page.evaluate(() => window.BellaMoments?.showToast?.('لقطة اختبار 👀'));
+  await expect(page.locator('.bella-popup')).toBeVisible();
+  await expect(page.locator('.bella-popup')).toContainText('لقطة اختبار');
+  await expect(page.locator('#rumor-bar')).toBeHidden();
+
+  await page.evaluate(() => window.openBellaSettings?.());
+  const momentsToggle = page.locator('#bellaMomentsEnabled');
+  await expect(momentsToggle).toBeChecked();
+  await momentsToggle.uncheck();
+  await expect.poll(() => page.evaluate(() => window.BellaMoments?.isEnabled?.())).toBe(false);
+  await momentsToggle.check();
+  await expect.poll(() => page.evaluate(() => window.BellaMoments?.isEnabled?.())).toBe(true);
+
+  expect(pageErrors).toEqual([]);
+});
+
 test('Bella visual identity renders and follows mood classes', async ({ page }) => {
   const pageErrors = await bootBella(page);
 

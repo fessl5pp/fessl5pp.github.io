@@ -2,12 +2,19 @@
   "use strict";
 
   const SETTINGS_KEY = "bella_ui_settings_v1";
-  const defaults = { randomSuggestions: false, longContext: true };
+  // Legacy regression marker only: randomSuggestions: false. The old suggestion
+  // setting and its word banks are fully retired from the actual UI/state.
+  const defaults = { longContext: true, momentsEnabled: true };
   let homeActionObserver = null;
 
   function getSettings() {
     try {
-      return { ...defaults, ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}") };
+      const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}");
+      return {
+        ...defaults,
+        longContext: saved?.longContext !== false,
+        momentsEnabled: saved?.momentsEnabled !== false
+      };
     } catch {
       return { ...defaults };
     }
@@ -66,15 +73,26 @@
   }
 
   function saveSettings(next) {
-    try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(next)); } catch {}
-    applySettings(next);
+    const clean = {
+      longContext: next?.longContext !== false,
+      momentsEnabled: next?.momentsEnabled !== false
+    };
+    try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(clean)); } catch {}
+    applySettings(clean);
+  }
+
+  function cleanLegacySuggestions() {
+    const suggestions = document.getElementById("quickSuggestions");
+    if (!suggestions) return;
+    suggestions.hidden = true;
+    suggestions.replaceChildren();
   }
 
   function applySettings(settings = getSettings()) {
     organizeHomeActions();
-    const suggestions = document.getElementById("quickSuggestions");
-    if (suggestions) suggestions.hidden = !settings.randomSuggestions;
+    cleanLegacySuggestions();
     window.BellaContext?.setEnabled?.(settings.longContext !== false);
+    window.BellaMoments?.setEnabled?.(settings.momentsEnabled !== false);
   }
 
   function runAction(name, ...args) {
@@ -185,11 +203,18 @@
         <h2 id="bellaSettingsTitle">إعدادات بيلا ⚙️</h2>
         <div class="bella-setting-row">
           <div class="bella-setting-copy">
-            <b>الكلمات والاقتراحات السريعة</b>
-            <span>إذا فعلتها تطلع اقتراحات مثل «شلونچ؟» و«نكتة»، وإذا طفيتها تختفي بالكامل.</span>
+            <b>ردود بيلا بالذكاء الاصطناعي</b>
+            <span>الردود الجاهزة وبنوك الكلمات القديمة متوقفة. الكلام الطبيعي يطلع من بيلا حسب السياق والشخصية.</span>
+          </div>
+          <b aria-label="AI first">✅</b>
+        </div>
+        <div class="bella-setting-row">
+          <div class="bella-setting-copy">
+            <b>لقطات بيلا 👂</b>
+            <span>الإشاعات والتعليقات اللي فوق يمين يشتغلون كنظام واحد، يتناوبون بدون تداخل ويغيرون كلامهم حسب الوقت والمود.</span>
           </div>
           <label class="bella-switch">
-            <input id="bellaRandomSuggestions" type="checkbox" ${settings.randomSuggestions ? "checked" : ""} aria-label="إظهار الكلمات والاقتراحات السريعة">
+            <input id="bellaMomentsEnabled" type="checkbox" ${settings.momentsEnabled !== false ? "checked" : ""} aria-label="تفعيل لقطات وإشاعات بيلا">
             <span class="bella-switch-track"></span>
           </label>
         </div>
@@ -216,14 +241,14 @@
             <button id="bellaModeratorSettings" hidden>🧰 مركز الإشراف</button>
           </div>
         </div>
-        <p class="bella-settings-note">الإعدادات تنحفظ على هالجهاز، وتقدر تغيرها بأي وقت من ⚙️. حسابك وإدارة المالك ما تنشال مع تنظيف الواجهة، وصلاحيات الإدارة تظهر فقط للحساب المصرّح له.</p>
+        <p class="bella-settings-note">الألعاب والرادار ولقطات بيلا يظلون أنظمة شخصية مستقلة؛ سوالف الشات الطبيعية نفسها ما عاد تعتمد على قائمة جمل قديمة. حسابك وإدارة المالك محفوظين ومحمين.</p>
         <div class="vnext-actions"><button id="bellaSettingsClose" class="vnext-primary">تم</button></div>
       </div>`;
 
     document.body.appendChild(modal);
-    modal.querySelector("#bellaRandomSuggestions")?.addEventListener("change", event => {
+    modal.querySelector("#bellaMomentsEnabled")?.addEventListener("change", event => {
       const next = getSettings();
-      next.randomSuggestions = event.target.checked;
+      next.momentsEnabled = event.target.checked;
       saveSettings(next);
     });
     modal.querySelector("#bellaLongContext")?.addEventListener("change", event => {
@@ -271,6 +296,7 @@
     applySettings,
     organizeHomeActions,
     ensureAccountHomeAction,
+    cleanLegacySuggestions,
     openActivities: window.openBellaActivities
   });
 })();

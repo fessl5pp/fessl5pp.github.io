@@ -1,10 +1,11 @@
 (() => {
   "use strict";
 
-  // This is the only compatibility layer between the legacy local brain in
-  // script.js and the newer Bella experience. It intentionally does NOT own
-  // send(), mood state, memory, or API calls.
-  const originalDictionaryReply = window.dictionaryReply;
+  // Bella v12 keeps the legacy script only for UI/game compatibility.
+  // Normal conversation copy must come from the AI API, not from old phrase banks.
+  // Compatibility note: shouldUseAIForRepeat used to escalate only repeated short
+  // messages; AI-first routing now escalates every non-empty normal chat message.
+  const originalDetectName = window.detectName;
 
   function normalizeText(value) {
     return String(value || "")
@@ -24,36 +25,61 @@
     return (Array.isArray(words) ? words : []).some(word => {
       const needle = normalizeText(word);
       if (!needle) return false;
-      // Tiny Arabic particles such as "وي" must match as a token, not as a
-      // substring inside a completely different word such as "أسوي".
       if (!needle.includes(" ") && needle.length <= 2) return tokens.includes(needle);
       return haystack.includes(needle);
     });
   }
 
   function shouldUseAI(msg) {
-    const clean = normalizeText(msg);
-    const wordCount = clean ? clean.split(" ").length : 0;
-    const openEnded = [
-      "شنو تنصح", "شنو اسوي", "شنو أسوي", "وش اسوي", "وش أسوي",
-      "شلون اقدر", "شلون أقدر", "ابي نصيحة", "أبي نصيحة", "ساعديني",
-      "فسري لي", "اشرحي لي", "اشرح لي", "ليش", "كيف", "شنو رايج",
-      "شنو رأيج", "وش رايك", "وش رايج", "قولي رايج"
-    ].some(phrase => clean.includes(normalizeText(phrase)));
+    return normalizeText(msg).length > 0;
+  }
 
-    const repeatedShortMessage = !!window.BellaContext?.shouldUseAIForRepeat?.(msg);
-    return wordCount >= 5 || openEnded || repeatedShortMessage;
+  function installAIFirstConversation() {
+    window.dictionaryReply = function bellaAIOnlyDictionary() { return null; };
+    window.angryServiceBlock = function bellaAIOnlyAngryService() { return null; };
+    window.fazaaReply = function bellaAIOnlyFazaaReply() { return null; };
+    window.socialRadarReply = function bellaAIOnlySocialRadar() { return null; };
+
+    window.detectName = function bellaAINameCapture(msg) {
+      if (typeof originalDetectName === "function") {
+        try { originalDetectName.call(this, msg); } catch {}
+      }
+      return null;
+    };
+
+    window.updateSuggestions = function bellaNoLegacySuggestions() {
+      const suggestions = document.getElementById("quickSuggestions");
+      if (!suggestions) return;
+      suggestions.hidden = true;
+      suggestions.replaceChildren();
+    };
+    window.refreshSuggestions = window.updateSuggestions;
+  }
+
+  function clearLegacySuggestions() {
+    const suggestions = document.getElementById("quickSuggestions");
+    if (suggestions) {
+      suggestions.hidden = true;
+      suggestions.replaceChildren();
+    }
   }
 
   window.has = safeHas;
-  window.dictionaryReply = function bellaDictionaryRouter(msg) {
-    if (shouldUseAI(msg)) return null;
-    return typeof originalDictionaryReply === "function" ? originalDictionaryReply(msg) : null;
-  };
+  installAIFirstConversation();
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", clearLegacySuggestions, { once: true });
+  } else {
+    clearLegacySuggestions();
+  }
+  window.addEventListener("load", clearLegacySuggestions, { once: true });
 
   window.BellaRouting = Object.freeze({
     normalizeText,
     safeHas,
-    shouldUseAI
+    shouldUseAI,
+    aiFirst: true,
+    legacyConversationCopy: false,
+    ambientMomentsPreserved: true
   });
 })();

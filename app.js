@@ -1,6 +1,24 @@
 (() => {
   "use strict";
   // Bella v11 personality-activities release marker.
+  // Bella v12 AI-first chat + coordinated ambient moments marker.
+
+  // The visible switch track is decoration; the full label area stays the real
+  // tap target on iPhone/iPad and desktop. This prevents the track from
+  // intercepting taps/clicks meant for the checkbox underneath.
+  function installSwitchInteractionFix() {
+    if (document.getElementById("bellaSwitchInteractionFix")) return;
+    const style = document.createElement("style");
+    style.id = "bellaSwitchInteractionFix";
+    style.textContent = `
+      .bella-switch{cursor:pointer;touch-action:manipulation}
+      .bella-switch input{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;margin:0!important;opacity:0!important;pointer-events:auto!important;cursor:pointer;z-index:2}
+      .bella-switch-track{pointer-events:none!important}
+    `;
+    document.head.appendChild(style);
+  }
+
+  installSwitchInteractionFix();
 
   const modules = [
     "bella-account.js",
@@ -10,6 +28,7 @@
     "bella-config.js",
     "bella-context.js",
     "bella-routing.js",
+    "bella-moments.js",
     "bella-style.js",
     "bella-auth-bridge.js",
     "bella-runtime.js",
