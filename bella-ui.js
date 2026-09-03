@@ -2,13 +2,17 @@
   "use strict";
 
   const SETTINGS_KEY = "bella_ui_settings_v1";
-  const defaults = { longContext: true };
+  const defaults = { longContext: true, momentsEnabled: true };
   let homeActionObserver = null;
 
   function getSettings() {
     try {
       const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}");
-      return { ...defaults, longContext: saved?.longContext !== false };
+      return {
+        ...defaults,
+        longContext: saved?.longContext !== false,
+        momentsEnabled: saved?.momentsEnabled !== false
+      };
     } catch {
       return { ...defaults };
     }
@@ -67,7 +71,10 @@
   }
 
   function saveSettings(next) {
-    const clean = { longContext: next?.longContext !== false };
+    const clean = {
+      longContext: next?.longContext !== false,
+      momentsEnabled: next?.momentsEnabled !== false
+    };
     try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(clean)); } catch {}
     applySettings(clean);
   }
@@ -83,6 +90,7 @@
     organizeHomeActions();
     cleanLegacySuggestions();
     window.BellaContext?.setEnabled?.(settings.longContext !== false);
+    window.BellaMoments?.setEnabled?.(settings.momentsEnabled !== false);
   }
 
   function runAction(name, ...args) {
@@ -200,6 +208,16 @@
         </div>
         <div class="bella-setting-row">
           <div class="bella-setting-copy">
+            <b>لقطات بيلا 👂</b>
+            <span>الإشاعات والتعليقات اللي فوق يمين يشتغلون كنظام واحد، يتناوبون بدون تداخل ويغيرون كلامهم حسب الوقت والمود.</span>
+          </div>
+          <label class="bella-switch">
+            <input id="bellaMomentsEnabled" type="checkbox" ${settings.momentsEnabled !== false ? "checked" : ""} aria-label="تفعيل لقطات وإشاعات بيلا">
+            <span class="bella-switch-track"></span>
+          </label>
+        </div>
+        <div class="bella-setting-row">
+          <div class="bella-setting-copy">
             <b>ذاكرة سياق السوالف</b>
             <span>تخلي بيلا تتذكر آخر سياق مختصر على هالجهاز عشان ما تضيع السالفة إذا طالت أو سويت تحديث للصفحة.</span>
           </div>
@@ -221,11 +239,16 @@
             <button id="bellaModeratorSettings" hidden>🧰 مركز الإشراف</button>
           </div>
         </div>
-        <p class="bella-settings-note">الألعاب والرادار يظلون أنظمة مستقلة، أما سوالف بيلا الطبيعية ما عاد تعتمد على قائمة جمل قديمة. حسابك وإدارة المالك محفوظين ومحمين.</p>
+        <p class="bella-settings-note">الألعاب والرادار ولقطات بيلا يظلون أنظمة شخصية مستقلة؛ سوالف الشات الطبيعية نفسها ما عاد تعتمد على قائمة جمل قديمة. حسابك وإدارة المالك محفوظين ومحمين.</p>
         <div class="vnext-actions"><button id="bellaSettingsClose" class="vnext-primary">تم</button></div>
       </div>`;
 
     document.body.appendChild(modal);
+    modal.querySelector("#bellaMomentsEnabled")?.addEventListener("change", event => {
+      const next = getSettings();
+      next.momentsEnabled = event.target.checked;
+      saveSettings(next);
+    });
     modal.querySelector("#bellaLongContext")?.addEventListener("change", event => {
       const next = getSettings();
       next.longContext = event.target.checked;
