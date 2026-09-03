@@ -10,6 +10,10 @@
       "destination": "/api/gated-dira"
     },
     {
+      "source": "/api/voice",
+      "destination": "/api/gated-voice"
+    },
+    {
       "source": "/api/icon",
       "destination": "/api/icon-v3"
     }
