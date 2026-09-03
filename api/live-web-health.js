@@ -12,8 +12,8 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: "gpt-5-mini",
         tools: [{ type: "web_search", search_context_size: "low" }],
-        tool_choice: "auto",
-        input: "What is today's date? Verify with web search if needed. Reply with only the date.",
+        tool_choice: "required",
+        input: "Search the web for today's date in Kuwait and reply with only the date.",
         reasoning: { effort: "low" },
         text: { verbosity: "low", format: { type: "text" } },
         max_output_tokens: 80,
