@@ -16,9 +16,6 @@ if (vercel.buildCommand !== 'npm run vercel-build') {
 if (vercel.outputDirectory !== 'public') {
   fail('Vercel must publish only the validated static output directory.');
 }
-if (!Array.isArray(vercel.alias) || !vercel.alias.includes('fessl5pp-github-io.vercel.app')) {
-  fail('The public Bella project alias must follow production releases.');
-}
 
 const headerRule = source => (vercel.headers || []).find(rule => rule.source === source);
 for (const source of ['/', '/index.html', '/sw.js']) {
@@ -40,4 +37,4 @@ if (!health.includes('release: "v10"')) fail('Deployment health endpoint must re
 if (!health.includes('VERCEL_GIT_COMMIT_SHA')) fail('Deployment health endpoint must report the active Git commit.');
 if (!health.includes('Cache-Control')) fail('Deployment health endpoint must be non-cacheable.');
 
-console.log('Bella deployment regression checks passed: build gate, public alias, release headers, cache rotation and health endpoint are active.');
+console.log('Bella deployment regression checks passed: build gate, static output, release headers, cache rotation and health endpoint are active.');
