@@ -10,6 +10,7 @@
     "bella-style.js",
     "bella-runtime.js",
     "bella-vnext.js",
+    "bella-live-web.js",
     "bella-account-memory.js",
     "bella-speed.js",
     "bella-ui.js",
@@ -19,7 +20,7 @@
   function loadScript(file) {
     return new Promise((resolve, reject) => {
       const script = document.createElement("script");
-      script.src = `/${file}?v=15`;
+      script.src = `/${file}?v=16`;
       script.async = false;
       script.onload = resolve;
       script.onerror = () => reject(new Error(`Failed to load ${file}`));

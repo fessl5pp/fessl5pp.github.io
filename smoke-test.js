@@ -7,6 +7,7 @@ const mustExist = [
   'app.js',
   'bella-account.js',
   'bella-account-memory.js',
+  'bella-live-web.js',
   'script.js',
   'bella-legacy-plus.js',
   'bella-context.js',
@@ -33,6 +34,7 @@ const index = read('index.html');
 const app = read('app.js');
 const account = read('bella-account.js');
 const accountMemory = read('bella-account-memory.js');
+const liveWeb = read('bella-live-web.js');
 const legacy = read('script.js');
 const legacyPlus = read('bella-legacy-plus.js');
 const context = read('bella-context.js');
@@ -61,12 +63,13 @@ assert.ok(!index.includes('<script src="/bella-vnext.js'), 'index.html must not 
 assert.ok(index.includes('id="quickSuggestions" hidden'), 'quick suggestions should remain hidden by default');
 
 assert.ok(app.indexOf('bella-account.js') < app.indexOf('script.js'), 'account module must load before local profile modules so cached account name is available');
-assert.ok(app.indexOf('bella-vnext.js') < app.indexOf('bella-account-memory.js'), 'cloud memory integration must load after vNext creates the memory UI');
+assert.ok(app.indexOf('bella-vnext.js') < app.indexOf('bella-live-web.js'), 'live web UI must load after vNext owns chat rendering');
+assert.ok(app.indexOf('bella-live-web.js') < app.indexOf('bella-account-memory.js'), 'live web UI must load before later account-memory helpers');
 assert.ok(app.includes('bella-legacy-plus.js'), 'tracked app entry must load legacy improvements');
 assert.ok(app.includes('bella-style.js'), 'tracked app entry must know the style module');
 assert.ok(app.includes('bella-vnext.js'), 'tracked app entry must know the main conversation module');
 assert.ok(app.includes('window.__bellaBoot'), 'tracked app entry must expose boot completion');
-assert.ok(app.includes('?v=15'), 'tracked app entry must cache-bust cloud-memory source modules');
+assert.ok(app.includes('?v=16'), 'tracked app entry must cache-bust live-web source modules');
 
 assert.ok(account.includes('sb_publishable_'), 'account module must use a browser-safe Supabase publishable key');
 assert.ok(!account.includes('service_role'), 'account module must never contain a Supabase service-role credential');
@@ -104,6 +107,15 @@ assert.ok(!/window\.getAIReply\s*=(?!=)/.test(accountMemory), 'cloud memory modu
 assert.ok(!/window\.updateMood\s*=(?!=)/.test(accountMemory), 'cloud memory module must never own mood flow');
 assert.ok(!/window\.fetch\s*=(?!=)/.test(accountMemory), 'cloud memory module must never replace the network guard');
 
+assert.ok(/window\.BellaLiveWeb\s*=(?!=)/.test(liveWeb), 'live web UI must expose one namespace');
+assert.ok(liveWeb.includes('bella-cite-inline'), 'live web citations must render as clickable inline links');
+assert.ok(liveWeb.includes('noopener noreferrer'), 'live web external links must use safe opener isolation');
+assert.ok(liveWeb.includes('مصادر التحقق:'), 'live web UI must parse the server citation section');
+assert.ok(liveWeb.includes('🔎 تحقق حي'), 'live web replies must visibly disclose live verification');
+assert.ok(!/window\.send\s*=(?!=)/.test(liveWeb), 'live web UI must never own send flow');
+assert.ok(!/window\.getAIReply\s*=(?!=)/.test(liveWeb), 'live web UI must never own AI flow');
+assert.ok(!/window\.fetch\s*=(?!=)/.test(liveWeb), 'live web UI must never replace network fetch');
+
 for (const feature of ['coffeeRadar', 'socialRadarReply', 'dailyWisdom', 'startBoxGame', 'startProverbGame', 'checkGameAnswer', 'openFazaa', 'fazaaReply', 'shareChat', 'showRumor']) {
   assert.ok(legacy.includes(`function ${feature}`), `legacy feature ${feature} must remain present`);
 }
@@ -137,6 +149,7 @@ assert.ok(!build.includes('bella-personality.js'), 'old duplicate mood/personali
 assert.ok(!build.includes('bella-send-guard.js'), 'conflicting capture-phase send guard must not be bundled');
 assert.ok(build.includes('bella-account.js'), 'account/cloud-sync module must be validated by the build');
 assert.ok(build.includes('bella-account-memory.js'), 'cloud-memory module must be validated by the build');
+assert.ok(build.includes('bella-live-web.js'), 'live web citation module must be validated by the build');
 assert.ok(build.includes('bella-style.js'), 'style-only adaptive module must be bundled');
 assert.ok(build.includes('bella-legacy-plus.js'), 'cleaned legacy enhancement module must be validated by the build');
 
@@ -154,7 +167,13 @@ assert.ok(runtime.includes('const RETRIES = 0'), 'paid POST requests must not au
 assert.ok(speed.includes('isAppleSafari'), 'speed module must disable unstable Apple Safari streaming');
 assert.ok(speed.includes('BellaContext?.recordTurn?.("assistant", full)'), 'completed streamed replies must be persisted to context');
 
-assert.ok(chatApi.includes('stream: wantsStream'), 'chat API must support streaming when requested');
+assert.ok(chatApi.includes('shouldUseLiveWebSearch'), 'chat API must detect current-information intent selectively');
+assert.ok(chatApi.includes('MAX_LIVE_WEB_REQUESTS = 10'), 'live web search must have a separate cost guard');
+assert.ok(chatApi.includes('type: "web_search"'), 'main chat must use the current Responses web_search tool');
+assert.ok(chatApi.includes('search_context_size: "low"'), 'live web search must default to low context for cost control');
+assert.ok(chatApi.includes('const upstreamStream = wantsStream && !useLiveWeb'), 'live web replies must use JSON so citations can be rendered safely');
+assert.ok(chatApi.includes('outputTextWithCitations'), 'chat API must preserve and number web citations');
+assert.ok(chatApi.includes('مصادر التحقق:'), 'chat API must return a deterministic source section for clickable rendering');
 assert.ok(chatApi.includes('OPENAI_TIMEOUT_MS = 25000'), 'chat API must keep a bounded OpenAI timeout');
 assert.ok(diraApi.includes('cleanVisibleReply'), 'Dira API must sanitize visible web-search text');
 assert.ok(diraApi.includes('الناتج الظاهر للمستخدم يكون كلام فقط'), 'Dira prompt must require plain visible text only');
@@ -168,16 +187,16 @@ assert.ok(ui.includes('randomSuggestions: false'), 'suggestions setting should d
 assert.ok(ui.includes('longContext: true'), 'long context setting should default to on');
 assert.ok(manifest.includes('"orientation": "any"'), 'PWA must allow tablet rotation');
 
-assert.ok(sw.includes('bella-pwa-v11-stable-5'), 'service worker cache must use the cloud-memory-v2 cache');
+assert.ok(sw.includes('bella-pwa-v11-stable-6'), 'service worker cache must use the live-web release cache');
 assert.ok(sw.includes('/app.js?v=11'), 'service worker must cache the exact app entry requested by index.html');
-for (const moduleName of ['bella-account.js', 'script.js', 'bella-legacy-plus.js', 'bella-context.js', 'bella-routing.js', 'bella-style.js', 'bella-runtime.js', 'bella-vnext.js', 'bella-account-memory.js', 'bella-speed.js', 'bella-ui.js', 'bella-install.js']) {
-  assert.ok(sw.includes(`/${moduleName}?v=15`), `service worker must cache loader module ${moduleName}`);
+for (const moduleName of ['bella-account.js', 'script.js', 'bella-legacy-plus.js', 'bella-context.js', 'bella-routing.js', 'bella-style.js', 'bella-runtime.js', 'bella-vnext.js', 'bella-live-web.js', 'bella-account-memory.js', 'bella-speed.js', 'bella-ui.js', 'bella-install.js']) {
+  assert.ok(sw.includes(`/${moduleName}?v=16`), `service worker must cache loader module ${moduleName}`);
 }
 assert.ok(sw.includes('request.mode === "navigate"'), 'offline HTML fallback must be navigation-only');
 assert.ok(!sw.includes("cached || caches.match(\"/index.html\")"), 'static assets must never fall back to index.html');
 
-for (const moduleName of ['bella-account.js', 'bella-account-memory.js', 'bella-legacy-plus.js', 'bella-context.js', 'bella-routing.js', 'bella-style.js', 'bella-runtime.js', 'bella-vnext.js', 'bella-speed.js', 'bella-ui.js', 'bella-install.js']) {
+for (const moduleName of ['bella-account.js', 'bella-account-memory.js', 'bella-live-web.js', 'bella-legacy-plus.js', 'bella-context.js', 'bella-routing.js', 'bella-style.js', 'bella-runtime.js', 'bella-vnext.js', 'bella-speed.js', 'bella-ui.js', 'bella-install.js']) {
   assert.ok(build.includes(moduleName), `build.js must validate ${moduleName}`);
 }
 
-console.log('Bella smoke tests passed: cloud memory v2 deletion safety, accounts, legacy features, send/mood ownership, context/cost/Safari/PWA protections are valid.');
+console.log('Bella smoke tests passed: selective live web search/clickable citations, cloud memory v2, accounts, legacy features, send/mood ownership, context/cost/Safari/PWA protections are valid.');

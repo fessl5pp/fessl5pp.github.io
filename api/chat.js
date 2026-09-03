@@ -1,30 +1,71 @@
 const WINDOW_MS = 10 * 60 * 1000;
 const MAX_REQUESTS = 36;
+const MAX_LIVE_WEB_REQUESTS = 10;
 const OPENAI_TIMEOUT_MS = 25000;
 const rateStore = globalThis.__bellaRateStore || (globalThis.__bellaRateStore = new Map());
+const liveWebRateStore = globalThis.__bellaLiveWebRateStore || (globalThis.__bellaLiveWebRateStore = new Map());
 
 function getIp(req) {
   return String(req.headers["x-forwarded-for"] || req.headers["x-real-ip"] || "unknown").split(",")[0].trim();
 }
 
-function rateLimited(req) {
+function checkRate(store, key, max) {
   const now = Date.now();
-  const ip = getIp(req);
-  const prev = rateStore.get(ip) || [];
+  const prev = store.get(key) || [];
   const fresh = prev.filter(ts => now - ts < WINDOW_MS);
-  if (fresh.length >= MAX_REQUESTS) return true;
+  if (fresh.length >= max) return true;
   fresh.push(now);
-  rateStore.set(ip, fresh);
-  if (rateStore.size > 2500) {
-    for (const [key, list] of rateStore) {
-      if (!list.some(ts => now - ts < WINDOW_MS)) rateStore.delete(key);
+  store.set(key, fresh);
+  if (store.size > 2500) {
+    for (const [entryKey, list] of store) {
+      if (!list.some(ts => now - ts < WINDOW_MS)) store.delete(entryKey);
     }
   }
   return false;
 }
 
+function rateLimited(req) {
+  return checkRate(rateStore, getIp(req), MAX_REQUESTS);
+}
+
+function liveWebRateLimited(req) {
+  return checkRate(liveWebRateStore, getIp(req), MAX_LIVE_WEB_REQUESTS);
+}
+
 function cleanString(value, max = 1000) {
   return String(value || "").replace(/\u0000/g, "").trim().slice(0, max);
+}
+
+function normalizeIntent(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[أإآ]/g, "ا")
+    .replace(/ى/g, "ي")
+    .replace(/ة/g, "ه")
+    .replace(/[؟?!.,،؛:]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function shouldUseLiveWebSearch(value) {
+  const text = normalizeIntent(value);
+  if (!text) return false;
+
+  const strongCurrentIntent = /(?:اخر|احدث|جديد)\s+(?:خبر|اخبار|تحديث|نتيجه|نتيجة|سعر)|(?:اخبار|ترندات?)\s+(?:اليوم|الحين|الان)|(?:من\s+فاز|شنو\s+نتيجه|شنو\s+نتيجة)|(?:كم\s+سعر|سعره\s+كم|سعر\s+.+\s+(?:اليوم|الحين|الان))|(?:متي|متى)\s+(?:مباراه|مباراة)|(?:مباراه|مباراة)\s+.+\s+(?:اليوم|الحين|الان)|(?:فاتح|مفتوح)\s+(?:الحين|الان)|(?:الطقس|الجو|الحراره|الحرارة)\s+(?:اليوم|الحين|الان)|(?:فعاليات|عروض)\s+(?:اليوم|هالاسبوع|هذا الاسبوع)/;
+  if (strongCurrentIntent.test(text)) return true;
+
+  const currentMarker = /(?:\bاليوم\b|\bالحين\b|\bالان\b|\bتوه\b|\bتوها\b|\bهالاسبوع\b|\bهذا الاسبوع\b|\bباجر\b|\bمباشر\b|\blive\b|\btoday\b|\bnow\b|\blatest\b|\bcurrent\b|\btonight\b)/;
+  const changingFact = /(?:خبر|اخبار|ترند|مفتوح|فاتح|زحمه|زحمة|مطعم|كافيه|قهوه|قهوة|مكان|طقس|جو|حراره|حرارة|مباراه|مباراة|نتيجه|نتيجة|سعر|بورصه|بورصة|سهم|اسهم|عملة|بيتكوين|ذهب|فعاليات|سينما|عرض|رحله|رحلة|طيران|دوام|اصدار|إصدار|تحديث|متوفر|موجود|stock|price|weather|score|game|match|news|open|event|flight)/;
+  return currentMarker.test(text) && changingFact.test(text);
+}
+
+function validHttpUrl(value) {
+  try {
+    const url = new URL(String(value || ""));
+    return url.protocol === "https:" || url.protocol === "http:" ? url.toString() : "";
+  } catch {
+    return "";
+  }
 }
 
 function outputText(data) {
@@ -36,6 +77,52 @@ function outputText(data) {
     }
   }
   return parts.join("\n").trim();
+}
+
+function outputTextWithCitations(data) {
+  const sources = [];
+  const sourceIndex = new Map();
+  const renderedParts = [];
+
+  const indexFor = annotation => {
+    const url = validHttpUrl(annotation?.url || annotation?.url_citation?.url);
+    if (!url) return null;
+    if (sourceIndex.has(url)) return sourceIndex.get(url);
+    const index = sources.length + 1;
+    sourceIndex.set(url, index);
+    sources.push({
+      index,
+      url,
+      title: cleanString(annotation?.title || annotation?.url_citation?.title || `مصدر ${index}`, 140)
+    });
+    return index;
+  };
+
+  for (const item of data?.output || []) {
+    if (item?.type !== "message") continue;
+    for (const part of item.content || []) {
+      if (part?.type !== "output_text" || typeof part.text !== "string") continue;
+      let text = part.text;
+      const replacements = [];
+      for (const annotation of Array.isArray(part.annotations) ? part.annotations : []) {
+        if (annotation?.type !== "url_citation") continue;
+        const index = indexFor(annotation);
+        const start = Number(annotation?.start_index ?? annotation?.url_citation?.start_index);
+        const end = Number(annotation?.end_index ?? annotation?.url_citation?.end_index);
+        if (!index || !Number.isInteger(start) || !Number.isInteger(end) || start < 0 || end <= start || end > text.length) continue;
+        replacements.push({ start, end, replacement: `〔${index}〕` });
+      }
+      replacements.sort((a, b) => b.start - a.start);
+      for (const item of replacements) text = text.slice(0, item.start) + item.replacement + text.slice(item.end);
+      renderedParts.push(text);
+    }
+  }
+
+  let reply = renderedParts.join("\n").trim();
+  if (sources.length) {
+    reply += `\n\nمصادر التحقق:\n${sources.map(source => `〔${source.index}〕 ${source.url}`).join("\n")}`;
+  }
+  return { reply, sources };
 }
 
 function streamError(res, message) {
@@ -70,7 +157,13 @@ export default async function handler(req, res) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) return res.status(500).json({ error: "AI is not configured" });
 
+  const liveWebIntent = shouldUseLiveWebSearch(userMessage);
+  if (liveWebIntent && liveWebRateLimited(req)) {
+    return res.status(429).json({ error: "البحث الحي عليه ضغط شوي 🔎 جرب بعد دقيقة، والسوالف العادية شغالة." });
+  }
+  const useLiveWeb = liveWebIntent;
   const wantsStream = req.body?.stream === true || String(req.headers.accept || "").includes("text/event-stream");
+  const upstreamStream = wantsStream && !useLiveWeb;
   const effectiveMode = ["auto", "angry", "cute", "chill"].includes(mode) ? mode : "chill";
 
   const modeInstruction = {
@@ -114,12 +207,16 @@ export default async function handler(req, res) {
 
   const memoryBlock = safeMemory.length ? safeMemory.map(x => `- ${x}`).join("\n") : "- ما في تفضيلات محفوظة حالياً.";
   const avoidBlock = avoid.length ? avoid.map(x => `- ${x}`).join("\n") : "- ما في ردود سابقة كافية.";
+  const liveWebInstruction = useLiveWeb
+    ? "تم تفعيل البحث الحي لهالسؤال. استخدمي الويب للتحقق من المعلومة المتغيرة، واربطي الادعاءات الحديثة بالمصادر اللي لقيتيها. لا تكتبي روابط يدويًا؛ النظام يعرض الاستشهادات والمصادر للمستخدم. إذا النتائج مو كافية قولي إن التحقق مو كافي بدل الاختلاق."
+    : "البحث الحي غير مفعّل لهالرسالة. إذا احتاجت المعلومة تحديثًا مباشرًا وما عندج أداة لها، قوليها بصراحة ولا تخترعين.";
 
   const instructions = `أنتِ "بيلا"، شخصية ذكاء اصطناعي كويتية لها طبع ثابت وسوالف طبيعية. لا تدعين إنج إنسانة حقيقية.
 اسم المستخدم إن وُجد: ${cleanString(userName, 40) || "مو محدد"}.
 درجة العلاقة الحالية: ${cleanString(relationship, 40)}.
 ${modeInstruction}
 ${timeHint}
+${liveWebInstruction}
 التاريخ المحلي المرسل من الجهاز: ${cleanString(localDate, 40) || "غير محدد"}.
 
 هوية بيلا وعقليتها:
@@ -164,6 +261,21 @@ ${avoidBlock}
   const timeout = setTimeout(() => controller.abort(), OPENAI_TIMEOUT_MS);
 
   try {
+    const requestBody = {
+      model: "gpt-5-mini",
+      instructions,
+      input: [...safeHistory, { role: "user", content: userMessage }],
+      reasoning: { effort: "low" },
+      text: { verbosity: "low", format: { type: "text" } },
+      max_output_tokens: useLiveWeb ? 850 : 700,
+      store: false,
+      stream: upstreamStream
+    };
+    if (useLiveWeb) {
+      requestBody.tools = [{ type: "web_search", search_context_size: "low" }];
+      requestBody.tool_choice = "auto";
+    }
+
     const response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
@@ -171,16 +283,7 @@ ${avoidBlock}
         Authorization: `Bearer ${apiKey}`
       },
       signal: controller.signal,
-      body: JSON.stringify({
-        model: "gpt-5-mini",
-        instructions,
-        input: [...safeHistory, { role: "user", content: userMessage }],
-        reasoning: { effort: "low" },
-        text: { verbosity: "low", format: { type: "text" } },
-        max_output_tokens: 700,
-        store: false,
-        stream: wantsStream
-      })
+      body: JSON.stringify(requestBody)
     });
 
     if (!response.ok) {
@@ -189,7 +292,7 @@ ${avoidBlock}
       return res.status(502).json({ error: "الربط مع الذكاء الاصطناعي تعطل شوي، جرب مرة ثانية." });
     }
 
-    if (wantsStream) {
+    if (upstreamStream) {
       if (!response.body?.getReader) return res.status(502).json({ error: "البث المباشر مو متاح الحين، جرب مرة ثانية." });
 
       res.statusCode = 200;
@@ -214,10 +317,15 @@ ${avoidBlock}
     }
 
     const data = await response.json();
+    if (useLiveWeb) {
+      const cited = outputTextWithCitations(data);
+      if (!cited.reply) return res.status(502).json({ error: "بيلا ما رجعت رد هالمرة، جرب مرة ثانية." });
+      return res.status(200).json({ reply: cited.reply, mode: effectiveMode, liveWeb: true, sourceCount: cited.sources.length });
+    }
+
     const reply = outputText(data);
     if (!reply) return res.status(502).json({ error: "بيلا ما رجعت رد هالمرة، جرب مرة ثانية." });
-
-    return res.status(200).json({ reply, mode: effectiveMode });
+    return res.status(200).json({ reply, mode: effectiveMode, liveWeb: false });
   } catch (error) {
     if (error?.name === "AbortError") {
       console.error("OpenAI request timed out");
