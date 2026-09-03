@@ -7,7 +7,8 @@ const sources = [
   ['bella-legacy-plus.js', 'Cleaned and enhanced legacy features'],
   ['bella-config.js', 'Public remote feature configuration'],
   ['bella-context.js', 'Long conversation context memory'],
-  ['bella-routing.js', 'Local reply routing'],
+  ['bella-routing.js', 'AI-first conversation routing'],
+  ['bella-moments.js', 'Coordinated rumors and top-right Bella moments'],
   ['bella-style.js', 'Adaptive user communication style'],
   ['bella-auth-bridge.js', 'Signed-in API authorization bridge'],
   ['bella-runtime.js', 'Network reliability and streaming runtime'],
@@ -53,6 +54,7 @@ const ownershipRules = [
   { pattern: /window\.BellaOwnerControls\s*=(?!=)/, owner: 'bella-owner-controls.js', label: 'owner remote controls UI' },
   { pattern: /window\.BellaAvatar\s*=(?!=)/, owner: 'bella-avatar.js', label: 'visual identity UI' },
   { pattern: /window\.BellaLiveWeb\s*=(?!=)/, owner: 'bella-live-web.js', label: 'live web citation UI' },
+  { pattern: /window\.BellaMoments\s*=(?!=)/, owner: 'bella-moments.js', label: 'ambient rumors and top-right moments' },
   { pattern: /window\.send\s*=(?!=)/, owner: 'bella-vnext.js', label: 'send flow' },
   { pattern: /window\.getAIReply\s*=(?!=)/, owner: 'bella-vnext.js', label: 'AI reply flow' },
   { pattern: /window\.updateMood\s*=(?!=)/, owner: 'bella-vnext.js', label: 'mood UI' },
@@ -94,4 +96,4 @@ try {
 }
 
 console.log(`Bella combined source validated (${sources.length} modules, ${bundle.length} chars)`);
-console.log('Bella ownership validated: account/analytics/config/auth/voice/owner-users/moderator-center/account-center/owner-center/owner-controls/owner-analytics/avatar/memory-sync/live-web/legacy/context/routing/style/runtime/mood/send/speed/UI are separated.');
+console.log('Bella ownership validated: account/analytics/config/auth/voice/owner-users/moderator-center/account-center/owner-center/owner-controls/owner-analytics/avatar/memory-sync/live-web/moments/legacy/context/routing/style/runtime/mood/send/speed/UI are separated.');
