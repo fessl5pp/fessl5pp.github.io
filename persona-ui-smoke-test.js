@@ -21,7 +21,7 @@ assert.ok(persona.includes('لا تفتحي رد اجتماعي عادي بتع�
 
 assert.ok(chat.includes('bellaPersonaInstruction'), 'chat API must load the canonical Bella persona');
 assert.ok(chat.includes('.slice(-20)'), 'chat API must keep a larger recent conversation window for short-reference understanding');
-assert.ok(chat.includes('اربطين الرسالة بآخر سياق'), 'chat API must explicitly reason over recent conversational context');
+assert.ok(chat.includes('تربطين الرسالة بآخر سياق') && chat.includes('خصوصًا الرسائل القصيرة والضمائر'), 'chat API must explicitly reason over recent conversational context');
 
 assert.ok(index.includes('openBellaSettings()">الإعدادات ⚙️'), 'settings must stay next to the main chat entry');
 assert.ok(index.includes('openBellaActivities()">فعاليات بيلا 🎮'), 'home must expose one dedicated activities entry');
