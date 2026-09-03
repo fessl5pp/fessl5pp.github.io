@@ -1,5 +1,11 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    {
+      "source": "/api/icon",
+      "destination": "/api/icon-v3"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
