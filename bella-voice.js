@@ -174,9 +174,12 @@
       boundButton = btn;
       btn.onclick = toggle;
     }
-    btn.textContent = state.enabled ? "🔊" : "🔇";
-    btn.setAttribute("aria-label", state.enabled ? "إيقاف صوت بيلا" : "تشغيل صوت بيلا");
-    btn.title = state.enabled ? "صوت بيلا الحقيقي شغال" : "شغّل صوت بيلا الحقيقي";
+    const text = state.enabled ? "🔊" : "🔇";
+    const label = state.enabled ? "إيقاف صوت بيلا" : "تشغيل صوت بيلا";
+    const title = state.enabled ? "صوت بيلا الحقيقي شغال" : "شغّل صوت بيلا الحقيقي";
+    if (btn.textContent !== text) btn.textContent = text;
+    if (btn.getAttribute("aria-label") !== label) btn.setAttribute("aria-label", label);
+    if (btn.title !== title) btn.title = title;
   }
 
   function toggle() {
