@@ -13,6 +13,7 @@ const CORE = [
   "/bella-config.js?v=16",
   "/bella-context.js?v=16",
   "/bella-routing.js?v=16",
+  "/bella-moments.js?v=16",
   "/bella-style.js?v=16",
   "/bella-auth-bridge.js?v=16",
   "/bella-runtime.js?v=16",
