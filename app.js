@@ -6,6 +6,7 @@
     "bella-analytics.js",
     "script.js",
     "bella-legacy-plus.js",
+    "bella-config.js",
     "bella-context.js",
     "bella-routing.js",
     "bella-style.js",
@@ -16,6 +17,7 @@
     "bella-account-center.js",
     "bella-owner-center.js",
     "bella-owner-analytics.js",
+    "bella-owner-controls.js",
     "bella-speed.js",
     "bella-ui.js",
     "bella-install.js"
@@ -24,7 +26,7 @@
   function loadScript(file) {
     return new Promise((resolve, reject) => {
       const script = document.createElement("script");
-      script.src = `/${file}?v=16`;
+      script.src = `/${file}?v=18`;
       script.async = false;
       script.onload = resolve;
       script.onerror = () => reject(new Error(`Failed to load ${file}`));
