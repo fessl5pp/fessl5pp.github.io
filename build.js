@@ -2,6 +2,7 @@ const fs = require('fs');
 
 const sources = [
   ['bella-account.js', 'Accounts and cloud profile sync'],
+  ['bella-analytics.js', 'Privacy-safe signed-in usage analytics'],
   ['script.js', 'Legacy UI and local features'],
   ['bella-legacy-plus.js', 'Cleaned and enhanced legacy features'],
   ['bella-context.js', 'Long conversation context memory'],
@@ -12,7 +13,8 @@ const sources = [
   ['bella-live-web.js', 'Selective live web citation rendering'],
   ['bella-account-memory.js', 'Cloud memory deletion synchronization'],
   ['bella-account-center.js', 'Signed-in account dashboard'],
-  ['bella-owner-center.js', 'Owner-only analytics and account dashboard'],
+  ['bella-owner-center.js', 'Owner-only account dashboard'],
+  ['bella-owner-analytics.js', 'Owner-only activity analytics dashboard'],
   ['bella-speed.js', 'Live reply rendering and perceived latency'],
   ['bella-ui.js', 'Settings and chat controls'],
   ['bella-install.js', 'PWA install experience']
@@ -31,9 +33,11 @@ const loaded = sources.map(([file, label]) => {
 
 const ownershipRules = [
   { pattern: /window\.BellaAccount\s*=(?!=)/, owner: 'bella-account.js', label: 'account and cloud profile' },
+  { pattern: /window\.BellaAnalytics\s*=(?!=)/, owner: 'bella-analytics.js', label: 'privacy-safe usage analytics' },
   { pattern: /window\.BellaAccountMemory\s*=(?!=)/, owner: 'bella-account-memory.js', label: 'cloud memory deletion sync' },
   { pattern: /window\.BellaAccountCenter\s*=(?!=)/, owner: 'bella-account-center.js', label: 'account center UI' },
   { pattern: /window\.BellaOwnerCenter\s*=(?!=)/, owner: 'bella-owner-center.js', label: 'owner center UI' },
+  { pattern: /window\.BellaOwnerAnalytics\s*=(?!=)/, owner: 'bella-owner-analytics.js', label: 'owner activity analytics UI' },
   { pattern: /window\.BellaLiveWeb\s*=(?!=)/, owner: 'bella-live-web.js', label: 'live web citation UI' },
   { pattern: /window\.send\s*=(?!=)/, owner: 'bella-vnext.js', label: 'send flow' },
   { pattern: /window\.getAIReply\s*=(?!=)/, owner: 'bella-vnext.js', label: 'AI reply flow' },
@@ -65,8 +69,5 @@ try {
   process.exit(1);
 }
 
-// app.js is a tracked, resilient static boot loader. Do not overwrite it here:
-// Vercel can execute vercel-build multiple times while compiling functions.
-// We validate the combined source in memory instead, keeping the deployed entry immutable.
 console.log(`Bella combined source validated (${sources.length} modules, ${bundle.length} chars)`);
-console.log('Bella ownership validated: account/account-center/owner-center/memory-sync/live-web/legacy/context/routing/style/runtime/mood/send/speed/UI are separated.');
+console.log('Bella ownership validated: account/analytics/account-center/owner-center/owner-analytics/memory-sync/live-web/legacy/context/routing/style/runtime/mood/send/speed/UI are separated.');
