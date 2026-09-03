@@ -2,6 +2,9 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "npm run vercel-build",
   "outputDirectory": "public",
+  "alias": [
+    "fessl5pp-github-io.vercel.app"
+  ],
   "rewrites": [
     {
       "source": "/api/chat",
