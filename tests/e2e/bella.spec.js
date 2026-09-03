@@ -35,6 +35,25 @@ test('boots cleanly and core chat controls open', async ({ page }) => {
   expect(pageErrors).toEqual([]);
 });
 
+test('Bella visual identity renders and follows mood classes', async ({ page }) => {
+  const pageErrors = await bootBella(page);
+
+  await expect(page.locator('#heroAvatar .bella-face')).toHaveCount(1);
+  await expect(page.locator('#chatAvatar .bella-face')).toHaveCount(1);
+  await expect(page.locator('#heroAvatar .bella-kuwait-mark')).toHaveCount(1);
+  await expect(page.locator('#chatAvatar')).toHaveAttribute('role', 'img');
+
+  await page.evaluate(() => {
+    const avatar = document.getElementById('chatAvatar');
+    avatar.classList.remove('mood-angry', 'mood-cute', 'mood-happy', 'mood-chill');
+    avatar.classList.add('mood-cute');
+  });
+
+  await expect(page.locator('#chatAvatar')).toHaveAttribute('data-bella-mood', 'cute');
+  await expect(page.locator('#chatAvatar')).toHaveAttribute('aria-label', /دلّوعة/);
+  expect(pageErrors).toEqual([]);
+});
+
 test('Enter and send button each submit exactly one message', async ({ page }) => {
   await bootBella(page);
   await page.evaluate(() => (window.openChat || window.__openBella)());
