@@ -18,6 +18,7 @@
     "bella-account-center.js",
     "bella-owner-center.js",
     "bella-owner-users.js",
+    "bella-moderator-center.js",
     "bella-owner-analytics.js",
     "bella-owner-controls.js",
     "bella-speed.js",
