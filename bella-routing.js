@@ -3,6 +3,8 @@
 
   // Bella v12 keeps the legacy script only for UI/game compatibility.
   // Normal conversation copy must come from the AI API, not from old phrase banks.
+  // Compatibility note: shouldUseAIForRepeat used to escalate only repeated short
+  // messages; AI-first routing now escalates every non-empty normal chat message.
   const originalDetectName = window.detectName;
 
   function normalizeText(value) {
@@ -33,13 +35,11 @@
   }
 
   function installAIFirstConversation() {
-    // Old dictionary / mood banks are never allowed to answer normal chat.
     window.dictionaryReply = function bellaAIOnlyDictionary() { return null; };
     window.angryServiceBlock = function bellaAIOnlyAngryService() { return null; };
     window.fazaaReply = function bellaAIOnlyFazaaReply() { return null; };
     window.socialRadarReply = function bellaAIOnlySocialRadar() { return null; };
 
-    // Keep learning the user's name locally, but let the AI phrase the reply.
     window.detectName = function bellaAINameCapture(msg) {
       if (typeof originalDetectName === "function") {
         try { originalDetectName.call(this, msg); } catch {}
@@ -47,8 +47,6 @@
       return null;
     };
 
-    // Old suggestion banks are retired. Ambient rumors / top-right Bella moments
-    // are intentionally preserved and enhanced by bella-moments.js.
     window.updateSuggestions = function bellaNoLegacySuggestions() {
       const suggestions = document.getElementById("quickSuggestions");
       if (!suggestions) return;
