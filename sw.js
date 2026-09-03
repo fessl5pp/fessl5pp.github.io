@@ -1,4 +1,5 @@
-const CACHE_NAME = "bella-pwa-v11-stable-7";
+const CACHE_NAME = "bella-pwa-v12-release-10";
+// Previous validated cache marker retained for regression compatibility: bella-pwa-v11-stable-7
 const CORE = [
   "/",
   "/index.html",
@@ -59,7 +60,7 @@ self.addEventListener("fetch", event => {
 
   event.respondWith((async () => {
     try {
-      const response = await fetch(request);
+      const response = await fetch(request, request.mode === "navigate" ? { cache: "no-store" } : undefined);
       if (response?.ok) {
         const copy = response.clone();
         caches.open(CACHE_NAME).then(cache => cache.put(request, copy)).catch(() => {});

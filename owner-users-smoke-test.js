@@ -13,7 +13,7 @@ const gatedChat = read('api/gated-chat.js');
 const gatedDira = read('api/gated-dira.js');
 const app = read('app.js');
 const sw = read('sw.js');
-const vercel = read('vercel.json');
+const vercel = JSON.parse(read('vercel.json'));
 
 assert.ok(users.includes('bella_owner_users_v2'), 'owner UI must use the v2 protected user list');
 assert.ok(users.includes('bella_owner_user_detail'), 'owner UI must load protected account detail');
@@ -23,7 +23,7 @@ assert.ok(users.includes('suspend') && users.includes('unsuspend') && users.incl
 assert.ok(users.includes('ما نعرض نص المحادثات'), 'owner UI must keep chat-content privacy disclosure');
 assert.ok(/window\.BellaOwnerUsers\s*=(?!=)/.test(users), 'owner user management must expose one namespace');
 assert.ok(!/window\.send\s*=(?!=)/.test(users), 'owner user management must not own send flow');
-assert.ok(!/window\.getAIReply\s*=(?!=)/.test(users), 'owner user management must not own AI flow');
+assert.ok(!/window\.getAIReply\s*=(?!=)/.test(users), 'owner user management must never own AI flow');
 assert.ok(!users.includes('service_role') && !users.includes('sb_secret_'), 'owner UI must not contain Supabase secret credentials');
 
 assert.ok(bridge.includes('bella_account_session_v1'), 'auth bridge must read the existing account session');
@@ -40,7 +40,9 @@ assert.ok(gatedDira.includes('checkBellaAccountAccess') && gatedDira.includes('d
 assert.ok(app.indexOf('bella-auth-bridge.js') < app.indexOf('bella-runtime.js'), 'auth bridge must load before runtime captures the network transport');
 assert.ok(app.indexOf('bella-owner-center.js') < app.indexOf('bella-owner-users.js'), 'owner user management must load after owner verification');
 assert.ok(sw.includes('/bella-auth-bridge.js?v=16') && sw.includes('/bella-owner-users.js?v=16'), 'PWA cache must include owner user management modules');
-assert.ok(vercel.includes('"source": "/api/chat"') && vercel.includes('"destination": "/api/gated-chat"'), 'Vercel must route chat through the account gate');
-assert.ok(vercel.includes('"source": "/api/dira"') && vercel.includes('"destination": "/api/gated-dira"'), 'Vercel must route Dira through the account gate');
+
+const rewriteMap = new Map((vercel.rewrites || []).map(rule => [rule.source, rule.destination]));
+assert.strictEqual(rewriteMap.get('/api/chat'), '/api/gated-chat', 'Vercel must route chat through the account gate');
+assert.strictEqual(rewriteMap.get('/api/dira'), '/api/gated-dira', 'Vercel must route Dira through the account gate');
 
 console.log('Bella owner user management smoke tests passed: owner-only account controls, audit log, suspended-account cloud/API gating and privacy boundaries are wired.');

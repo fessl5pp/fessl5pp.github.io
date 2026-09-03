@@ -1,6 +1,6 @@
 (() => {
   "use strict";
-  // Bella voice v9 release marker.
+  // Bella v10 deployment-security release marker.
 
   const modules = [
     "bella-account.js",
