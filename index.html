@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
   <title>Bella | بيلا الكويتية 🇰🇼</title>
-  <meta name="description" content="سولف ويا بيلا.. ذكاء اصطناعي كويتي له مزاج وذاكرة وقطات، رادار قز وسوالف الديرة وألعاب!">
+  <meta name="description" content="سولف ويا بيلا.. شخصية كويتية ذكية لها مزاج وذاكرة وقطات، رادار قز وسوالف الديرة وألعاب!">
   <meta name="theme-color" content="#0c1018">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -21,7 +21,7 @@
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Bella">
   <meta property="og:title" content="Bella | بيلا الكويتية 🇰🇼">
-  <meta property="og:description" content="سولف ويا بيلا.. ذكاء اصطناعي كويتي له مزاج وذاكرة وقطات، رادار قز وسوالف الديرة!">
+  <meta property="og:description" content="سولف ويا بيلا.. شخصية كويتية ذكية لها مزاج وذاكرة وقطات، رادار قز وسوالف الديرة!">
   <meta property="og:url" content="https://fessl5pp-github-io-fessl5pps-projects.vercel.app/">
   <meta property="og:image" content="https://fessl5pp-github-io-fessl5pps-projects.vercel.app/api/icon?size=512">
   <meta property="og:image:type" content="image/png">
@@ -31,7 +31,7 @@
 
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Bella | بيلا الكويتية 🇰🇼">
-  <meta name="twitter:description" content="ذكاء اصطناعي كويتي يسولف وياك بمزاج وذاكرة وقطات.">
+  <meta name="twitter:description" content="شخصية كويتية ذكية تسولف وياك بمزاج وذاكرة وقطات.">
   <meta name="twitter:image" content="https://fessl5pp-github-io-fessl5pps-projects.vercel.app/api/icon?size=512">
 
   <link rel="stylesheet" href="/style.css?v=11">
@@ -49,13 +49,23 @@
     .bella-switch input:checked + .bella-switch-track{background:var(--accent)}
     .bella-switch input:checked + .bella-switch-track::after{transform:translateX(-22px)}
     .bella-settings-note{font-size:11px;color:var(--muted);margin-top:12px;line-height:1.7}
+    .bella-settings-tools{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px}
+    .bella-settings-tools button{min-height:44px;border:1px solid rgba(255,255,255,.1);border-radius:13px;background:rgba(255,255,255,.055);color:inherit;font:inherit;font-size:12px;font-weight:800;cursor:pointer}
 
     .header-actions .tiny:not(.bella-core-action){display:none!important}
     .header-actions{position:relative;gap:6px}
-    .bella-more-menu{position:absolute;top:58px;left:12px;right:12px;z-index:30;padding:10px;border:1px solid rgba(255,255,255,.11);border-radius:18px;background:rgba(14,18,27,.98);box-shadow:0 18px 50px rgba(0,0,0,.4);backdrop-filter:blur(18px)}
-    .bella-more-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-    .bella-more-grid button{min-height:46px;border:1px solid rgba(255,255,255,.09);border-radius:13px;background:rgba(255,255,255,.05);color:inherit;font:inherit;font-size:12px;font-weight:800;cursor:pointer}
-    .bella-more-grid button:active{transform:scale(.98)}
+
+    .bella-activities-card{width:min(620px,calc(100vw - 28px));max-height:min(760px,88vh);overflow:auto}
+    .bella-activities-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:18px}
+    .bella-activities-head h2{margin:0 0 5px}.bella-activities-head p{margin:0;color:var(--muted);font-size:12px;line-height:1.6}
+    .bella-activities-close{width:36px;height:36px;flex:0 0 auto;border:1px solid rgba(255,255,255,.1);border-radius:12px;background:rgba(255,255,255,.06);color:inherit;font:inherit;cursor:pointer}
+    .bella-activities-section{margin-top:16px}
+    .bella-activities-label{display:block;margin-bottom:9px;font-size:13px}
+    .bella-activities-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+    .bella-activities-grid.compact{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .bella-activities-grid button{display:flex;min-height:84px;flex-direction:column;align-items:flex-start;justify-content:center;gap:4px;padding:13px;border:1px solid rgba(255,255,255,.09);border-radius:15px;background:rgba(255,255,255,.05);color:inherit;text-align:right;font:inherit;cursor:pointer}
+    .bella-activities-grid button span{font-size:21px}.bella-activities-grid button b{font-size:13px}.bella-activities-grid button small{color:var(--muted);font-size:11px;line-height:1.5}
+    .bella-activities-grid button:active,.bella-settings-tools button:active{transform:scale(.98)}
 
     .bella-net-error{border-color:rgba(255,110,110,.34)!important;background:rgba(110,35,35,.18)!important}
     .bella-error-actions{display:flex;justify-content:flex-start;padding:4px 12px 8px}
@@ -63,7 +73,11 @@
     .bella-retry-btn:active{transform:scale(.98)}
     .bella-connection-state{flex-shrink:0;margin:0 12px 7px;padding:7px 10px;border:1px solid rgba(255,190,70,.22);border-radius:12px;background:rgba(130,85,10,.15);color:#ffd98a;font-size:11px;font-weight:800;text-align:center}
 
-    @media (max-width:520px){.bella-more-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.header-actions{gap:4px}}
+    @media (max-width:520px){
+      .header-actions{gap:4px}
+      .bella-settings-tools{grid-template-columns:1fr}
+      .bella-activities-grid,.bella-activities-grid.compact{grid-template-columns:repeat(2,minmax(0,1fr))}
+    }
   </style>
 </head>
 <body class="theme-blue">
@@ -82,15 +96,11 @@
       <div class="txt"><b>Bella</b><span>بيلا الكويتية</span></div>
     </div>
     <h1>بيلا 🇰🇼 سوالف، قطات، ومزاج على حسبك</h1>
-    <div class="sub">مو بس تجاوبك — تتذكر سوالفك بهالجهاز، تفهم أسلوبك، ومزاجها يتغير معاك شوي شوي.</div>
+    <div class="sub">مو بس تجاوبك — تتذكر سوالفك، تربط اللي قلته قبل، وتفهم المقصد والجو قبل لا ترد.</div>
     <div class="hero-actions">
       <button class="btn" onclick="(window.openChat || window.__openBella)()">دش سولف وياها ⚡</button>
       <button class="ghost" onclick="openBellaSettings()">الإعدادات ⚙️</button>
-      <button class="ghost" onclick="showTheme()">الثيم 🎨</button>
-      <button class="ghost" onclick="openDira()">شكو ماكو؟ 🇰🇼</button>
-      <button class="ghost" onclick="openRadarPlus()">رادار القز+ 📡</button>
-      <button class="ghost" onclick="startKuwaitiChallenge()">تحدي كويتي 🧩</button>
-      <button class="ghost" onclick="shareChat()">شارك ستوري 📸</button>
+      <button class="ghost" onclick="openBellaActivities()">فعاليات بيلا 🎮</button>
     </div>
   </section>
 
@@ -107,25 +117,8 @@
     <div class="left"><div class="avatar" id="chatAvatar">B</div><div class="title"><b>Bella</b><span id="chat-status">تو نعرف بعض · النفسية وسط</span></div></div>
     <div class="header-actions">
       <button class="tiny bella-core-action" onclick="openBellaSettings()" aria-label="إعدادات بيلا" title="الإعدادات">⚙️</button>
-      <button class="tiny bella-core-action" id="bellaMoreBtn" onclick="toggleBellaMoreMenu()" aria-label="المزيد" title="المزيد">•••</button>
+      <button class="tiny bella-core-action" onclick="openBellaActivities()" aria-label="فعاليات بيلا" title="الفعاليات">🎮</button>
       <button class="tiny bella-core-action" onclick="(window.closeChat || window.__closeBella)()" aria-label="إغلاق الشات" title="إغلاق">✕</button>
-    </div>
-  </div>
-
-  <div class="bella-more-menu" id="bellaMoreMenu" hidden>
-    <div class="bella-more-grid">
-      <button onclick="openMemoryPanel();closeBellaMoreMenu()">🧠 الذاكرة</button>
-      <button onclick="openDira();closeBellaMoreMenu()">🇰🇼 شكو ماكو؟</button>
-      <button onclick="openRadarPlus();closeBellaMoreMenu()">📡 رادار القز</button>
-      <button onclick="startKuwaitiChallenge();closeBellaMoreMenu()">🧩 تحدي كويتي</button>
-      <button onclick="dailyWisdom();closeBellaMoreMenu()">🧿 حكمة اليوم</button>
-      <button onclick="startBoxGame();closeBellaMoreMenu()">🎁 شنو بالصندوق</button>
-      <button onclick="startProverbGame();closeBellaMoreMenu()">🧠 كمّل المثل</button>
-      <button onclick="openFazaa();closeBellaMoreMenu()">🚨 فزعة</button>
-      <button onclick="shareChat();closeBellaMoreMenu()">📸 مشاركة</button>
-      <button onclick="giveGift('rose');closeBellaMoreMenu()">🌹 وردة</button>
-      <button onclick="giveGift('choco');closeBellaMoreMenu()">🍫 كاكاو</button>
-      <button onclick="document.getElementById('bellaVoiceToggle')?.click();closeBellaMoreMenu()">🔊 صوت بيلا</button>
     </div>
   </div>
 
