@@ -3,17 +3,23 @@ const { test, expect } = require('@playwright/test');
 async function bootBella(page) {
   const pageErrors = [];
   page.on('pageerror', error => pageErrors.push(error.message));
+  await page.addInitScript(() => {
+    localStorage.setItem('bella_vnext_v2', JSON.stringify({
+      version: 2,
+      onboarded: true,
+      name: 'اختبار',
+      memory: [],
+      recentReplies: [],
+      recentUser: [],
+      mood: { angry: 0, cute: 0, happy: 0 },
+      stats: { messages: 0, totalChars: 0, humor: 0, warmth: 0, radar: 0, dira: 0, gameWins: 0 }
+    }));
+  });
   await page.goto('/');
   await page.waitForFunction(() => !!window.__bellaBoot);
   await page.evaluate(() => window.__bellaBoot);
   await expect(page.locator('#inp')).toBeAttached();
   return pageErrors;
-}
-
-async function dismissOnboarding(page) {
-  await page.evaluate(() => {
-    document.getElementById('bellaOnboard')?.remove();
-  });
 }
 
 test('boots cleanly and core chat controls open', async ({ page }) => {
@@ -31,7 +37,6 @@ test('boots cleanly and core chat controls open', async ({ page }) => {
 
 test('Enter and send button each submit exactly one message', async ({ page }) => {
   await bootBella(page);
-  await dismissOnboarding(page);
   await page.evaluate(() => (window.openChat || window.__openBella)());
 
   await page.evaluate(() => {
@@ -70,7 +75,6 @@ test('emergency network fallback renders a JSON API reply', async ({ page }) => 
   });
 
   await bootBella(page);
-  await dismissOnboarding(page);
   await page.evaluate(() => (window.openChat || window.__openBella)());
   await page.evaluate(() => window.__bellaEmergencySend('اختبار fallback'));
 
