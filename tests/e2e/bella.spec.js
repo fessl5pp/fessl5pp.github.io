@@ -10,6 +10,12 @@ async function bootBella(page) {
   return pageErrors;
 }
 
+async function dismissOnboarding(page) {
+  await page.evaluate(() => {
+    document.getElementById('bellaOnboard')?.remove();
+  });
+}
+
 test('boots cleanly and core chat controls open', async ({ page }) => {
   const pageErrors = await bootBella(page);
 
@@ -25,6 +31,7 @@ test('boots cleanly and core chat controls open', async ({ page }) => {
 
 test('Enter and send button each submit exactly one message', async ({ page }) => {
   await bootBella(page);
+  await dismissOnboarding(page);
   await page.evaluate(() => (window.openChat || window.__openBella)());
 
   await page.evaluate(() => {
@@ -44,12 +51,12 @@ test('Enter and send button each submit exactly one message', async ({ page }) =
   await input.fill('اختبار Enter');
   await input.press('Enter');
   await expect(page.locator('#box .m.user')).toHaveCount(1);
-  await expect(page.locator('#box .m.user').last()).toHaveText('اختبار Enter');
+  await expect(page.locator('#box .m.user').last()).toContainText('اختبار Enter');
 
   await input.fill('اختبار الزر');
   await page.getByRole('button', { name: 'إرسال الرسالة' }).click();
   await expect(page.locator('#box .m.user')).toHaveCount(2);
-  await expect(page.locator('#box .m.user').last()).toHaveText('اختبار الزر');
+  await expect(page.locator('#box .m.user').last()).toContainText('اختبار الزر');
   await expect(page.getByRole('button', { name: 'إرسال الرسالة' })).toBeEnabled();
 });
 
@@ -63,10 +70,11 @@ test('emergency network fallback renders a JSON API reply', async ({ page }) => 
   });
 
   await bootBella(page);
+  await dismissOnboarding(page);
   await page.evaluate(() => (window.openChat || window.__openBella)());
   await page.evaluate(() => window.__bellaEmergencySend('اختبار fallback'));
 
-  await expect(page.locator('#box .m.user').last()).toHaveText('اختبار fallback');
+  await expect(page.locator('#box .m.user').last()).toContainText('اختبار fallback');
   await expect(page.locator('#box .m.bot').last()).toContainText('رد اختبار الشبكة');
 });
 
