@@ -11,7 +11,7 @@ const api = read('api/voice.js');
 const gate = read('api/gated-voice.js');
 const app = read('app.js');
 const sw = read('sw.js');
-const vercel = read('vercel.json');
+const vercel = JSON.parse(read('vercel.json'));
 const build = read('build.js');
 
 new Function(client);
@@ -40,8 +40,9 @@ assert.ok(gate.includes('rejectSuspendedAccount'), 'voice gate must enforce acco
 
 assert.ok(app.indexOf('bella-voice.js') < app.indexOf('bella-vnext.js'), 'voice migration must run before vNext reads legacy voiceEnabled');
 assert.ok(sw.includes('/bella-voice.js?v=16'), 'PWA shell must cache Bella voice client');
-assert.ok(vercel.includes('"source": "/api/voice"'), 'Vercel must route /api/voice through the account gate');
-assert.ok(vercel.includes('"destination": "/api/gated-voice"'), 'Vercel voice rewrite must target the gated endpoint');
+
+const rewriteMap = new Map((vercel.rewrites || []).map(rule => [rule.source, rule.destination]));
+assert.strictEqual(rewriteMap.get('/api/voice'), '/api/gated-voice', 'Vercel must route /api/voice through the account gate');
 assert.ok(build.includes("['bella-voice.js', 'Server-backed Bella voice with local fallback']"), 'build must validate the voice module');
 assert.ok(build.includes("owner: 'bella-voice.js'"), 'build ownership must reserve BellaVoice for its module');
 
