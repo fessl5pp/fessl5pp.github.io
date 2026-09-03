@@ -1,6 +1,7 @@
 (() => {
   "use strict";
   // Bella v11 personality-activities release marker.
+  // Bella v12 AI-first chat + coordinated ambient moments marker.
 
   const modules = [
     "bella-account.js",
@@ -10,6 +11,7 @@
     "bella-config.js",
     "bella-context.js",
     "bella-routing.js",
+    "bella-moments.js",
     "bella-style.js",
     "bella-auth-bridge.js",
     "bella-runtime.js",
@@ -51,6 +53,7 @@
     banner.hidden = false;
     banner.textContent = "تعذر تحميل بيلا بالكامل. حدّث الصفحة وجرب مرة ثانية.";
     const inputArea = document.querySelector(".input-area");
+    if (!banner.isConnected && inputArea) banner.insertAdjacentElement?.("beforebegin", banner);
     if (!banner.isConnected && inputArea) inputArea.insertAdjacentElement("beforebegin", banner);
   });
 })();
