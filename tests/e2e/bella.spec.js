@@ -28,7 +28,7 @@ test('boots cleanly and core chat controls open', async ({ page }) => {
   await page.evaluate(() => (window.openChat || window.__openBella)());
   await expect(page.locator('#win')).toHaveClass(/active/);
 
-  await page.getByRole('button', { name: 'فعاليات بيلا' }).click();
+  await page.locator('.header-actions button[aria-label="فعاليات بيلا"]').click();
   await expect(page.locator('#bellaActivities')).toBeVisible();
   await expect(page.getByRole('button', { name: /رادار القز/ })).toBeVisible();
   await expect(page.getByRole('button', { name: /تحدي كويتي/ })).toBeVisible();
