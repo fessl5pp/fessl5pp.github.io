@@ -29,13 +29,17 @@ test('Bella server voice loads and toggle persists independently of legacy devic
   await bootBella(page);
 
   await expect.poll(() => page.evaluate(() => window.BellaVoice?.provider)).toBe('gpt-4o-mini-tts');
-  const button = page.locator('#bellaVoiceToggle');
-  await expect(button).toBeVisible();
-  await expect(button).toHaveAttribute('aria-label', 'تشغيل صوت بيلا');
+  const internalToggle = page.locator('#bellaVoiceToggle');
+  await expect(internalToggle).toHaveAttribute('aria-label', 'تشغيل صوت بيلا');
 
-  await button.click();
+  await page.locator('#bellaMoreBtn').click();
+  await expect(page.locator('#bellaMoreMenu')).toBeVisible();
+  const voiceMenuButton = page.getByRole('button', { name: /صوت بيلا/ });
+  await expect(voiceMenuButton).toBeVisible();
+
+  await voiceMenuButton.click();
   await expect.poll(() => page.evaluate(() => window.BellaVoice?.enabled)).toBe(true);
-  await expect(button).toHaveAttribute('aria-label', 'إيقاف صوت بيلا');
+  await expect(internalToggle).toHaveAttribute('aria-label', 'إيقاف صوت بيلا');
 
   const saved = await page.evaluate(() => ({
     voice: JSON.parse(localStorage.getItem('bella_voice_v1') || '{}'),
