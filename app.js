@@ -1,6 +1,6 @@
 (() => {
   "use strict";
-  // Bella voice v9 release marker.
+  // Bella v10 deployment-security release marker.
 
   const modules = [
     "bella-account.js",
@@ -32,7 +32,7 @@
   function loadScript(file) {
     return new Promise((resolve, reject) => {
       const script = document.createElement("script");
-      script.src = `/${file}?v=16`;
+      script.src = `/${file}?v=17`;
       script.async = false;
       script.onload = resolve;
       script.onerror = () => reject(new Error(`Failed to load ${file}`));
