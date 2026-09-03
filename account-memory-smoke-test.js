@@ -11,9 +11,9 @@ const sw = read('sw.js');
 
 assert.ok(app.indexOf('bella-vnext.js') < app.indexOf('bella-account-memory.js'), 'account memory sync must load after vNext owns the memory UI');
 assert.ok(app.indexOf('bella-account-memory.js') < app.indexOf('bella-speed.js'), 'account memory sync must load before later UI bridges');
-assert.ok(app.includes('?v=15'), 'account-memory release must use the v15 loader generation');
+assert.ok(app.includes('?v=16'), 'account-memory release must use the current loader generation');
 assert.ok(build.includes('bella-account-memory.js'), 'build must syntax-check account memory sync');
-assert.ok(sw.includes('/bella-account-memory.js?v=15'), 'PWA cache must include account memory v2');
+assert.ok(sw.includes('/bella-account-memory.js?v=16'), 'PWA cache must include account memory v2');
 assert.ok(memorySync.includes('syncExactMemory'), 'account memory sync must expose exact cross-device synchronization');
 assert.ok(memorySync.includes('bella_memories'), 'memory v2 must use a dedicated RLS-protected cloud memory table');
 assert.ok(memorySync.includes('SNAPSHOT_KEY'), 'memory v2 must track a per-user last synchronized set');
