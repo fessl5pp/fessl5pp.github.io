@@ -16,6 +16,7 @@ const CORE = [
   "/bella-live-web.js?v=16",
   "/bella-account-memory.js?v=16",
   "/bella-account-center.js?v=16",
+  "/bella-owner-center.js?v=16",
   "/bella-speed.js?v=16",
   "/bella-ui.js?v=16",
   "/bella-install.js?v=16",

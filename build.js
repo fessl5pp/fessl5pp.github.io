@@ -12,6 +12,7 @@ const sources = [
   ['bella-live-web.js', 'Selective live web citation rendering'],
   ['bella-account-memory.js', 'Cloud memory deletion synchronization'],
   ['bella-account-center.js', 'Signed-in account dashboard'],
+  ['bella-owner-center.js', 'Owner-only analytics and account dashboard'],
   ['bella-speed.js', 'Live reply rendering and perceived latency'],
   ['bella-ui.js', 'Settings and chat controls'],
   ['bella-install.js', 'PWA install experience']
@@ -32,6 +33,7 @@ const ownershipRules = [
   { pattern: /window\.BellaAccount\s*=(?!=)/, owner: 'bella-account.js', label: 'account and cloud profile' },
   { pattern: /window\.BellaAccountMemory\s*=(?!=)/, owner: 'bella-account-memory.js', label: 'cloud memory deletion sync' },
   { pattern: /window\.BellaAccountCenter\s*=(?!=)/, owner: 'bella-account-center.js', label: 'account center UI' },
+  { pattern: /window\.BellaOwnerCenter\s*=(?!=)/, owner: 'bella-owner-center.js', label: 'owner center UI' },
   { pattern: /window\.BellaLiveWeb\s*=(?!=)/, owner: 'bella-live-web.js', label: 'live web citation UI' },
   { pattern: /window\.send\s*=(?!=)/, owner: 'bella-vnext.js', label: 'send flow' },
   { pattern: /window\.getAIReply\s*=(?!=)/, owner: 'bella-vnext.js', label: 'AI reply flow' },
@@ -67,4 +69,4 @@ try {
 // Vercel can execute vercel-build multiple times while compiling functions.
 // We validate the combined source in memory instead, keeping the deployed entry immutable.
 console.log(`Bella combined source validated (${sources.length} modules, ${bundle.length} chars)`);
-console.log('Bella ownership validated: account/account-center/memory-sync/live-web/legacy/context/routing/style/runtime/mood/send/speed/UI are separated.');
+console.log('Bella ownership validated: account/account-center/owner-center/memory-sync/live-web/legacy/context/routing/style/runtime/mood/send/speed/UI are separated.');
