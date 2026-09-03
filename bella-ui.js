@@ -13,27 +13,53 @@
     }
   }
 
+  function accountLabel() {
+    const name = String(window.BellaAccount?.displayName?.() || "").trim();
+    return name ? `👤 ${name}` : "الحساب 👤";
+  }
+
+  function ensureAccountHomeAction() {
+    const heroActions = document.querySelector(".hero-actions");
+    if (!heroActions || heroActions.querySelector("[data-bella-account-button]")) return;
+    if (typeof window.BellaAccount?.open !== "function") return;
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "ghost";
+    button.dataset.bellaAccountButton = "1";
+    button.textContent = accountLabel();
+    button.title = "حساب بيلا";
+    button.onclick = () => window.BellaAccount?.open?.();
+    heroActions.appendChild(button);
+  }
+
   function organizeHomeActions() {
     const heroActions = document.querySelector(".hero-actions");
     if (!heroActions) return;
 
     const isCoreAction = button => {
       const onclick = String(button.getAttribute("onclick") || "");
-      return onclick.includes("openChat")
+      return button.dataset.bellaAccountButton === "1"
+        || button.dataset.bellaOwnerButton === "1"
+        || button.dataset.bellaModeratorButton === "1"
+        || onclick.includes("openChat")
         || onclick.includes("__openBella")
         || onclick.includes("openBellaSettings")
-        || onclick.includes("openBellaActivities");
+        || onclick.includes("openBellaActivities")
+        || onclick.includes("BellaAccount");
     };
 
     [...heroActions.querySelectorAll(":scope > button")].forEach(button => {
       if (!isCoreAction(button)) button.remove();
     });
+    ensureAccountHomeAction();
 
     if (!homeActionObserver) {
       homeActionObserver = new MutationObserver(() => {
         [...heroActions.querySelectorAll(":scope > button")].forEach(button => {
           if (!isCoreAction(button)) button.remove();
         });
+        ensureAccountHomeAction();
       });
       homeActionObserver.observe(heroActions, { childList: true });
     }
@@ -55,6 +81,23 @@
     closeBellaActivities();
     const action = window[name];
     if (typeof action === "function") return action(...args);
+  }
+
+  async function refreshManagementTools(modal) {
+    if (!(modal instanceof HTMLElement)) return;
+    const admin = modal.querySelector("#bellaSettingsAdmin");
+    const ownerButton = modal.querySelector("#bellaOwnerSettings");
+    const moderatorButton = modal.querySelector("#bellaModeratorSettings");
+    if (!admin || !ownerButton || !moderatorButton) return;
+
+    let ownerAllowed = false;
+    let moderatorAllowed = false;
+    try { ownerAllowed = Boolean(await window.BellaOwnerCenter?.refresh?.()); } catch {}
+    try { moderatorAllowed = Boolean(await window.BellaModeratorCenter?.refresh?.()); } catch {}
+
+    ownerButton.hidden = !ownerAllowed;
+    moderatorButton.hidden = !moderatorAllowed;
+    admin.hidden = !(ownerAllowed || moderatorAllowed);
   }
 
   window.closeBellaMoreMenu = function closeBellaMoreMenu() {
@@ -161,11 +204,19 @@
           </label>
         </div>
         <div class="bella-settings-tools">
+          <button id="bellaAccountSettings">👤 الحساب</button>
           <button id="bellaThemeSettings">🎨 الثيم</button>
           <button id="bellaMemorySettings">🧠 الذاكرة</button>
           <button id="bellaVoiceSettings">🔊 صوت بيلا</button>
         </div>
-        <p class="bella-settings-note">الإعدادات تنحفظ على هالجهاز، وتقدر تغيرها بأي وقت من ⚙️. إذا طفيت ذاكرة السياق تنمسح بيانات السياق الطويل المحفوظة محلياً.</p>
+        <div class="bella-activities-section" id="bellaSettingsAdmin" hidden>
+          <b class="bella-activities-label">🛡️ الإدارة</b>
+          <div class="bella-settings-tools">
+            <button id="bellaOwnerSettings" hidden>🛡️ مركز المالك</button>
+            <button id="bellaModeratorSettings" hidden>🧰 مركز الإشراف</button>
+          </div>
+        </div>
+        <p class="bella-settings-note">الإعدادات تنحفظ على هالجهاز، وتقدر تغيرها بأي وقت من ⚙️. حسابك وإدارة المالك ما تنشال مع تنظيف الواجهة، وصلاحيات الإدارة تظهر فقط للحساب المصرّح له.</p>
         <div class="vnext-actions"><button id="bellaSettingsClose" class="vnext-primary">تم</button></div>
       </div>`;
 
@@ -180,14 +231,27 @@
       next.longContext = event.target.checked;
       saveSettings(next);
     });
+    modal.querySelector("#bellaAccountSettings").onclick = () => {
+      modal.remove();
+      window.BellaAccount?.open?.();
+    };
     modal.querySelector("#bellaThemeSettings").onclick = () => { modal.remove(); runAction("showTheme"); };
     modal.querySelector("#bellaMemorySettings").onclick = () => { modal.remove(); runAction("openMemoryPanel"); };
     modal.querySelector("#bellaVoiceSettings").onclick = () => {
       const voiceToggle = document.getElementById("bellaVoiceToggle");
       if (voiceToggle) voiceToggle.click();
     };
+    modal.querySelector("#bellaOwnerSettings").onclick = () => {
+      modal.remove();
+      window.BellaOwnerCenter?.open?.();
+    };
+    modal.querySelector("#bellaModeratorSettings").onclick = () => {
+      modal.remove();
+      window.BellaModeratorCenter?.open?.();
+    };
     modal.querySelector("#bellaSettingsClose").onclick = () => modal.remove();
     modal.addEventListener("click", event => { if (event.target === modal) modal.remove(); });
+    refreshManagementTools(modal);
   };
 
   document.addEventListener("click", event => {
@@ -206,6 +270,7 @@
     getSettings,
     applySettings,
     organizeHomeActions,
+    ensureAccountHomeAction,
     openActivities: window.openBellaActivities
   });
 })();
