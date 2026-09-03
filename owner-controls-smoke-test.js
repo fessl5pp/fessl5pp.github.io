@@ -17,9 +17,9 @@ for (const file of ['bella-config.js', 'bella-owner-controls.js', 'lib/bella-con
 
 assert.ok(app.includes('bella-config.js'), 'boot must load public remote config');
 assert.ok(app.includes('bella-owner-controls.js'), 'boot must load owner controls');
-assert.ok(app.includes('?v=18'), 'remote controls release must bust module cache');
-assert.ok(sw.includes('bella-config.js?v=18'), 'PWA must cache public config module');
-assert.ok(sw.includes('bella-owner-controls.js?v=18'), 'PWA must cache owner controls module');
+assert.ok(app.includes('?v=16'), 'remote controls must stay on the validated module cache generation');
+assert.ok(sw.includes('bella-config.js?v=16'), 'PWA must cache public config module');
+assert.ok(sw.includes('bella-owner-controls.js?v=16'), 'PWA must cache owner controls module');
 assert.ok(build.includes("owner: 'bella-config.js'"), 'build must validate BellaConfig ownership');
 assert.ok(build.includes("owner: 'bella-owner-controls.js'"), 'build must validate owner-controls ownership');
 
