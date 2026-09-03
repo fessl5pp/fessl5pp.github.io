@@ -6,6 +6,7 @@ const mustExist = [
   'index.html',
   'app.js',
   'bella-account.js',
+  'bella-account-memory.js',
   'script.js',
   'bella-legacy-plus.js',
   'bella-context.js',
@@ -31,6 +32,7 @@ assert.ok(!fs.existsSync('bella-personality.js'), 'duplicate bella-personality.j
 const index = read('index.html');
 const app = read('app.js');
 const account = read('bella-account.js');
+const accountMemory = read('bella-account-memory.js');
 const legacy = read('script.js');
 const legacyPlus = read('bella-legacy-plus.js');
 const context = read('bella-context.js');
@@ -59,11 +61,12 @@ assert.ok(!index.includes('<script src="/bella-vnext.js'), 'index.html must not 
 assert.ok(index.includes('id="quickSuggestions" hidden'), 'quick suggestions should remain hidden by default');
 
 assert.ok(app.indexOf('bella-account.js') < app.indexOf('script.js'), 'account module must load before local profile modules so cached account name is available');
+assert.ok(app.indexOf('bella-vnext.js') < app.indexOf('bella-account-memory.js'), 'cloud memory integration must load after vNext creates the memory UI');
 assert.ok(app.includes('bella-legacy-plus.js'), 'tracked app entry must load legacy improvements');
 assert.ok(app.includes('bella-style.js'), 'tracked app entry must know the style module');
 assert.ok(app.includes('bella-vnext.js'), 'tracked app entry must know the main conversation module');
 assert.ok(app.includes('window.__bellaBoot'), 'tracked app entry must expose boot completion');
-assert.ok(app.includes('?v=14'), 'tracked app entry must cache-bust account-aware source modules');
+assert.ok(app.includes('?v=15'), 'tracked app entry must cache-bust cloud-memory source modules');
 
 assert.ok(account.includes('sb_publishable_'), 'account module must use a browser-safe Supabase publishable key');
 assert.ok(!account.includes('service_role'), 'account module must never contain a Supabase service-role credential');
@@ -80,6 +83,26 @@ assert.ok(!/window\.send\s*=(?!=)/.test(account), 'account module must never own
 assert.ok(!/window\.getAIReply\s*=(?!=)/.test(account), 'account module must never own AI flow');
 assert.ok(!/window\.updateMood\s*=(?!=)/.test(account), 'account module must never own mood flow');
 assert.ok(!/window\.fetch\s*=(?!=)/.test(account), 'account module must never replace the network guard');
+
+assert.ok(accountMemory.includes('bella_memories'), 'cloud memory v2 must use the dedicated protected memory table');
+assert.ok(accountMemory.includes('SNAPSHOT_KEY'), 'cloud memory v2 must track the last synchronized memory set');
+assert.ok(accountMemory.includes('deleted_at'), 'cloud memory v2 must keep tombstones so deletes propagate across devices');
+assert.ok(accountMemory.includes('tombstoneKey'), 'cloud memory v2 must support per-memory deletion');
+assert.ok(accountMemory.includes('tombstoneAll'), 'cloud memory v2 must support clear-all deletion');
+assert.ok(accountMemory.includes('patchLegacyProfileMemory'), 'cloud memory v2 must keep legacy profile memory canonical and prevent resurrection');
+assert.ok(accountMemory.includes('remember,'), 'cloud memory v2 must expose explicit remember controls');
+assert.ok(accountMemory.includes('forget,'), 'cloud memory v2 must expose explicit forget controls');
+assert.ok(accountMemory.includes('clear,'), 'cloud memory v2 must expose explicit clear controls');
+assert.ok(accountMemory.includes('احفظيها ☁️'), 'memory panel must let signed-in users add a cloud memory explicitly');
+assert.ok(accountMemory.includes('متزامنة بين أجهزتك'), 'memory panel must explain cross-device cloud sync');
+assert.ok(accountMemory.includes('sb_publishable_'), 'cloud memory client must use a browser-safe Supabase publishable key');
+assert.ok(!accountMemory.includes('service_role'), 'cloud memory client must never contain a service-role key');
+assert.ok(!accountMemory.includes('sb_secret_'), 'cloud memory client must never contain a Supabase secret key');
+assert.ok(/window\.BellaAccountMemory\s*=(?!=)/.test(accountMemory), 'cloud memory module must expose one namespace');
+assert.ok(!/window\.send\s*=(?!=)/.test(accountMemory), 'cloud memory module must never own send flow');
+assert.ok(!/window\.getAIReply\s*=(?!=)/.test(accountMemory), 'cloud memory module must never own AI flow');
+assert.ok(!/window\.updateMood\s*=(?!=)/.test(accountMemory), 'cloud memory module must never own mood flow');
+assert.ok(!/window\.fetch\s*=(?!=)/.test(accountMemory), 'cloud memory module must never replace the network guard');
 
 for (const feature of ['coffeeRadar', 'socialRadarReply', 'dailyWisdom', 'startBoxGame', 'startProverbGame', 'checkGameAnswer', 'openFazaa', 'fazaaReply', 'shareChat', 'showRumor']) {
   assert.ok(legacy.includes(`function ${feature}`), `legacy feature ${feature} must remain present`);
@@ -113,6 +136,7 @@ assert.ok(/window\.BellaSpeed\s*=(?!=)/.test(speed), 'speed module must own stre
 assert.ok(!build.includes('bella-personality.js'), 'old duplicate mood/personality module must not be bundled');
 assert.ok(!build.includes('bella-send-guard.js'), 'conflicting capture-phase send guard must not be bundled');
 assert.ok(build.includes('bella-account.js'), 'account/cloud-sync module must be validated by the build');
+assert.ok(build.includes('bella-account-memory.js'), 'cloud-memory module must be validated by the build');
 assert.ok(build.includes('bella-style.js'), 'style-only adaptive module must be bundled');
 assert.ok(build.includes('bella-legacy-plus.js'), 'cleaned legacy enhancement module must be validated by the build');
 
@@ -144,16 +168,16 @@ assert.ok(ui.includes('randomSuggestions: false'), 'suggestions setting should d
 assert.ok(ui.includes('longContext: true'), 'long context setting should default to on');
 assert.ok(manifest.includes('"orientation": "any"'), 'PWA must allow tablet rotation');
 
-assert.ok(sw.includes('bella-pwa-v11-stable-4'), 'service worker cache must use the account-sync cache');
+assert.ok(sw.includes('bella-pwa-v11-stable-5'), 'service worker cache must use the cloud-memory-v2 cache');
 assert.ok(sw.includes('/app.js?v=11'), 'service worker must cache the exact app entry requested by index.html');
-for (const moduleName of ['bella-account.js', 'script.js', 'bella-legacy-plus.js', 'bella-context.js', 'bella-routing.js', 'bella-style.js', 'bella-runtime.js', 'bella-vnext.js', 'bella-speed.js', 'bella-ui.js', 'bella-install.js']) {
-  assert.ok(sw.includes(`/${moduleName}?v=14`), `service worker must cache loader module ${moduleName}`);
+for (const moduleName of ['bella-account.js', 'script.js', 'bella-legacy-plus.js', 'bella-context.js', 'bella-routing.js', 'bella-style.js', 'bella-runtime.js', 'bella-vnext.js', 'bella-account-memory.js', 'bella-speed.js', 'bella-ui.js', 'bella-install.js']) {
+  assert.ok(sw.includes(`/${moduleName}?v=15`), `service worker must cache loader module ${moduleName}`);
 }
 assert.ok(sw.includes('request.mode === "navigate"'), 'offline HTML fallback must be navigation-only');
 assert.ok(!sw.includes("cached || caches.match(\"/index.html\")"), 'static assets must never fall back to index.html');
 
-for (const moduleName of ['bella-account.js', 'bella-legacy-plus.js', 'bella-context.js', 'bella-routing.js', 'bella-style.js', 'bella-runtime.js', 'bella-vnext.js', 'bella-speed.js', 'bella-ui.js', 'bella-install.js']) {
+for (const moduleName of ['bella-account.js', 'bella-account-memory.js', 'bella-legacy-plus.js', 'bella-context.js', 'bella-routing.js', 'bella-style.js', 'bella-runtime.js', 'bella-vnext.js', 'bella-speed.js', 'bella-ui.js', 'bella-install.js']) {
   assert.ok(build.includes(moduleName), `build.js must validate ${moduleName}`);
 }
 
-console.log('Bella smoke tests passed: accounts/cloud sync, legacy features, send/mood ownership, context/cost/Safari/PWA protections are valid.');
+console.log('Bella smoke tests passed: cloud memory v2 deletion safety, accounts, legacy features, send/mood ownership, context/cost/Safari/PWA protections are valid.');
