@@ -20,6 +20,7 @@ async function bootBella(page) {
   await page.evaluate(() => window.__bellaBoot);
   await page.waitForFunction(() => !!window.BellaVoice);
   await page.evaluate(() => (window.openChat || window.__openBella)());
+  await expect(page.locator('#win')).toHaveClass(/active/);
 }
 
 test('Bella server voice loads and toggle persists independently of legacy device voice', async ({ page }) => {
