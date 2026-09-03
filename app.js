@@ -1,5 +1,6 @@
 (() => {
   "use strict";
+  // Bella visual identity v8 release marker.
 
   const modules = [
     "bella-account.js",
