@@ -40,6 +40,28 @@ test('boots cleanly and core chat controls open', async ({ page }) => {
   expect(pageErrors).toEqual([]);
 });
 
+test('account access survives home cleanup and opens the account center', async ({ page }) => {
+  const pageErrors = await bootBella(page);
+
+  const account = page.locator('.hero-actions [data-bella-account-button]');
+  await expect(account).toBeVisible();
+  await expect(account).toContainText(/الحساب|اختبار/);
+
+  await page.evaluate(() => window.BellaUI?.organizeHomeActions?.());
+  await expect(page.locator('.hero-actions [data-bella-account-button]')).toHaveCount(1);
+  await expect(account).toBeVisible();
+
+  await account.click();
+  await expect(page.locator('#bellaAccountModal')).toBeVisible();
+  await page.locator('#bellaAccountModal').evaluate(node => node.remove());
+
+  await page.evaluate(() => window.openBellaSettings?.());
+  await expect(page.locator('#bellaAccountSettings')).toBeVisible();
+  await expect(page.locator('#bellaSettingsAdmin')).toBeHidden();
+
+  expect(pageErrors).toEqual([]);
+});
+
 test('Bella visual identity renders and follows mood classes', async ({ page }) => {
   const pageErrors = await bootBella(page);
 

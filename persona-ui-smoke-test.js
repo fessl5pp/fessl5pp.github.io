@@ -37,4 +37,14 @@ assert.ok(ui.includes('startProverbGame'), 'activities hub must include proverb 
 assert.ok(ui.includes('bellaThemeSettings'), 'theme control must move under settings');
 assert.ok(ui.includes('bellaMemorySettings'), 'memory control must be reachable from settings');
 
-console.log('Bella v11 persona/UI smoke tests passed: staged identity, natural social intent, context continuity and grouped activities are wired.');
+assert.ok(ui.includes('button.dataset.bellaAccountButton === "1"'), 'home cleanup must preserve the account button');
+assert.ok(ui.includes('ensureAccountHomeAction'), 'UI must restore a missing account entry automatically');
+assert.ok(ui.includes('bellaAccountSettings'), 'account must be reachable from settings');
+assert.ok(ui.includes('window.BellaAccount?.open?.()'), 'settings account action must open the account center');
+assert.ok(ui.includes('bellaSettingsAdmin'), 'settings must include a protected management section');
+assert.ok(ui.includes('window.BellaOwnerCenter?.refresh?.()'), 'owner access must be re-verified before showing management');
+assert.ok(ui.includes('bellaOwnerSettings'), 'owner center must be reachable from settings for authorized owners');
+assert.ok(ui.includes('window.BellaModeratorCenter?.refresh?.()'), 'moderator access must be re-verified before showing moderation');
+assert.ok(ui.includes('bellaModeratorSettings'), 'moderator center must be reachable from settings for authorized staff');
+
+console.log('Bella v11 persona/UI smoke tests passed: staged identity, natural social intent, context continuity, grouped activities, account access and protected admin access are wired.');
