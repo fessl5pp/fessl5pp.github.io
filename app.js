@@ -2,10 +2,10 @@
   "use strict";
   // Bella v11 personality-activities release marker.
   // Bella v12 AI-first chat + coordinated ambient moments marker.
+  // Bella v13 adaptive moments engine marker.
 
   // The visible switch track is decoration; the full label area stays the real
-  // tap target on iPhone/iPad and desktop. This prevents the track from
-  // intercepting taps/clicks meant for the checkbox underneath.
+  // tap target on iPhone/iPad and desktop.
   function installSwitchInteractionFix() {
     if (document.getElementById("bellaSwitchInteractionFix")) return;
     const style = document.createElement("style");
@@ -45,6 +45,7 @@
     "bella-owner-controls.js",
     "bella-speed.js",
     "bella-ui.js",
+    "bella-moments-ui.js",
     "bella-install.js"
   ];
 
