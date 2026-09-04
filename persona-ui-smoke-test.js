@@ -42,9 +42,10 @@ assert.ok(sw.includes('/bella-moments.js?v=16'), 'moments module must be availab
 assert.ok(moments.includes('window.BellaMoments'), 'moments module must expose one coordinated controller');
 assert.ok(moments.includes('rumorBanks') && moments.includes('toastBanks'), 'rumors and top-right comments must share the moments system');
 assert.ok(moments.includes('Date.now() < seriousUntil'), 'ambient jokes must pause during serious conversations');
-assert.ok(moments.includes('state.cycles % 4 === 0 && useLegacyRumor()'), 'original rumor deck must stay in rotation');
-assert.ok(moments.includes('13500'), 'top-right moments need a cooldown to avoid spam');
-assert.ok(moments.includes('45000') && moments.includes('21000'), 'rumors must run frequently but with varied timing');
+assert.ok(moments.includes('يقولون بيلا مسوية ملف سري حق أكثر كلمة تكتبها') && moments.includes('يقولون اللي يدخل بيلا كل يوم يصير من الربع'), 'favorite original rumor copy must stay in the upgraded deck');
+assert.ok(moments.includes('toast: 8500'), 'high-intensity top-right moments need a cooldown without feeling slow');
+assert.ok(moments.includes('rumorMin: 30000') && moments.includes('rumorJitter: 16000'), 'high-intensity rumors must run frequently with varied timing');
+assert.ok(moments.includes('rumorBanks.legendary') && moments.includes('awardXP'), 'rare and legendary rumor interactions must stay active');
 
 assert.ok(index.includes('openBellaSettings()">الإعدادات ⚙️'), 'settings must stay next to the main chat entry');
 assert.ok(index.includes('openBellaActivities()">فعاليات بيلا 🎮'), 'home must expose one dedicated activities entry');
@@ -73,4 +74,4 @@ assert.ok(ui.includes('bellaOwnerSettings'), 'owner center must be reachable fro
 assert.ok(ui.includes('window.BellaModeratorCenter?.refresh?.()'), 'moderator access must be re-verified before showing moderation');
 assert.ok(ui.includes('bellaModeratorSettings'), 'moderator center must be reachable from settings for authorized staff');
 
-console.log('Bella AI-first/persona/UI smoke tests passed: normal chat uses AI, legacy suggestion banks stay retired, moments coordinate rumors/toasts, and protected account/admin access remains wired.');
+console.log('Bella AI-first/persona/UI smoke tests passed: normal chat uses AI, legacy suggestion banks stay retired, adaptive moments stay active, and protected account/admin access remains wired.');
