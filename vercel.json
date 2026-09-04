@@ -3,95 +3,43 @@
   "buildCommand": "npm run vercel-build",
   "outputDirectory": "public",
   "rewrites": [
-    {
-      "source": "/api/chat",
-      "destination": "/api/gated-chat"
-    },
-    {
-      "source": "/api/dira",
-      "destination": "/api/gated-dira"
-    },
-    {
-      "source": "/api/voice",
-      "destination": "/api/gated-voice"
-    },
-    {
-      "source": "/api/icon",
-      "destination": "/api/icon-v3"
-    }
+    { "source": "/api/chat", "destination": "/api/gated-chat" },
+    { "source": "/api/dira", "destination": "/api/gated-dira" },
+    { "source": "/api/voice", "destination": "/api/gated-voice" },
+    { "source": "/api/icon", "destination": "/api/icon-v3" }
   ],
   "headers": [
     {
       "source": "/",
       "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store, max-age=0"
-        },
-        {
-          "key": "X-Bella-Release",
-          "value": "v12"
-        }
+        { "key": "Cache-Control", "value": "no-store, max-age=0" },
+        { "key": "X-Bella-Release", "value": "v13" }
       ]
     },
     {
       "source": "/index.html",
       "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store, max-age=0"
-        },
-        {
-          "key": "X-Bella-Release",
-          "value": "v12"
-        }
+        { "key": "Cache-Control", "value": "no-store, max-age=0" },
+        { "key": "X-Bella-Release", "value": "v13" }
       ]
     },
     {
       "source": "/sw.js",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store, max-age=0"
-        }
-      ]
+      "headers": [ { "key": "Cache-Control", "value": "no-store, max-age=0" } ]
     },
     {
       "source": "/app.js",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=0, must-revalidate"
-        }
-      ]
+      "headers": [ { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" } ]
     },
     {
       "source": "/(.*)",
       "headers": [
-        {
-          "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; connect-src 'self' https://buxicnxkhaalwzjmbkgv.supabase.co; font-src 'self' data:; media-src 'self' blob:; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; frame-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests"
-        },
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "DENY"
-        },
-        {
-          "key": "Referrer-Policy",
-          "value": "strict-origin-when-cross-origin"
-        },
-        {
-          "key": "Permissions-Policy",
-          "value": "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
-        },
-        {
-          "key": "Strict-Transport-Security",
-          "value": "max-age=31536000; includeSubDomains"
-        }
+        { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; connect-src 'self' https://buxicnxkhaalwzjmbkgv.supabase.co; font-src 'self' data:; media-src 'self' blob:; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; frame-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=(), payment=(), usb=()" },
+        { "key": "Strict-Transport-Security", "value": "max-age=31536000; includeSubDomains" }
       ]
     }
   ]
