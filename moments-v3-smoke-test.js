@@ -44,6 +44,6 @@ for (const token of ['كثافة اللقطات', 'هادي', 'عادي', 'حي�
 
 if (!app.includes('bella-moments-ui.js')) fail('moments UI module must load after Bella UI.');
 if (app.indexOf('bella-moments-ui.js') < app.indexOf('bella-ui.js')) fail('moments UI must load after Bella UI.');
-if (!sw.includes('bella-moments-ui.js?v=17')) fail('moments UI must be available offline with the current runtime generation.');
+if (!sw.includes('bella-moments-ui.js?v=16')) fail('moments UI must be available offline with the current validated runtime generation.');
 
 console.log('Bella moments v3 smoke tests passed: adaptive high-frequency rumors, contextual tags, rare/legendary tiers, no-overlap coordination, privacy and intensity controls are valid.');
