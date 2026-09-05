@@ -22,10 +22,20 @@ assert.ok(api.includes('tooSimilar') && api.includes('similarity(text,x) >= .72'
 assert.ok(api.includes('json_schema') && api.includes('store: false'),'AI Fresh must use structured non-stored output');
 assert.ok(api.includes('enum: ["common","rare"]') && !api.includes('enum: ["common","rare","legendary"]'),'AI must not auto-generate legendary moments');
 assert.ok(!api.includes('service_role') && !api.includes('sb_secret_'),'generation endpoint must not embed Supabase secrets');
+
+// Owner-approved Kuwait Lifestyle Rumors style pack.
+assert.ok(api.includes('Bella Kuwait Lifestyle Rumor Style Bible v2'),'AI Fresh must keep the owner-approved rumor style bible');
+assert.ok(api.includes('Kuwait Lifestyle Rumors') && api.includes('مجمعات وطلعات') && api.includes('قهاوي وهبات') && api.includes('شوارع وزحمة') && api.includes('بحر وشاليهات'),'mixed batches must prioritize the four Kuwait lifestyle themes');
+assert.ok(api.includes('يقولون الأفنيوز زحمة اليوم لأن بيلا هناك تتسوق') && api.includes('يقولون قهاوي الشويخ مستنفرة لأن بيلا ما عجبها الماتشا'),'mall and cafe reference examples must remain in the style bible');
+assert.ok(api.includes('يقولون الخامس واقف لأن سيارة بيلا مرت') && api.includes('يقولون جسر جابر مسكر، ثلاث أرباعهم رايحين الصبية ومضيعين'),'traffic and sea/chalet reference examples must remain in the style bible');
+assert.ok(api.includes('styleExamples') && api.includes('seen = [...existing, ...styleExamples]'),'reference examples must participate in duplicate rejection instead of being copied');
+assert.ok(api.includes('promptVersion: 2') && api.includes('stylePack: "kuwait_lifestyle_v1"'),'AI Fresh response must expose the new rumor prompt/style version');
+assert.ok(api.includes('مو ادعاء إنها فعليًا موجودة بالمكان'),'public-place Bella rumors must remain clearly fictional rather than location claims');
+
 assert.ok(migration.includes('create schema if not exists private') && migration.includes('private.bella_is_owner_v14'),'RLS owner helper must live outside exposed public schema');
 assert.ok(migration.includes('alter table public.bella_moments enable row level security'),'moments RLS missing');
 assert.ok(rls.includes('to anon') && rls.includes('to authenticated'),'optimized read policies missing');
 assert.ok(app.indexOf('bella-moments.js') < app.indexOf('bella-moments-cloud.js'),'cloud sync must load after engine');
 assert.ok(app.indexOf('bella-owner-controls.js') < app.indexOf('bella-owner-moments.js'),'Moments Studio must load after owner controls');
 assert.ok(sw.includes('bella-pwa-v16-release-14') && sw.includes('/bella-moments-cloud.js?v=16') && sw.includes('/bella-owner-moments.js?v=16'),'v14 PWA cache missing Studio assets');
-console.log('Bella v14 Moments Studio smoke tests passed: secure remote bank, owner controls, AI Fresh filtering, RLS, pinning and cache coverage are valid.');
+console.log('Bella v14+ Moments Studio smoke tests passed: secure remote bank, Kuwait lifestyle AI Fresh style, owner controls, filtering, RLS, pinning and cache coverage are valid.');
