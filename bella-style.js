@@ -1,6 +1,7 @@
 (() => {
   "use strict";
 
+  // Mood is owned by bella-vnext.js. This module only learns communication style and enriches context.
   const STORAGE_KEY = "bella_style_v1";
   const defaults = {
     version: 1,
