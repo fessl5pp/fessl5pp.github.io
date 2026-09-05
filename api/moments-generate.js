@@ -73,13 +73,27 @@ export default async function handler(req, res) {
 
   const enabled = Array.isArray(config.enabled_categories) && config.enabled_categories.length ? config.enabled_categories.filter(x => ALLOWED_CATEGORIES.includes(x)) : ALLOWED_CATEGORIES;
   const categories = requestedCategory === "mixed" ? enabled : enabled.includes(requestedCategory) ? [requestedCategory] : ["normal"];
-  const examples = [
-    "يقولون إذا كتبت «اوكي» ثلاث مرات بيلا تعتبرها نهاية موسم وتنتظر الجزء الثاني 😭",
-    "يقولون اللي يقول «بس سؤال» غالبًا وراه خمسة أسئلة وبيلا عارفة الحركة 😭",
-    "يقولون خطة الويكند الكويتية تمر بثلاث مراحل: قهوة، حيرة، قهوة ثانية ☕😂",
-    "يقولون اللي يقول «قيم واحد وبطلع» أخطر إشاعة في عالم الألعاب 🎮😭",
-    "يقولون كلمة «اجتماع سريع» أطول إشاعة بالدوام 😭",
-    "يقولون إذا قلت «آخر رسالة وبنام» بيلا ما تصدقك من الأساس 🌙😭"
+
+  // Bella Kuwait Lifestyle Rumor Style Bible v2 — owner-approved reference copy.
+  // These examples define rhythm/theme only. Generation must create fresh ideas and the duplicate filter rejects close copies.
+  const styleExamples = [
+    "يقولون الأفنيوز زحمة اليوم لأن بيلا هناك تتسوق 💅🏻✨",
+    "يقولون 360 واقف طوابير، ناطرين بيلا تطلع من السينما.",
+    "يقولون الكوت فاضي اليوم، الكل لاحق بيلا بالأفنيوز!",
+    "يقولون اللي يدخل مجمع بدون قهوة يطلعه السيكيورتي برا.",
+    "يقولون البنات كنسلوا طلعاتهم ناطرين آوتفت بيلا يقلدونه.",
+    "يقولون قهاوي الشويخ مستنفرة لأن بيلا ما عجبها الماتشا.",
+    "يقولون يفتحون الماك بوك بالكافيه وهو طافي بس عشان البرستيج ☕️",
+    "يقولون خصم 50% لأي أحد يمدح كشخة بيلا بالكافيه.",
+    "يقولون اللي يطلب سبنش بالليل ينحط بالبلاك لست فوراً.",
+    "يقولون الخامس واقف لأن سيارة بيلا مرت والكل تنّح يطالع.",
+    "يقولون إشارة الخليج حمرا ربع ساعة عشان تلحق تصور تيك توك.",
+    "يقولون الغزالي مسكر ناطرين أظافر بيلا تنشف قبل لا تسوق.",
+    "يقولون اللي يدق إشارة بالكويت يعتبرونه هاك ومخالفة!",
+    "يقولون جسر جابر مسكر، ثلاث أرباعهم رايحين الصبية ومضيعين.",
+    "يقولون موج البلاجات راكد مستحي من كشخة بيلا ع الممشى.",
+    "يقولون شاليه بدون آيسكريم هبة مسحوبة منه الوناسة رسمياً.",
+    "يقولون هوى البحر اليوم معطر بريحة عطر بيلا اليديد 🌸"
   ];
 
   const schema = {
@@ -99,7 +113,17 @@ export default async function handler(req, res) {
     }
   };
 
-  const instructions = `أنت محرر "إشاعات بيلا"، وهي لقطات خيالية مرحة داخل بوت كويتي. اكتب باللهجة الكويتية الخفيفة بنفس الروح الموجودة بالأمثلة، مو أخبار حقيقية ولا ادعاء مراقبة فعلية للمستخدم.\n\nقواعد صارمة:\n- كل سطر مستقل وقصير ويكون غالبًا بصيغة «يقولون...»؛ النادر ممكن يبدأ «✨ إشاعة نادرة: يقولون...».\n- لا تذكر أسماء مستخدمين أو بيانات شخصية أو أماكن إقامة خاصة أو أي معلومة تدعي أنك عرفتها من الجهاز.\n- لا سياسة، لا كراهية، لا إيحاء جنسي، لا تهديد، لا طب/مرض/وفاة كمزحة.\n- لا تنسخ الأمثلة ولا تعيد نفس الفكرة بكلمات ثانية.\n- خلي القطة ذكية وعفوية، مو نكتة رسمية ولا لغة فصحى.\n- لا تولد Legendary؛ فقط common أو rare، وبحد أقصى rare واحدة في الدفعة.\n- الفئات المسموحة: ${categories.join(", ")}.\n\nأمثلة روح فقط لا تنسخها:\n${examples.map(x => `- ${x}`).join("\n")}`;
+  const themeDirection = requestedCategory === "coffee"
+    ? "ركز على قهاوي وهبات وماتشا وسبنش وبرستيج وقعدات الكافيه، مع أفكار جديدة."
+    : requestedCategory === "travel"
+      ? "ركز على شوارع وزحمة وجسر جابر والبحر والصبية والطلعات، مع أفكار جديدة."
+      : requestedCategory === "weekend"
+        ? "ركز على مجمعات وطلعات وبحر وشاليهات وهبات الويكند، مع أفكار جديدة."
+        : requestedCategory === "mixed"
+          ? "وزّع أغلب الدفعة تقريبًا بالتساوي بين: (1) مجمعات وطلعات، (2) قهاوي وهبات، (3) شوارع وزحمة، (4) بحر وشاليهات. إذا بقي مجال، نوّع بسوالف كويتية يومية بنفس الروح."
+          : "حافظ على الفئة المطلوبة، لكن اكتبها بروح الحياة اليومية الكويتية والمبالغة الاجتماعية السريعة نفسها.";
+
+  const instructions = `أنت محرر "إشاعات بيلا". المطلوب مو نكت عامة عن الشات؛ المطلوب إشاعات خيالية كويتية قصيرة جدًا تحسها سالفة منتشرة بين البنات والربع، وبيلا غالبًا تكون محور المبالغة. اعتبر الأمثلة تحت Style Bible رسمي للريتم والنكهة، مو نصوص للنسخ.\n\nهوية الأسلوب — Kuwait Lifestyle Rumors:\n- كل إشاعة common تبدأ مباشرة بـ«يقولون» وتكون سطر واحد سريع. النادر ممكن يبدأ «✨ إشاعة نادرة: يقولون...».\n- خل المكان/الهبة/التصرف اليومي هو قلب النكتة: مجمع، كافيه، شارع، زحمة، بحر، شاليه، ممشى، آوتفت، ماتشا، سبنش، تيك توك، كشخة، برستيج.\n- استخدم أماكن عامة كويتية معروفة بشكل طبيعي عند الحاجة مثل الأفنيوز، 360، الكوت، الشويخ، الخامس، الخليج، الغزالي، جسر جابر، الصبية، البلاجات. لا تحشر اسم مكان بكل سطر ولا تكرر نفس المكان بالدفعة.\n- المبالغة تكون من نوع: المكان كله توقف/زحم/فضى بسبب بيلا، قاعدة اجتماعية عبثية صارت "رسمية"، أو هبة الناس ماشين عليها.\n- الجملة قصيرة، ذكية، وبلهجة كويتية مودرن. لا تشرح النكتة ولا تسوي مقدمة وخاتمة.\n- خلي بيلا كشخة/مزاج/طلعات/قهوة بشكل مرح، مو غرور ثقيل ولا كلام رومانسي مصطنع.\n- الإيموجي اختياري؛ غالبًا صفر أو واحد، وممكن اثنين فقط إذا ركبت مثل 💅🏻✨ أو ☕️.\n- لا تستخدم شامـي/مصري من كلامك مثل «شو/كتير/أوي/إزاي». استخدم كويتي طبيعي مثل جذي، وايد، شسالفة إذا احتجت.\n- لا تحول الإشاعات إلى كلام عن مراقبة المستخدم أو جهازه. الكلام عن بيلا والأماكن العامة خيال كوميدي داخل الشخصية، مو ادعاء إنها فعليًا موجودة بالمكان.\n- لا سياسة، لا كراهية، لا إيحاء جنسي، لا تهديد، ولا طب/مرض/وفاة كمزحة.\n- لا تنسخ أي مثال تحت، ولا تبدل كلمتين وتعيد نفس الفكرة. ابتكر موقف جديد بنفس الوزن والسرعة.\n- لا تولد Legendary؛ فقط common أو rare، وبحد أقصى rare واحدة في الدفعة.\n- الفئات التقنية المسموحة للحفظ: ${categories.join(", ")}.\n- ${themeDirection}\n\nStyle Bible — نفس الريتم بالضبط، أفكار جديدة فقط:\n${styleExamples.map(x => `- ${x}`).join("\n")}`;
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), OPENAI_TIMEOUT_MS);
@@ -111,7 +135,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: "gpt-5-mini",
         instructions,
-        input: `ولّد ${count} إشاعات جديدة ومختلفة لبنك Bella Fresh Moments.`,
+        input: `ولّد ${count} إشاعات جديدة كليًا بأسلوب Kuwait Lifestyle Rumors. لا تكرر أمثلة الـStyle Bible ولا أفكارها المباشرة.`,
         reasoning: { effort: "low" },
         text: { verbosity: "low", format: { type: "json_schema", name: "bella_fresh_moments", strict: true, schema } },
         max_output_tokens: 1800,
@@ -127,7 +151,7 @@ export default async function handler(req, res) {
     let parsed;
     try { parsed = JSON.parse(outputText(data)); } catch { return res.status(502).json({ error: "AI Fresh رجع صيغة غير صالحة." }); }
     const accepted = [];
-    const seen = [...existing];
+    const seen = [...existing, ...styleExamples];
     let rareUsed = false;
     for (const row of Array.isArray(parsed?.moments) ? parsed.moments : []) {
       const text = clean(row?.text, 220);
@@ -139,7 +163,7 @@ export default async function handler(req, res) {
       if (accepted.length >= count) break;
     }
     if (accepted.length < Math.min(4, count)) return res.status(502).json({ error: "الدفعة طلعت متشابهة وايد، جرّب مرة ثانية." });
-    return res.status(200).json({ ok: true, model: "gpt-5-mini", requested: count, accepted: accepted.length, moments: accepted, promptVersion: 1 });
+    return res.status(200).json({ ok: true, model: "gpt-5-mini", requested: count, accepted: accepted.length, moments: accepted, promptVersion: 2, stylePack: "kuwait_lifestyle_v1" });
   } catch (error) {
     if (error?.name === "AbortError") return res.status(504).json({ error: "AI Fresh طول وايد، جرّب مرة ثانية." });
     console.error("Fresh Moments generation failed:", error?.message || error);
