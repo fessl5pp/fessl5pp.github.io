@@ -21,19 +21,21 @@ for (const source of ['/', '/index.html', '/sw.js']) {
 }
 
 const releaseHeader = headerRule('/')?.headers?.find(header => header.key.toLowerCase() === 'x-bella-release')?.value;
-if (releaseHeader !== 'v14') fail('The production shell must expose Bella release v14.');
+if (releaseHeader !== 'v15') fail('The production shell must expose Bella release v15.');
 
-if (!app.includes('Bella v14 Moments Studio + AI Fresh Moments marker')) fail('app.js v14 release marker is missing.');
+if (!app.includes('Bella v15 Brain v2 + natural Kuwaiti chat + Alive marker')) fail('app.js v15 release marker is missing.');
 if (!app.includes('?v=16')) fail('Runtime modules must keep the validated v16 generation.');
-if (!app.includes('bella-moments-cloud.js') || !app.includes('bella-owner-moments.js')) fail('v14 Moments Studio runtime modules must load.');
-if (!app.includes('bella-moments-ui.js')) fail('Moments intensity controls must load with the runtime.');
-if (!sw.includes('bella-pwa-v16-release-14')) fail('Service worker cache generation was not rotated for v14.');
+if (!app.includes('const coreModules') || !app.includes('const deferredModules')) fail('v15 core/deferred performance split is missing.');
+for (const moduleName of ['bella-brain-v2.js','bella-memory-v3.js','bella-alive.js','bella-moments-feedback.js','bella-ai-activities.js','bella-owner-dashboard-v2.js','bella-voice-v2.js']) {
+  if (!app.includes(moduleName)) fail(`v15 app loader missing ${moduleName}.`);
+  if (!sw.includes(`/${moduleName}?v=16`)) fail(`v15 service worker missing ${moduleName}.`);
+}
+if (!sw.includes('bella-pwa-v17-release-15')) fail('Service worker cache generation was not rotated for v15.');
 if (!sw.includes('?v=16')) fail('Service worker must precache the validated v16 runtime generation.');
-if (!sw.includes('bella-moments-cloud.js?v=16') || !sw.includes('bella-owner-moments.js?v=16')) fail('Service worker must cache the v14 Moments Studio modules.');
 if (!sw.includes('cache: "no-store"')) fail('Navigation requests must bypass stale browser HTTP caches.');
 
-if (!health.includes('release: "v14"')) fail('Deployment health endpoint must report release v14.');
+if (!health.includes('release: "v15"')) fail('Deployment health endpoint must report release v15.');
 if (!health.includes('VERCEL_GIT_COMMIT_SHA')) fail('Deployment health endpoint must report the active Git commit.');
 if (!health.includes('Cache-Control')) fail('Deployment health endpoint must be non-cacheable.');
 
-console.log('Bella v14 deployment regression checks passed: Moments Studio, AI Fresh runtime, PWA cache rotation and health endpoint are active.');
+console.log('Bella v15 deployment regression checks passed: Brain v2, Alive, layered memory, deferred loading, PWA cache rotation and health endpoint are active.');
