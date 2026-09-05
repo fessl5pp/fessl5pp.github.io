@@ -13,7 +13,8 @@ assert.ok(moments.includes('topic-tags-only-no-chat-text'),'moments privacy mark
 assert.ok(cloud.includes('bella_moments_config') && cloud.includes('bella_moments?select='),'cloud sync must read config and approved rows');
 assert.ok(!cloud.includes('service_role') && !cloud.includes('sb_secret_'),'cloud sync must not embed privileged keys');
 assert.ok(studio.includes('Moments Studio') && studio.includes('AI Fresh Moments'),'owner studio UI missing');
-assert.ok(studio.includes('BellaOwnerCenter?.refresh') && studio.includes('Authorization:`Bearer ${t}`'),'Studio must require owner session-backed access');
+assert.ok(studio.includes('BellaOwnerCenter?.refresh') && studio.includes('Bearer ${t}') && studio.includes('access_token'),'Studio must require owner session-backed access');
+assert.ok(!studio.includes('service_role') && !studio.includes('sb_secret_'),'Studio must not embed privileged Supabase keys');
 assert.ok(studio.includes('pinned_until') && studio.includes('تثبيت 24س'),'temporary pinning missing');
 assert.ok(studio.includes('ai_auto_approve') && studio.includes('maybeAutoFresh'),'AI review and auto freshness controls missing');
 assert.ok(api.includes('/rpc/is_bella_owner') && api.includes('Owner access required'),'generation endpoint must be owner-only');
