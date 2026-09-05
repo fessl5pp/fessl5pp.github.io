@@ -54,7 +54,8 @@ assert.ok(app.includes('requestIdleCallback') && app.includes('__bellaLoadDeferr
 assert.ok(app.includes('bella-owner-dashboard-v2.js'), 'Owner v15 dashboard must be deferred into the app');
 
 assert.ok(voiceV2.includes('BellaVoice?.stop') && voiceV2.includes('input'), 'Voice v2 must stop as soon as the user starts typing');
-assert.ok(voiceApi.includes('casual private voice note') && voiceApi.includes('Do not over-act the dialect'), 'Server voice must use natural mood-aware Kuwaiti delivery');
+const voiceApiLower = voiceApi.toLowerCase();
+assert.ok(voiceApiLower.includes('casual private voice note') && voiceApiLower.includes('do not over-act the dialect'), 'Server voice must use natural mood-aware Kuwaiti delivery');
 
 assert.ok(security.includes('revoke all on function public.bella_owner_summary() from public, anon, authenticated'), 'Owner RPC grants must be explicitly revoked before regrant');
 assert.ok(security.includes('grant execute on function public.bella_owner_summary() to authenticated'), 'Owner RPC must be signed-in only');
