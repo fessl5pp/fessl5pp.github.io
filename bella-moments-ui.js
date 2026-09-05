@@ -2,7 +2,7 @@
   "use strict";
 
   const SETTINGS_KEY = "bella_ui_settings_v1";
-  const originalOpenSettings = window.openBellaSettings;
+  let observer = null;
 
   function readSettings() {
     try { return JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}"); }
@@ -32,10 +32,9 @@
     document.head.appendChild(style);
   }
 
-  function enhanceSettings() {
-    const modal = document.getElementById("bellaSettings");
-    const momentsToggle = modal?.querySelector("#bellaMomentsEnabled");
-    if (!modal || !momentsToggle || modal.querySelector("#bellaMomentsIntensity")) return;
+  function enhanceSettings(modal = document.getElementById("bellaSettings")) {
+    const momentsToggle = modal?.querySelector?.("#bellaMomentsEnabled");
+    if (!modal || !momentsToggle || modal.querySelector("#bellaMomentsIntensity")) return false;
 
     const current = window.BellaMoments?.getIntensity?.() || readSettings().momentsIntensity || "high";
     const status = window.BellaMoments?.status?.() || {};
@@ -67,20 +66,30 @@
     row.querySelectorAll("[data-intensity]").forEach(button => {
       button.addEventListener("click", () => sync(writeIntensity(button.dataset.intensity)));
     });
+    return true;
   }
 
-  function wrapSettings() {
-    if (typeof originalOpenSettings !== "function") return;
-    window.openBellaSettings = function openBellaSettingsWithMoments() {
-      const result = originalOpenSettings.apply(this, arguments);
-      installStyles();
-      enhanceSettings();
-      return result;
-    };
+  function observeSettings() {
+    installStyles();
+    enhanceSettings();
+    if (observer || !document.body) return;
+    observer = new MutationObserver(records => {
+      for (const record of records) {
+        for (const node of record.addedNodes) {
+          if (!(node instanceof HTMLElement)) continue;
+          if (node.id === "bellaSettings") enhanceSettings(node);
+          else {
+            const modal = node.querySelector?.("#bellaSettings");
+            if (modal) enhanceSettings(modal);
+          }
+        }
+      }
+    });
+    observer.observe(document.body, { childList: true });
   }
 
-  installStyles();
-  wrapSettings();
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", observeSettings, { once: true });
+  else observeSettings();
 
   window.BellaMomentsUI = Object.freeze({ enhanceSettings, writeIntensity });
 })();

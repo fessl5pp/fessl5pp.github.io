@@ -21,18 +21,19 @@ for (const source of ['/', '/index.html', '/sw.js']) {
 }
 
 const releaseHeader = headerRule('/')?.headers?.find(header => header.key.toLowerCase() === 'x-bella-release')?.value;
-if (releaseHeader !== 'v13') fail('The production shell must expose Bella release v13.');
+if (releaseHeader !== 'v14') fail('The production shell must expose Bella release v14.');
 
-if (!app.includes('Bella v13 adaptive moments engine marker')) fail('app.js v13 release marker is missing.');
+if (!app.includes('Bella v14 Moments Studio + AI Fresh Moments marker')) fail('app.js v14 release marker is missing.');
 if (!app.includes('?v=16')) fail('Runtime modules must keep the validated v16 generation.');
+if (!app.includes('bella-moments-cloud.js') || !app.includes('bella-owner-moments.js')) fail('v14 Moments Studio runtime modules must load.');
 if (!app.includes('bella-moments-ui.js')) fail('Moments intensity controls must load with the runtime.');
-if (!sw.includes('bella-pwa-v15-release-13')) fail('Service worker cache generation was not rotated for v13.');
+if (!sw.includes('bella-pwa-v16-release-14')) fail('Service worker cache generation was not rotated for v14.');
 if (!sw.includes('?v=16')) fail('Service worker must precache the validated v16 runtime generation.');
-if (!sw.includes('bella-moments-ui.js?v=16')) fail('Service worker must cache the moments controls.');
+if (!sw.includes('bella-moments-cloud.js?v=16') || !sw.includes('bella-owner-moments.js?v=16')) fail('Service worker must cache the v14 Moments Studio modules.');
 if (!sw.includes('cache: "no-store"')) fail('Navigation requests must bypass stale browser HTTP caches.');
 
-if (!health.includes('release: "v13"')) fail('Deployment health endpoint must report release v13.');
+if (!health.includes('release: "v14"')) fail('Deployment health endpoint must report release v14.');
 if (!health.includes('VERCEL_GIT_COMMIT_SHA')) fail('Deployment health endpoint must report the active Git commit.');
 if (!health.includes('Cache-Control')) fail('Deployment health endpoint must be non-cacheable.');
 
-console.log('Bella v13 deployment regression checks passed: build gate, adaptive moments controls, PWA cache rotation and health endpoint are active.');
+console.log('Bella v14 deployment regression checks passed: Moments Studio, AI Fresh runtime, PWA cache rotation and health endpoint are active.');

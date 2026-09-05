@@ -9,14 +9,14 @@ export default function handler(req, res) {
 
   res.setHeader("Cache-Control", "no-store, max-age=0");
   res.setHeader("X-Content-Type-Options", "nosniff");
-  res.setHeader("X-Bella-Release", "v13");
+  res.setHeader("X-Bella-Release", "v14");
 
   if (req.method === "HEAD") return res.status(204).end();
 
   return res.status(200).json({
     ok: true,
     app: "Bella",
-    release: "v13",
+    release: "v14",
     commit,
     environment,
     timestamp: new Date().toISOString()
