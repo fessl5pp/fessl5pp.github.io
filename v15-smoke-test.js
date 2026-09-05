@@ -6,7 +6,7 @@ const files = [
   'bella-brain-v2.js','bella-memory-v3.js','bella-alive.js','bella-moments-feedback.js','bella-ai-activities.js',
   'bella-owner-dashboard-v2.js','bella-voice-v2.js','api/activity-generate.js','api/gated-activity.js',
   'lib/bella-persona.js','bella-style.js','bella-auth-bridge.js','app.js','sw.js','vercel.json',
-  'supabase/migrations/20260905072000_harden_bella_rpc_grants_v15.sql'
+  'supabase/migrations/20260905080207_harden_bella_rpc_grants_v15.sql'
 ];
 for (const f of files) assert.ok(fs.existsSync(f), `Missing Bella v15 file: ${f}`);
 
@@ -25,7 +25,7 @@ const auth = read('bella-auth-bridge.js');
 const app = read('app.js');
 const sw = read('sw.js');
 const vercel = JSON.parse(read('vercel.json'));
-const security = read('supabase/migrations/20260905072000_harden_bella_rpc_grants_v15.sql');
+const security = read('supabase/migrations/20260905080207_harden_bella_rpc_grants_v15.sql');
 const voiceApi = read('api/voice.js');
 const voiceV2 = read('bella-voice-v2.js');
 
