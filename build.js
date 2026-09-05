@@ -8,7 +8,8 @@ const sources = [
   ['bella-config.js', 'Public remote feature configuration'],
   ['bella-context.js', 'Long conversation context memory'],
   ['bella-routing.js', 'AI-first conversation routing'],
-  ['bella-moments.js', 'Coordinated rumors and top-right Bella moments'],
+  ['bella-moments.js', 'Local and remote adaptive Bella moments'],
+  ['bella-moments-cloud.js', 'Approved remote moments sync'],
   ['bella-style.js', 'Adaptive user communication style'],
   ['bella-auth-bridge.js', 'Signed-in API authorization bridge'],
   ['bella-runtime.js', 'Network reliability and streaming runtime'],
@@ -23,19 +24,16 @@ const sources = [
   ['bella-moderator-center.js', 'Limited moderator account review center'],
   ['bella-owner-analytics.js', 'Owner-only activity analytics dashboard'],
   ['bella-owner-controls.js', 'Owner-only remote system controls'],
+  ['bella-owner-moments.js', 'Owner-only Moments Studio and AI Fresh controls'],
   ['bella-speed.js', 'Live reply rendering and perceived latency'],
   ['bella-ui.js', 'Settings and chat controls'],
+  ['bella-moments-ui.js', 'Per-user moments intensity controls'],
   ['bella-install.js', 'PWA install experience']
 ];
 
 const loaded = sources.map(([file, label]) => {
   const source = fs.readFileSync(file, 'utf8');
-  try {
-    new Function(source);
-  } catch (error) {
-    console.error(`Bella source syntax validation failed in ${file}:`, error);
-    process.exit(1);
-  }
+  try { new Function(source); } catch (error) { console.error(`Bella source syntax validation failed in ${file}:`, error); process.exit(1); }
   return { file, label, source };
 });
 
@@ -52,6 +50,8 @@ const ownershipRules = [
   { pattern: /window\.BellaModeratorCenter\s*=(?!=)/, owner: 'bella-moderator-center.js', label: 'moderator center UI' },
   { pattern: /window\.BellaOwnerAnalytics\s*=(?!=)/, owner: 'bella-owner-analytics.js', label: 'owner activity analytics UI' },
   { pattern: /window\.BellaOwnerControls\s*=(?!=)/, owner: 'bella-owner-controls.js', label: 'owner remote controls UI' },
+  { pattern: /window\.BellaMomentsStudio\s*=(?!=)/, owner: 'bella-owner-moments.js', label: 'owner Moments Studio UI' },
+  { pattern: /window\.BellaMomentsCloud\s*=(?!=)/, owner: 'bella-moments-cloud.js', label: 'remote moments sync' },
   { pattern: /window\.BellaAvatar\s*=(?!=)/, owner: 'bella-avatar.js', label: 'visual identity UI' },
   { pattern: /window\.BellaLiveWeb\s*=(?!=)/, owner: 'bella-live-web.js', label: 'live web citation UI' },
   { pattern: /window\.BellaMoments\s*=(?!=)/, owner: 'bella-moments.js', label: 'ambient rumors and top-right moments' },
@@ -75,25 +75,11 @@ for (const rule of ownershipRules) {
 
 const runtime = loaded.find(item => item.file === 'bella-runtime.js')?.source || '';
 const bridge = loaded.find(item => item.file === 'bella-auth-bridge.js')?.source || '';
-if (!/window\.fetch\s*=(?!=)/.test(runtime)) {
-  console.error('Bella runtime must remain the final network guard.');
-  process.exit(1);
-}
-if (!/window\.fetch\s*=(?!=)/.test(bridge) || !bridge.includes('/api/chat') || !bridge.includes('/api/dira') || !bridge.includes('/api/voice')) {
-  console.error('Bella auth bridge must attach signed-in auth only to Bella API routes before runtime loads.');
-  process.exit(1);
-}
+if (!/window\.fetch\s*=(?!=)/.test(runtime)) { console.error('Bella runtime must remain the final network guard.'); process.exit(1); }
+if (!/window\.fetch\s*=(?!=)/.test(bridge) || !bridge.includes('/api/chat') || !bridge.includes('/api/dira') || !bridge.includes('/api/voice')) { console.error('Bella auth bridge must attach signed-in auth only to Bella API routes before runtime loads.'); process.exit(1); }
 
-const bundle = loaded.map(({ file, label, source }) =>
-  `\n;/* ---- ${label}: ${file} ---- */\n${source}\n`
-).join('\n');
-
-try {
-  new Function(bundle);
-} catch (error) {
-  console.error('Bella combined source validation failed:', error);
-  process.exit(1);
-}
+const bundle = loaded.map(({ file, label, source }) => `\n;/* ---- ${label}: ${file} ---- */\n${source}\n`).join('\n');
+try { new Function(bundle); } catch (error) { console.error('Bella combined source validation failed:', error); process.exit(1); }
 
 console.log(`Bella combined source validated (${sources.length} modules, ${bundle.length} chars)`);
-console.log('Bella ownership validated: account/analytics/config/auth/voice/owner-users/moderator-center/account-center/owner-center/owner-controls/owner-analytics/avatar/memory-sync/live-web/moments/legacy/context/routing/style/runtime/mood/send/speed/UI are separated.');
+console.log('Bella ownership validated: account/analytics/config/auth/voice/owner-users/moderator-center/account-center/owner-center/owner-controls/owner-moments/owner-analytics/avatar/memory-sync/live-web/moments-cloud/moments/legacy/context/routing/style/runtime/mood/send/speed/UI are separated.');
