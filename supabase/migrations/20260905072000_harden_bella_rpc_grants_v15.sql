@@ -1,0 +1,57 @@
+-- Bella v15 security hardening: make SECURITY DEFINER exposure explicit.
+-- Internal tables intentionally remain RLS-closed and are reached only through checked RPCs.
+
+revoke all on function public.bella_account_status() from public, anon, authenticated;
+revoke all on function public.bella_is_account_active() from public, anon, authenticated;
+revoke all on function public.is_bella_owner() from public, anon, authenticated;
+revoke all on function public.is_bella_moderator() from public, anon, authenticated;
+revoke all on function public.record_bella_event(text,text) from public, anon, authenticated;
+
+revoke all on function public.bella_moderator_audit(integer,integer) from public, anon, authenticated;
+revoke all on function public.bella_moderator_manage_user(uuid,text,text) from public, anon, authenticated;
+revoke all on function public.bella_moderator_user_detail(uuid) from public, anon, authenticated;
+revoke all on function public.bella_moderator_users(text,integer,integer) from public, anon, authenticated;
+
+revoke all on function public.bella_owner_activity(integer) from public, anon, authenticated;
+revoke all on function public.bella_owner_analytics_summary(integer) from public, anon, authenticated;
+revoke all on function public.bella_owner_audit(integer,integer) from public, anon, authenticated;
+revoke all on function public.bella_owner_config() from public, anon, authenticated;
+revoke all on function public.bella_owner_features(integer) from public, anon, authenticated;
+revoke all on function public.bella_owner_manage_user(uuid,text,text,text) from public, anon, authenticated;
+revoke all on function public.bella_owner_summary() from public, anon, authenticated;
+revoke all on function public.bella_owner_update_config(boolean,boolean,boolean,boolean,text,integer) from public, anon, authenticated;
+revoke all on function public.bella_owner_user_detail(uuid) from public, anon, authenticated;
+revoke all on function public.bella_owner_users(text,integer,integer) from public, anon, authenticated;
+revoke all on function public.bella_owner_users_v2(text,integer,integer) from public, anon, authenticated;
+
+-- These two endpoints are intentionally public: server-side Bella cost control and browser-safe feature config.
+revoke all on function public.bella_claim_ai_request(text) from public, anon, authenticated;
+revoke all on function public.bella_public_config() from public, anon, authenticated;
+grant execute on function public.bella_claim_ai_request(text) to anon, authenticated;
+grant execute on function public.bella_public_config() to anon, authenticated;
+
+-- Signed-in account and analytics helpers.
+grant execute on function public.bella_account_status() to authenticated;
+grant execute on function public.bella_is_account_active() to authenticated;
+grant execute on function public.is_bella_owner() to authenticated;
+grant execute on function public.is_bella_moderator() to authenticated;
+grant execute on function public.record_bella_event(text,text) to authenticated;
+
+-- Moderator RPCs keep their internal moderator/owner checks and are unreachable to anon.
+grant execute on function public.bella_moderator_audit(integer,integer) to authenticated;
+grant execute on function public.bella_moderator_manage_user(uuid,text,text) to authenticated;
+grant execute on function public.bella_moderator_user_detail(uuid) to authenticated;
+grant execute on function public.bella_moderator_users(text,integer,integer) to authenticated;
+
+-- Owner RPCs keep their internal owner check and are unreachable to anon.
+grant execute on function public.bella_owner_activity(integer) to authenticated;
+grant execute on function public.bella_owner_analytics_summary(integer) to authenticated;
+grant execute on function public.bella_owner_audit(integer,integer) to authenticated;
+grant execute on function public.bella_owner_config() to authenticated;
+grant execute on function public.bella_owner_features(integer) to authenticated;
+grant execute on function public.bella_owner_manage_user(uuid,text,text,text) to authenticated;
+grant execute on function public.bella_owner_summary() to authenticated;
+grant execute on function public.bella_owner_update_config(boolean,boolean,boolean,boolean,text,integer) to authenticated;
+grant execute on function public.bella_owner_user_detail(uuid) to authenticated;
+grant execute on function public.bella_owner_users(text,integer,integer) to authenticated;
+grant execute on function public.bella_owner_users_v2(text,integer,integer) to authenticated;
