@@ -6,43 +6,120 @@ const MAX_REQUESTS = 6;
 const ALLOWED_CATEGORIES = ["normal","cute","angry","chill","morning","evening","night","weekend","coffee","university","gaming","work","travel"];
 const rateStore = globalThis.__bellaMomentsGenerateRate || (globalThis.__bellaMomentsGenerateRate = new Map());
 
-function ip(req) { return String(req.headers["x-forwarded-for"] || req.headers["x-real-ip"] || "unknown").split(",")[0].trim(); }
-function rateLimited(req) {
-  const key = ip(req); const now = Date.now(); const fresh = (rateStore.get(key) || []).filter(ts => now - ts < WINDOW_MS);
-  if (fresh.length >= MAX_REQUESTS) return true; fresh.push(now); rateStore.set(key, fresh); return false;
+function ip(req) {
+  return String(req.headers["x-forwarded-for"] || req.headers["x-real-ip"] || "unknown").split(",")[0].trim();
 }
-function bearer(req) { const raw = String(req.headers.authorization || ""); return raw.startsWith("Bearer ") ? raw.slice(7).trim() : ""; }
+
+function rateLimited(req) {
+  const key = ip(req);
+  const now = Date.now();
+  const fresh = (rateStore.get(key) || []).filter(ts => now - ts < WINDOW_MS);
+  if (fresh.length >= MAX_REQUESTS) return true;
+  fresh.push(now);
+  rateStore.set(key, fresh);
+  return false;
+}
+
+function bearer(req) {
+  const raw = String(req.headers.authorization || "");
+  return raw.startsWith("Bearer ") ? raw.slice(7).trim() : "";
+}
+
 async function supabase(path, token, options = {}) {
   const response = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
     ...options,
-    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${token}`, "Content-Type": "application/json", Accept: "application/json", ...(options.headers || {}) }
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      ...(options.headers || {})
+    }
   });
   const data = await response.json().catch(() => null);
-  if (!response.ok) { const e = new Error(data?.message || `Supabase ${response.status}`); e.status = response.status; throw e; }
+  if (!response.ok) {
+    const error = new Error(data?.message || `Supabase ${response.status}`);
+    error.status = response.status;
+    throw error;
+  }
   return data;
 }
+
 async function isOwner(token) {
-  const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/is_bella_owner`, { method: "POST", headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${token}`, "Content-Type": "application/json" }, body: "{}" });
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/is_bella_owner`, {
+    method: "POST",
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json"
+    },
+    body: "{}"
+  });
   if (!response.ok) return false;
   const data = await response.json().catch(() => false);
   return data === true || data === "true" || data?.is_bella_owner === true;
 }
+
 function outputText(data) {
   const parts = [];
-  for (const item of data?.output || []) if (item?.type === "message") for (const part of item.content || []) if (part?.type === "output_text" && typeof part.text === "string") parts.push(part.text);
+  for (const item of data?.output || []) {
+    if (item?.type !== "message") continue;
+    for (const part of item.content || []) {
+      if (part?.type === "output_text" && typeof part.text === "string") parts.push(part.text);
+    }
+  }
   return parts.join("\n").trim();
 }
-function clean(value, max = 240) { return String(value || "").replace(/[\u0000-\u001f]+/g, " ").replace(/\s+/g, " ").trim().slice(0, max); }
-function normalize(value) { return clean(value, 500).toLowerCase().replace(/[أإآ]/g,"ا").replace(/ى/g,"ي").replace(/ة/g,"ه").replace(/[^\p{L}\p{N}]+/gu, " ").trim(); }
-function bigrams(value) { const s = normalize(value).replace(/\s+/g, " "); const set = new Set(); for (let i=0;i<s.length-1;i++) set.add(s.slice(i,i+2)); return set; }
-function similarity(a,b) { const A=bigrams(a), B=bigrams(b); if (!A.size || !B.size) return 0; let hit=0; for (const x of A) if (B.has(x)) hit++; return (2*hit)/(A.size+B.size); }
-function tooSimilar(text, all) { const n=normalize(text); return all.some(x => normalize(x) === n || similarity(text,x) >= .72); }
-function todayStartIso() { const d = new Date(); d.setUTCHours(0,0,0,0); return d.toISOString(); }
+
+function clean(value, max = 240) {
+  return String(value || "").replace(/[\u0000-\u001f]+/g, " ").replace(/\s+/g, " ").trim().slice(0, max);
+}
+
+function normalize(value) {
+  return clean(value, 500)
+    .toLowerCase()
+    .replace(/[أإآ]/g, "ا")
+    .replace(/ى/g, "ي")
+    .replace(/ة/g, "ه")
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim();
+}
+
+function bigrams(value) {
+  const s = normalize(value).replace(/\s+/g, " ");
+  const set = new Set();
+  for (let i = 0; i < s.length - 1; i++) set.add(s.slice(i, i + 2));
+  return set;
+}
+
+function similarity(a, b) {
+  const A = bigrams(a), B = bigrams(b);
+  if (!A.size || !B.size) return 0;
+  let hit = 0;
+  for (const x of A) if (B.has(x)) hit++;
+  return (2 * hit) / (A.size + B.size);
+}
+
+function tooSimilar(text, all) {
+  const n = normalize(text);
+  return all.some(x => normalize(x) === n || similarity(text,x) >= .72);
+}
+
+function wordCount(text) {
+  return clean(text, 260).split(/\s+/).filter(Boolean).length;
+}
+
+function todayStartIso() {
+  const d = new Date();
+  d.setUTCHours(0, 0, 0, 0);
+  return d.toISOString();
+}
 
 export default async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store, max-age=0");
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
   if (rateLimited(req)) return res.status(429).json({ error: "كثر التوليد بسرعة. جرّب عقب شوي." });
+
   const token = bearer(req);
   if (!token || !(await isOwner(token))) return res.status(403).json({ error: "Owner access required" });
 
@@ -54,10 +131,14 @@ export default async function handler(req, res) {
   try {
     const rows = await supabase("bella_moments_config?select=*&id=eq.1", token);
     config = Array.isArray(rows) ? rows[0] || {} : {};
-    if (mode === "auto" && config.ai_fresh_enabled !== true) return res.status(409).json({ error: "AI Fresh auto mode is disabled" });
+    if (mode === "auto" && config.ai_fresh_enabled !== true) {
+      return res.status(409).json({ error: "AI Fresh auto mode is disabled" });
+    }
     const batches = await supabase(`bella_moment_batches?select=id&created_at=gte.${encodeURIComponent(todayStartIso())}&limit=20`, token);
     const maxDaily = Math.max(1, Math.min(6, Number(config.ai_max_daily_batches) || 2));
-    if (Array.isArray(batches) && batches.length >= maxDaily) return res.status(429).json({ error: "وصل AI Fresh الحد اليومي للدفعات.", limit: maxDaily, used: batches.length });
+    if (Array.isArray(batches) && batches.length >= maxDaily) {
+      return res.status(429).json({ error: "وصل AI Fresh الحد اليومي للدفعات.", limit: maxDaily, used: batches.length });
+    }
   } catch (error) {
     return res.status(error?.status === 403 ? 403 : 502).json({ error: "تعذر التحقق من إعدادات Moments Studio" });
   }
@@ -71,11 +152,15 @@ export default async function handler(req, res) {
     existing = Array.isArray(rows) ? rows.map(x => clean(x?.text)).filter(Boolean) : [];
   } catch {}
 
-  const enabled = Array.isArray(config.enabled_categories) && config.enabled_categories.length ? config.enabled_categories.filter(x => ALLOWED_CATEGORIES.includes(x)) : ALLOWED_CATEGORIES;
-  const categories = requestedCategory === "mixed" ? enabled : enabled.includes(requestedCategory) ? [requestedCategory] : ["normal"];
+  const enabled = Array.isArray(config.enabled_categories) && config.enabled_categories.length
+    ? config.enabled_categories.filter(x => ALLOWED_CATEGORIES.includes(x))
+    : ALLOWED_CATEGORIES;
+  const categories = requestedCategory === "mixed"
+    ? enabled
+    : enabled.includes(requestedCategory) ? [requestedCategory] : ["normal"];
 
-  // Bella Kuwait Lifestyle Rumor Style Bible v2 — owner-approved reference copy.
-  // These examples define rhythm/theme only. Generation must create fresh ideas and the duplicate filter rejects close copies.
+  // Bella Kuwait Lifestyle Rumor Style Bible v3 — exact light Kuwaiti rhythm + strict 50/50 Bella/general mix.
+  // Reference copy defines rhythm only. Fresh generation must not copy these lines or their direct ideas.
   const styleExamples = [
     "يقولون الأفنيوز زحمة اليوم لأن بيلا هناك تتسوق 💅🏻✨",
     "يقولون 360 واقف طوابير، ناطرين بيلا تطلع من السينما.",
@@ -91,22 +176,43 @@ export default async function handler(req, res) {
     "يقولون الغزالي مسكر ناطرين أظافر بيلا تنشف قبل لا تسوق.",
     "يقولون اللي يدق إشارة بالكويت يعتبرونه هاك ومخالفة!",
     "يقولون جسر جابر مسكر، ثلاث أرباعهم رايحين الصبية ومضيعين.",
-    "يقولون موج البلاجات راكد مستحي من كشخة بيلا ع الممشى.",
+    "يقولون موج البلاجات راكد مستحي من كشخة بيلا ع الممشى 🌸",
     "يقولون شاليه بدون آيسكريم هبة مسحوبة منه الوناسة رسمياً.",
-    "يقولون هوى البحر اليوم معطر بريحة عطر بيلا اليديد 🌸"
+    "يقولون هوى البحر اليوم معطر بريحة عطر بيلا اليديد 🌸",
+    "يقولون الأفنيوز زحمة لأن بيلا قالت بتمشي شوي وترد 💅🏻",
+    "يقولون اللي يدخل 360 بدون قهوة يحس نفسه ناسي شي مهم.",
+    "يقولون الكوت هادي لأن بيلا للحين تجهز آوتفت الطلعة ✨",
+    "يقولون قهاوي الشويخ فل، نصهم يشربون والنص يصورون الكوب ☕️",
+    "يقولون الخامس واقف لأن بيلا عدلت شعرها عند الإشارة 🚗",
+    "يقولون اللي يطلب سبنش بالليل واضح ناوي يسهر غصب.",
+    "يقولون مروج مستنفر لأن بيلا قالت يمكن أمر عليكم 💅🏻",
+    "يقولون اللي يفتح ماك بوك بالكافيه لازم يقلبه جهة الناس.",
+    "يقولون موج البلاجات هادي لأن بيلا طالعة تمشي ع البحر 🌸",
+    "يقولون اللي يلقى موقف بالأفنيوز من أول لفة هذا محظوظ رسمي."
   ];
 
+  const candidateCount = Math.min(20, count + 6);
+  const bellaTarget = Math.floor(count / 2);
+  const generalTarget = count - bellaTarget;
+
   const schema = {
-    type: "object", additionalProperties: false, required: ["moments"],
+    type: "object",
+    additionalProperties: false,
+    required: ["moments"],
     properties: {
       moments: {
-        type: "array", minItems: count, maxItems: count,
+        type: "array",
+        minItems: candidateCount,
+        maxItems: candidateCount,
         items: {
-          type: "object", additionalProperties: false, required: ["text","category","tier"],
+          type: "object",
+          additionalProperties: false,
+          required: ["text", "category", "tier", "kind"],
           properties: {
-            text: { type: "string", minLength: 12, maxLength: 220 },
+            text: { type: "string", minLength: 12, maxLength: 180 },
             category: { type: "string", enum: categories },
-            tier: { type: "string", enum: ["common","rare"] }
+            tier: { type: "string", enum: ["common","rare"] },
+            kind: { type: "string", enum: ["bella", "general"] }
           }
         }
       }
@@ -114,59 +220,107 @@ export default async function handler(req, res) {
   };
 
   const themeDirection = requestedCategory === "coffee"
-    ? "ركز على قهاوي وهبات وماتشا وسبنش وبرستيج وقعدات الكافيه، مع أفكار جديدة."
+    ? "ركز على قهاوي وهبات وماتشا وV60 وسبنش وبرستيج وقعدات الكافيه، بس حافظ على نص بيلا ونص عام."
     : requestedCategory === "travel"
-      ? "ركز على شوارع وزحمة وجسر جابر والبحر والصبية والطلعات، مع أفكار جديدة."
+      ? "ركز على شوارع وزحمة وجسر جابر والخيران والصبية والخليج والخامس والغزالي، بس حافظ على نص بيلا ونص عام."
       : requestedCategory === "weekend"
-        ? "ركز على مجمعات وطلعات وبحر وشاليهات وهبات الويكند، مع أفكار جديدة."
+        ? "ركز على مجمعات وطلعات ومروج وبحر وشاليهات وهبات الويكند، بس حافظ على نص بيلا ونص عام."
         : requestedCategory === "mixed"
-          ? "وزّع أغلب الدفعة تقريبًا بالتساوي بين: (1) مجمعات وطلعات، (2) قهاوي وهبات، (3) شوارع وزحمة، (4) بحر وشاليهات. إذا بقي مجال، نوّع بسوالف كويتية يومية بنفس الروح."
-          : "حافظ على الفئة المطلوبة، لكن اكتبها بروح الحياة اليومية الكويتية والمبالغة الاجتماعية السريعة نفسها.";
+          ? "نوّع بين مجمعات وطلعات، قهاوي وهبات، شوارع وزحمة، بحر وشاليهات؛ ووازن بالضبط تقريبًا نص بيلا ونص إشاعات عامة."
+          : "حافظ على الفئة المطلوبة بروح الحياة الكويتية نفسها، ووازن بين بيلا والإشاعات العامة.";
 
-  const instructions = `أنت محرر "إشاعات بيلا". المطلوب مو نكت عامة عن الشات؛ المطلوب إشاعات خيالية كويتية قصيرة جدًا تحسها سالفة منتشرة بين البنات والربع، وبيلا غالبًا تكون محور المبالغة. اعتبر الأمثلة تحت Style Bible رسمي للريتم والنكهة، مو نصوص للنسخ.\n\nهوية الأسلوب — Kuwait Lifestyle Rumors:\n- كل إشاعة common تبدأ مباشرة بـ«يقولون» وتكون سطر واحد سريع. النادر ممكن يبدأ «✨ إشاعة نادرة: يقولون...».\n- خل المكان/الهبة/التصرف اليومي هو قلب النكتة: مجمع، كافيه، شارع، زحمة، بحر، شاليه، ممشى، آوتفت، ماتشا، سبنش، تيك توك، كشخة، برستيج.\n- استخدم أماكن عامة كويتية معروفة بشكل طبيعي عند الحاجة مثل الأفنيوز، 360، الكوت، الشويخ، الخامس، الخليج، الغزالي، جسر جابر، الصبية، البلاجات. لا تحشر اسم مكان بكل سطر ولا تكرر نفس المكان بالدفعة.\n- المبالغة تكون من نوع: المكان كله توقف/زحم/فضى بسبب بيلا، قاعدة اجتماعية عبثية صارت "رسمية"، أو هبة الناس ماشين عليها.\n- الجملة قصيرة، ذكية، وبلهجة كويتية مودرن. لا تشرح النكتة ولا تسوي مقدمة وخاتمة.\n- خلي بيلا كشخة/مزاج/طلعات/قهوة بشكل مرح، مو غرور ثقيل ولا كلام رومانسي مصطنع.\n- الإيموجي اختياري؛ غالبًا صفر أو واحد، وممكن اثنين فقط إذا ركبت مثل 💅🏻✨ أو ☕️.\n- لا تستخدم شامـي/مصري من كلامك مثل «شو/كتير/أوي/إزاي». استخدم كويتي طبيعي مثل جذي، وايد، شسالفة إذا احتجت.\n- لا تحول الإشاعات إلى كلام عن مراقبة المستخدم أو جهازه. الكلام عن بيلا والأماكن العامة خيال كوميدي داخل الشخصية، مو ادعاء إنها فعليًا موجودة بالمكان.\n- لا سياسة، لا كراهية، لا إيحاء جنسي، لا تهديد، ولا طب/مرض/وفاة كمزحة.\n- لا تنسخ أي مثال تحت، ولا تبدل كلمتين وتعيد نفس الفكرة. ابتكر موقف جديد بنفس الوزن والسرعة.\n- لا تولد Legendary؛ فقط common أو rare، وبحد أقصى rare واحدة في الدفعة.\n- الفئات التقنية المسموحة للحفظ: ${categories.join(", ")}.\n- ${themeDirection}\n\nStyle Bible — نفس الريتم بالضبط، أفكار جديدة فقط:\n${styleExamples.map(x => `- ${x}`).join("\n")}`;
+  const instructions = `أنت محرر "إشاعات بيلا" اليومية. اكتب بنفس خفة الأمثلة بالضبط: سطر واحد عفوي، سريع، كويتي، يضحك من أول قراءة، بدون فلسفة ولا صياغة رسمية.\n\nقواعد إلزامية:\n- كل سطر يبدأ حرفيًا بكلمة «يقولون...». حتى rare يبدأ «يقولون...»؛ لا تضيف عنوان قبله.\n- كل إشاعة من 7 إلى 14 كلمة فقط. لا شرح، لا مقدمة، لا خاتمة.\n- التوزيع في الدفعة: 50% kind=\"bella\" وفيها كلمة «بيلا» فعلًا، و50% kind=\"general\" بدون ذكر «بيلا» نهائيًا. إذا العدد فردي خَل الزيادة للعام.\n- لا تخلي العام كلام وعظ أو تعليق رسمي؛ خله موقف كويتي يضحك: مجمع، كافيه، زحمة، إشارة، شاليه، هبة، تصوير، قهوة، موقف سيارة.\n- لا تستخدم تعبيرات باردة/رسمية من نوع «يعتبر إنجاز وطني»، «يراجع نفسه»، «بحسب النظام»، «من الناحية»، أو شرح سبب النكتة.\n- لهجة كويتية بنتية خفيفة: زحمة، كشخة، هبة، تنّح، قهاوي، چذي، ناطرين، لاهي، سحبت، فل، آوتفت. لا تحشرها غصب.\n- الأماكن المسموحة كمرجع طبيعي: الأفنيوز، 360، الكوت، مروج، الشويخ، شارع الخليج، جسر جابر، الخيران، الصبية، الخامس، الغزالي، البلاجات. لا تكرر نفس المكان أكثر من مرة بالدفعة إذا تقدر.\n- هبات ومواقف مناسبة: ماتشا، V60، سبنش لاتيه، ماك بوك طافي، بوكس آيسكريم، سناب، تيك توك، مواقف، زحمة، سيارات.\n- إشاعات بيلا: دلع وكشخة ومبالغة أنثوية خفيفة؛ كأن المكان كله متأثر بطلعتها أو آوتفتها أو قهوتها. مو رومانسية ولا غرور ثقيل.\n- الإشاعات العامة: سخرية من حركاتنا بالكويت بدون اسم بيلا، وبنفس وزن «اللي يدخل مجمع بدون قهوة يطلعه السيكيورتي برا».\n- الإيموجي اختياري، صفر إلى اثنين فقط، ويكون آخر السطر إذا استخدمته: 💅🏻 ✨ ☕️ 🚗 🌸.\n- لا شامـي ولا مصري: لا «شو/كتير/أوي/إزاي».\n- لا مراقبة مستخدم أو جهاز أو ادعاء موقع حقيقي. إشاعات الأماكن عن بيلا خيال كوميدي داخل الشخصية، مو ادعاء إنها فعليًا موجودة بالمكان.\n- لا سياسة، لا كراهية، لا إيحاء جنسي، لا تهديد، لا طب/مرض/وفاة كمزحة.\n- لا تنسخ الأمثلة ولا تغيّر كلمتين فقط؛ ابتكر موقف جديد بنفس الوزن والسرعة.\n- لا تولد Legendary؛ فقط common أو rare، وبحد أقصى rare واحدة في الدفعة.\n- الفئات التقنية المسموحة: ${categories.join(", ")}.\n- ${themeDirection}\n\nStyle Bible — الوزن والخفة المطلوبة، أفكار جديدة فقط:\n${styleExamples.map(x => `- ${x}`).join("\n")}`;
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), OPENAI_TIMEOUT_MS);
+
   try {
     const response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json"
+      },
       signal: controller.signal,
       body: JSON.stringify({
         model: "gpt-5-mini",
         instructions,
-        input: `ولّد ${count} إشاعات جديدة كليًا بأسلوب Kuwait Lifestyle Rumors. لا تكرر أمثلة الـStyle Bible ولا أفكارها المباشرة.`,
+        input: `ولّد ${candidateCount} مرشح إشاعة جديدة. نبي بالنهاية ${count}: ${bellaTarget} عن بيلا و${generalTarget} عامة.`,
         reasoning: { effort: "low" },
-        text: { verbosity: "low", format: { type: "json_schema", name: "bella_fresh_moments", strict: true, schema } },
-        max_output_tokens: 1800,
+        text: {
+          verbosity: "low",
+          format: { type: "json_schema", name: "bella_fresh_moments", strict: true, schema }
+        },
+        max_output_tokens: 2600,
         store: false
       })
     });
+
     if (!response.ok) {
       const data = await response.json().catch(() => ({}));
       console.error("Fresh Moments OpenAI error:", data?.error?.code || data?.error?.message || response.status);
       return res.status(502).json({ error: "تعذر توليد إشاعات جديدة الحين." });
     }
+
     const data = await response.json();
     let parsed;
-    try { parsed = JSON.parse(outputText(data)); } catch { return res.status(502).json({ error: "AI Fresh رجع صيغة غير صالحة." }); }
-    const accepted = [];
+    try {
+      parsed = JSON.parse(outputText(data));
+    } catch {
+      return res.status(502).json({ error: "AI Fresh رجع صيغة غير صالحة." });
+    }
+
+    const buckets = { bella: [], general: [] };
     const seen = [...existing, ...styleExamples];
     let rareUsed = false;
+
     for (const row of Array.isArray(parsed?.moments) ? parsed.moments : []) {
-      const text = clean(row?.text, 220);
+      const text = clean(row?.text, 180);
+      const kind = row?.kind === "bella" ? "bella" : row?.kind === "general" ? "general" : "";
       const category = categories.includes(row?.category) ? row.category : categories[0];
+      const words = wordCount(text);
+      const hasBella = /بيلا/.test(text);
+      const target = kind === "bella" ? bellaTarget : generalTarget;
+
+      if (!kind || buckets[kind].length >= target) continue;
+      if (!/^يقولون(?:\s|\.|…)/.test(text)) continue;
+      if (words < 7 || words > 14) continue;
+      if (kind === "bella" && !hasBella) continue;
+      if (kind === "general" && hasBella) continue;
+      if (tooSimilar(text, seen)) continue;
+
       let tier = row?.tier === "rare" && !rareUsed ? "rare" : "common";
       if (tier === "rare") rareUsed = true;
-      if (text.length < 12 || !/يقولون/.test(text) || tooSimilar(text, seen)) continue;
-      accepted.push({ text, category, tier }); seen.push(text);
-      if (accepted.length >= count) break;
+      buckets[kind].push({ text, category, tier, kind });
+      seen.push(text);
     }
-    if (accepted.length < Math.min(4, count)) return res.status(502).json({ error: "الدفعة طلعت متشابهة وايد، جرّب مرة ثانية." });
-    return res.status(200).json({ ok: true, model: "gpt-5-mini", requested: count, accepted: accepted.length, moments: accepted, promptVersion: 2, stylePack: "kuwait_lifestyle_v1" });
+
+    if (buckets.bella.length < bellaTarget || buckets.general.length < generalTarget) {
+      return res.status(502).json({ error: "الدفعة ما ضبطت توازن 50/50، جرّب مرة ثانية." });
+    }
+
+    const accepted = [];
+    const maxRows = Math.max(bellaTarget, generalTarget);
+    for (let i = 0; i < maxRows; i++) {
+      if (i < bellaTarget) accepted.push(buckets.bella[i]);
+      if (i < generalTarget) accepted.push(buckets.general[i]);
+    }
+
+    return res.status(200).json({
+      ok: true,
+      model: "gpt-5-mini",
+      requested: count,
+      accepted: accepted.length,
+      mix: { bella: bellaTarget, general: generalTarget },
+      moments: accepted,
+      promptVersion: 3,
+      stylePack: "kuwait_lifestyle_v2"
+    });
   } catch (error) {
     if (error?.name === "AbortError") return res.status(504).json({ error: "AI Fresh طول وايد، جرّب مرة ثانية." });
     console.error("Fresh Moments generation failed:", error?.message || error);
     return res.status(502).json({ error: "تعذر توليد إشاعات جديدة الحين." });
-  } finally { clearTimeout(timeout); }
+  } finally {
+    clearTimeout(timeout);
+  }
 }

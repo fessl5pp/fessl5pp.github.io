@@ -23,13 +23,21 @@ assert.ok(api.includes('json_schema') && api.includes('store: false'),'AI Fresh 
 assert.ok(api.includes('enum: ["common","rare"]') && !api.includes('enum: ["common","rare","legendary"]'),'AI must not auto-generate legendary moments');
 assert.ok(!api.includes('service_role') && !api.includes('sb_secret_'),'generation endpoint must not embed Supabase secrets');
 
-// Owner-approved Kuwait Lifestyle Rumors style pack.
-assert.ok(api.includes('Bella Kuwait Lifestyle Rumor Style Bible v2'),'AI Fresh must keep the owner-approved rumor style bible');
-assert.ok(api.includes('Kuwait Lifestyle Rumors') && api.includes('مجمعات وطلعات') && api.includes('قهاوي وهبات') && api.includes('شوارع وزحمة') && api.includes('بحر وشاليهات'),'mixed batches must prioritize the four Kuwait lifestyle themes');
+// Owner-approved Kuwait Lifestyle Rumors v3: strict light rhythm and balanced Bella/general mix.
+assert.ok(api.includes('Bella Kuwait Lifestyle Rumor Style Bible v3'),'AI Fresh must keep the v3 owner-approved rumor style bible');
+assert.ok(api.includes('Kuwait Lifestyle Rumors') || api.includes('إشاعات بيلا'),'Kuwait lifestyle rumor identity missing');
+assert.ok(api.includes('مجمعات وطلعات') && api.includes('قهاوي وهبات') && api.includes('شوارع وزحمة') && api.includes('بحر وشاليهات'),'mixed batches must cover the four Kuwait lifestyle themes');
 assert.ok(api.includes('يقولون الأفنيوز زحمة اليوم لأن بيلا هناك تتسوق') && api.includes('يقولون قهاوي الشويخ مستنفرة لأن بيلا ما عجبها الماتشا'),'mall and cafe reference examples must remain in the style bible');
-assert.ok(api.includes('يقولون الخامس واقف لأن سيارة بيلا مرت') && api.includes('يقولون جسر جابر مسكر، ثلاث أرباعهم رايحين الصبية ومضيعين'),'traffic and sea/chalet reference examples must remain in the style bible');
-assert.ok(api.includes('styleExamples') && api.includes('seen = [...existing, ...styleExamples]'),'reference examples must participate in duplicate rejection instead of being copied');
-assert.ok(api.includes('promptVersion: 2') && api.includes('stylePack: "kuwait_lifestyle_v1"'),'AI Fresh response must expose the new rumor prompt/style version');
+assert.ok(api.includes('يقولون الخامس واقف لأن سيارة بيلا مرت') && api.includes('يقولون جسر جابر مسكر، ثلاث أرباعهم رايحين الصبية ومضيعين'),'traffic and chalet reference examples must remain in the style bible');
+assert.ok(api.includes('يقولون قهاوي الشويخ فل، نصهم يشربون والنص يصورون الكوب') && api.includes('يقولون اللي يفتح ماك بوك بالكافيه لازم يقلبه جهة الناس'),'latest light/general rhythm examples must remain in the style bible');
+assert.ok(api.includes('kind: { type: "string", enum: ["bella", "general"] }'),'structured output must label Bella vs general rumors');
+assert.ok(api.includes('bellaTarget = Math.floor(count / 2)') && api.includes('generalTarget = count - bellaTarget'),'50/50 target calculation missing');
+assert.ok(api.includes('buckets.bella.length < bellaTarget') && api.includes('buckets.general.length < generalTarget'),'server must reject unbalanced generated batches');
+assert.ok(api.includes('kind === "bella" && !hasBella') && api.includes('kind === "general" && hasBella'),'Bella/general name separation must be server enforced');
+assert.ok(api.includes('words < 7 || words > 14'),'7–14 word limit must be server enforced');
+assert.ok(api.includes('/^يقولون') && api.includes('كل سطر يبدأ حرفيًا بكلمة «يقولون...»'),'every rumor must start with يقولون');
+assert.ok(api.includes('seen = [...existing, ...styleExamples]'),'reference examples must participate in duplicate rejection instead of being copied');
+assert.ok(api.includes('promptVersion: 3') && api.includes('stylePack: "kuwait_lifestyle_v2"'),'AI Fresh response must expose v3 prompt/style version');
 assert.ok(api.includes('مو ادعاء إنها فعليًا موجودة بالمكان'),'public-place Bella rumors must remain clearly fictional rather than location claims');
 
 assert.ok(migration.includes('create schema if not exists private') && migration.includes('private.bella_is_owner_v14'),'RLS owner helper must live outside exposed public schema');
@@ -38,4 +46,4 @@ assert.ok(rls.includes('to anon') && rls.includes('to authenticated'),'optimized
 assert.ok(app.indexOf('bella-moments.js') < app.indexOf('bella-moments-cloud.js'),'cloud sync must load after engine');
 assert.ok(app.indexOf('bella-owner-controls.js') < app.indexOf('bella-owner-moments.js'),'Moments Studio must load after owner controls');
 assert.ok(sw.includes('bella-pwa-v16-release-14') && sw.includes('/bella-moments-cloud.js?v=16') && sw.includes('/bella-owner-moments.js?v=16'),'v14 PWA cache missing Studio assets');
-console.log('Bella v14+ Moments Studio smoke tests passed: secure remote bank, Kuwait lifestyle AI Fresh style, owner controls, filtering, RLS, pinning and cache coverage are valid.');
+console.log('Bella v14+ Moments Studio smoke tests passed: secure remote bank, strict 50/50 Kuwait lifestyle rumor mix, owner controls, filtering, RLS, pinning and cache coverage are valid.');
