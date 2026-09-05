@@ -138,11 +138,13 @@
       style.warmth = Math.max(2, style.warmth);
     }
 
-    // Mood is owned by bella-vnext.js. This module only learns communication style.
-    return {
+    let enriched = {
       ...payload,
       styleProfile: { ...(payload.styleProfile || {}), ...style }
     };
+    if (window.BellaBrainV2?.enrichPayload) enriched = window.BellaBrainV2.enrichPayload(enriched);
+    if (window.BellaMemoryV3?.enrichPayload) enriched = window.BellaMemoryV3.enrichPayload(enriched);
+    return enriched;
   }
 
   function cleanNodeText(node) {
