@@ -26,6 +26,19 @@ assert.ok(persona.includes('مواااح'), 'kiss intent must have a natural in-
 assert.ok(persona.includes('إذا المستخدم سأل مباشرة وبوضوح هل أنتي إنسانة حقيقية أو ذكاء اصطناعي'), 'Bella must stay truthful when directly asked about being human/AI');
 assert.ok(persona.includes('لا تفتحي رد اجتماعي عادي بتعريف تقني'), 'Bella must not inject technical identity disclaimers into ordinary social replies');
 
+// v15 Kuwaiti Rhythm Layer: modern, quick and playful without forced dialect stuffing.
+assert.ok(persona.includes('ريتم بنت كويتية مودرن — Kuwaiti Rhythm Layer'), 'modern Kuwaiti rhythm layer must be part of the canonical system prompt');
+assert.ok(persona.includes('تسولفين بواتساب أو فويس نوت خاص') && persona.includes('سطر إلى ثلاثة أسطر قصيرة'), 'casual social replies should use fast WhatsApp-like rhythm');
+assert.ok(persona.includes('من صجك؟') && persona.includes('امبيه شكو') && persona.includes('وي عاد'), 'light Kuwaiti teasing vocabulary must be available');
+assert.ok(persona.includes('مفردات مودرن مسموحة كأدوات، مو قائمة لازم تخلصينها'), 'Kuwaiti vocabulary must stay optional instead of becoming a forced checklist');
+assert.ok(persona.includes('النغزة ما تنحط وقت المرض') && persona.includes('الأسئلة الطبية/القانونية/المالية'), 'teasing must shut off in serious or high-stakes contexts');
+assert.ok(persona.includes('عادة صفر إلى اثنين تكفي'), 'emoji use must stay restrained');
+assert.ok(persona.includes('لا تبدين كل مرة بـ«امبيه»'), 'reply openings must vary instead of becoming repetitive');
+assert.ok(persona.includes('«شو»، «كتير»، «أوي»، «إزاي»، «عايزة»، «لسه»'), 'persona must explicitly block Levantine/Egyptian leakage in Bella-authored chat');
+assert.ok(persona.includes('«جذي» على «كذا»') && persona.includes('«چنّه»'), 'Kuwaiti orthography preference must be explicit');
+assert.ok(persona.includes('الاستثناء فقط إذا كنتِ تقتبسين أو تترجمين'), 'other dialect words must remain allowed only when quoting/translating/explaining');
+assert.ok(persona.includes('النغزة تجي حول الجواب، مو بدل الجواب'), 'playful teasing must never replace the actual answer');
+
 assert.ok(chat.includes('bellaPersonaInstruction'), 'chat API must load the canonical Bella persona');
 assert.ok(chat.includes('.slice(-20)'), 'chat API must keep a larger recent conversation window for short-reference understanding');
 assert.ok(chat.includes('تربطين الرسالة بآخر سياق') && chat.includes('خصوصًا الرسائل القصيرة والضمائر'), 'chat API must explicitly reason over recent conversational context');
@@ -74,4 +87,4 @@ assert.ok(ui.includes('bellaOwnerSettings'), 'owner center must be reachable fro
 assert.ok(ui.includes('window.BellaModeratorCenter?.refresh?.()'), 'moderator access must be re-verified before showing moderation');
 assert.ok(ui.includes('bellaModeratorSettings'), 'moderator center must be reachable from settings for authorized staff');
 
-console.log('Bella AI-first/persona/UI smoke tests passed: normal chat uses AI, legacy suggestion banks stay retired, adaptive moments stay active, and protected account/admin access remains wired.');
+console.log('Bella AI-first/persona/UI smoke tests passed: natural Kuwaiti rhythm, AI-first chat, adaptive moments and protected account/admin access remain wired.');
