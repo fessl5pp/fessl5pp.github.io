@@ -9,11 +9,14 @@ const sources = [
   ['bella-context.js', 'Long conversation context memory'],
   ['bella-routing.js', 'AI-first conversation routing'],
   ['bella-moments.js', 'Local and remote adaptive Bella moments'],
+  ['bella-brain-v2.js', 'Intent and relationship brain'],
+  ['bella-memory-v3.js', 'Layered durable and session memory'],
   ['bella-moments-cloud.js', 'Approved remote moments sync'],
   ['bella-style.js', 'Adaptive user communication style'],
   ['bella-auth-bridge.js', 'Signed-in API authorization bridge'],
   ['bella-runtime.js', 'Network reliability and streaming runtime'],
   ['bella-voice.js', 'Server-backed Bella voice with local fallback'],
+  ['bella-voice-v2.js', 'Voice interruption while user types'],
   ['bella-vnext.js', 'Conversation mood memory and send flow'],
   ['bella-avatar.js', 'Mood-reactive Bella visual identity'],
   ['bella-live-web.js', 'Selective live web citation rendering'],
@@ -25,9 +28,13 @@ const sources = [
   ['bella-owner-analytics.js', 'Owner-only activity analytics dashboard'],
   ['bella-owner-controls.js', 'Owner-only remote system controls'],
   ['bella-owner-moments.js', 'Owner-only Moments Studio and AI Fresh controls'],
+  ['bella-owner-dashboard-v2.js', 'Owner v15 system health dashboard'],
   ['bella-speed.js', 'Live reply rendering and perceived latency'],
   ['bella-ui.js', 'Settings and chat controls'],
   ['bella-moments-ui.js', 'Per-user moments intensity controls'],
+  ['bella-alive.js', 'Natural between-session Bella presence'],
+  ['bella-moments-feedback.js', 'Moment reactions and preference learning'],
+  ['bella-ai-activities.js', 'AI-generated activities and XP'],
   ['bella-install.js', 'PWA install experience']
 ];
 
@@ -43,6 +50,13 @@ const ownershipRules = [
   { pattern: /window\.BellaConfig\s*=(?!=)/, owner: 'bella-config.js', label: 'remote public configuration' },
   { pattern: /window\.BellaAuthBridge\s*=(?!=)/, owner: 'bella-auth-bridge.js', label: 'signed-in API authorization bridge' },
   { pattern: /window\.BellaVoice\s*=(?!=)/, owner: 'bella-voice.js', label: 'server-backed voice UI' },
+  { pattern: /window\.BellaVoiceV2\s*=(?!=)/, owner: 'bella-voice-v2.js', label: 'voice v2 interruption behavior' },
+  { pattern: /window\.BellaBrainV2\s*=(?!=)/, owner: 'bella-brain-v2.js', label: 'intent and relationship brain' },
+  { pattern: /window\.BellaMemoryV3\s*=(?!=)/, owner: 'bella-memory-v3.js', label: 'layered memory' },
+  { pattern: /window\.BellaAlive\s*=(?!=)/, owner: 'bella-alive.js', label: 'between-session presence' },
+  { pattern: /window\.BellaMomentFeedback\s*=(?!=)/, owner: 'bella-moments-feedback.js', label: 'moment feedback learning' },
+  { pattern: /window\.BellaAIActivities\s*=(?!=)/, owner: 'bella-ai-activities.js', label: 'AI activity UI' },
+  { pattern: /window\.BellaOwnerDashboardV2\s*=(?!=)/, owner: 'bella-owner-dashboard-v2.js', label: 'owner v15 system dashboard' },
   { pattern: /window\.BellaAccountMemory\s*=(?!=)/, owner: 'bella-account-memory.js', label: 'cloud memory deletion sync' },
   { pattern: /window\.BellaAccountCenter\s*=(?!=)/, owner: 'bella-account-center.js', label: 'account center UI' },
   { pattern: /window\.BellaOwnerCenter\s*=(?!=)/, owner: 'bella-owner-center.js', label: 'owner center UI' },
@@ -82,4 +96,4 @@ const bundle = loaded.map(({ file, label, source }) => `\n;/* ---- ${label}: ${f
 try { new Function(bundle); } catch (error) { console.error('Bella combined source validation failed:', error); process.exit(1); }
 
 console.log(`Bella combined source validated (${sources.length} modules, ${bundle.length} chars)`);
-console.log('Bella ownership validated: account/analytics/config/auth/voice/owner-users/moderator-center/account-center/owner-center/owner-controls/owner-moments/owner-analytics/avatar/memory-sync/live-web/moments-cloud/moments/legacy/context/routing/style/runtime/mood/send/speed/UI are separated.');
+console.log('Bella ownership validated: core chat, Brain v2, Memory v3, Alive, moments learning, AI activities, voice v2 and deferred owner/admin modules are separated.');

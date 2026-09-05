@@ -6,6 +6,7 @@
     { "source": "/api/chat", "destination": "/api/gated-chat" },
     { "source": "/api/dira", "destination": "/api/gated-dira" },
     { "source": "/api/voice", "destination": "/api/gated-voice" },
+    { "source": "/api/activity-generate", "destination": "/api/gated-activity" },
     { "source": "/api/icon", "destination": "/api/icon-v3" }
   ],
   "headers": [
@@ -13,14 +14,14 @@
       "source": "/",
       "headers": [
         { "key": "Cache-Control", "value": "no-store, max-age=0" },
-        { "key": "X-Bella-Release", "value": "v14" }
+        { "key": "X-Bella-Release", "value": "v15" }
       ]
     },
     {
       "source": "/index.html",
       "headers": [
         { "key": "Cache-Control", "value": "no-store, max-age=0" },
-        { "key": "X-Bella-Release", "value": "v14" }
+        { "key": "X-Bella-Release", "value": "v15" }
       ]
     },
     { "source": "/sw.js", "headers": [ { "key": "Cache-Control", "value": "no-store, max-age=0" } ] },

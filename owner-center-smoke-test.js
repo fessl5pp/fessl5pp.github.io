@@ -9,8 +9,9 @@ const app = read('app.js');
 const build = read('build.js');
 const sw = read('sw.js');
 
-assert.ok(app.indexOf('bella-account-center.js') < app.indexOf('bella-owner-center.js'), 'owner center must load after signed-in account center');
-assert.ok(app.indexOf('bella-owner-center.js') < app.indexOf('bella-speed.js'), 'owner center must load before later UI bridges');
+assert.ok(app.indexOf('bella-account-center.js') < app.indexOf('bella-owner-center.js'), 'owner center must remain after signed-in account center');
+assert.ok(app.indexOf('bella-owner-center.js') > app.indexOf('const deferredModules'), 'owner center must live in the deferred admin group so core chat boots first');
+assert.ok(app.includes('__bellaLoadDeferred') && app.includes('__bellaAdminBoot'), 'deferred owner modules must remain explicitly loadable and observable');
 assert.ok(build.includes('bella-owner-center.js'), 'build must syntax-check owner center');
 assert.ok(sw.includes('/bella-owner-center.js?v=16'), 'PWA cache must include owner center');
 
@@ -37,4 +38,4 @@ assert.ok(!/window\.updateMood\s*=(?!=)/.test(owner), 'owner center must never o
 assert.ok(!/window\.fetch\s*=(?!=)/.test(owner), 'owner center must never replace network fetch');
 assert.ok(/window\.BellaOwnerCenter\s*=(?!=)/.test(owner), 'owner center must expose one isolated namespace');
 
-console.log('Bella owner center smoke tests passed: owner-only RPC gating, analytics, searchable accounts, privacy and chat ownership are valid.');
+console.log('Bella owner center smoke tests passed: owner-only RPC gating, deferred loading, searchable accounts, privacy and chat ownership are valid.');
