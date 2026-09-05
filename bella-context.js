@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = "bella_context_v1";
   const SETTINGS_KEY = "bella_ui_settings_v1";
-  const MAX_TURNS = 48;
+  const MAX_TURNS = 56;
   const MAX_CONTENT = 700;
   const RETENTION_MS = 14 * 24 * 60 * 60 * 1000;
 
@@ -61,19 +61,20 @@
             .filter(x => !x.ts || now - Number(x.ts) < RETENTION_MS)
             .slice(-MAX_TURNS)
         : [];
-      return { version: 1, turns };
+      return { version: 2, turns };
     } catch {
-      return { version: 1, turns: [] };
+      return { version: 2, turns: [] };
     }
   }
 
   function save() {
     if (!enabled()) return;
+    state.version = 2;
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
   }
 
   function clear() {
-    state = { version: 1, turns: [] };
+    state = { version: 2, turns: [] };
     try { localStorage.removeItem(STORAGE_KEY); } catch {}
   }
 
@@ -121,6 +122,26 @@
     const wordScore = setSimilarity(new Set(tokens(na)), new Set(tokens(nb)));
     const charScore = setSimilarity(trigramSet(na), trigramSet(nb));
     return Math.min(1, wordScore * 0.62 + charScore * 0.38);
+  }
+
+  function openingKey(value) {
+    const words = normalize(value).split(" ").filter(Boolean);
+    if (!words.length) return "";
+    return words.slice(0, Math.min(4, words.length)).join(" ");
+  }
+
+  function endingKey(value) {
+    const words = normalize(value).split(" ").filter(Boolean);
+    if (!words.length) return "";
+    return words.slice(-Math.min(3, words.length)).join(" ");
+  }
+
+  function laughterKey(value) {
+    const raw = String(value || "");
+    if (/ه{4,}/.test(raw) || /هههه/.test(raw)) return "هههه";
+    if (/😭/.test(raw)) return "😭";
+    if (/😂|🤣/.test(raw)) return "😂";
+    return "";
   }
 
   function isNoise(role, text) {
@@ -220,6 +241,45 @@
     return selected.map(({ role, content }) => ({ role, content: content.slice(0, 900) }));
   }
 
+  function antiRepeatProfile(baseReplies = []) {
+    const candidates = [
+      ...state.turns.filter(x => x.role === "assistant").map(x => x.content),
+      ...(Array.isArray(baseReplies) ? baseReplies : [])
+    ].filter(Boolean).slice(-16);
+
+    const openingCounts = new Map();
+    const endingCounts = new Map();
+    const laughCounts = new Map();
+    const recentOpenings = [];
+
+    for (const value of candidates) {
+      if (isNoise("assistant", value)) continue;
+      const opener = openingKey(value);
+      const ending = endingKey(value);
+      const laugh = laughterKey(value);
+      if (opener) {
+        openingCounts.set(opener, (openingCounts.get(opener) || 0) + 1);
+        recentOpenings.push(opener);
+      }
+      if (ending) endingCounts.set(ending, (endingCounts.get(ending) || 0) + 1);
+      if (laugh) laughCounts.set(laugh, (laughCounts.get(laugh) || 0) + 1);
+    }
+
+    const hot = map => [...map.entries()]
+      .filter(([, count]) => count >= 2)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 4)
+      .map(([value]) => value);
+
+    const hotOpenings = hot(openingCounts);
+    const hotEndings = hot(endingCounts);
+    const hotLaughter = hot(laughCounts);
+    const recent = [...new Set(recentOpenings.slice(-6))];
+    const pressure = hotOpenings.length >= 2 || hotLaughter.length >= 2 ? "high" : hotOpenings.length || hotLaughter.length ? "medium" : "low";
+
+    return { version: 2, pressure, recentOpenings: recent, hotOpenings, hotEndings, hotLaughter };
+  }
+
   function getRecentReplies(baseReplies = []) {
     if (!enabled()) return Array.isArray(baseReplies) ? baseReplies.slice(-8) : [];
     const candidates = [
@@ -228,13 +288,20 @@
     ].filter(Boolean);
 
     const unique = [];
-    for (let i = candidates.length - 1; i >= 0 && unique.length < 10; i--) {
+    for (let i = candidates.length - 1; i >= 0 && unique.length < 8; i--) {
       const value = String(candidates[i]).slice(0, 260);
       if (isNoise("assistant", value)) continue;
-      if (unique.some(existing => similarity(existing, value) >= 0.82)) continue;
+      if (unique.some(existing => similarity(existing, value) >= 0.78)) continue;
       unique.push(value);
     }
-    return unique.reverse().slice(-8);
+    unique.reverse();
+
+    const profile = antiRepeatProfile(baseReplies);
+    const meta = [];
+    if (profile.recentOpenings.length) meta.push(`افتتاحيات بيلا الأخيرة: ${profile.recentOpenings.join(" | ")}`);
+    if (profile.hotLaughter.length) meta.push(`ضحكات/إيموجيز تكررت مؤخرًا: ${profile.hotLaughter.join(" | ")}`);
+    if (profile.hotEndings.length) meta.push(`نهايات تكررت مؤخرًا: ${profile.hotEndings.join(" | ")}`);
+    return [...unique.slice(-6), ...meta.slice(0, 2)].slice(-8);
   }
 
   function repeatInfo(text) {
@@ -280,6 +347,8 @@
   window.BellaContext = Object.freeze({
     buildHistory,
     getRecentReplies,
+    antiRepeatProfile,
+    openingKey,
     repeatInfo,
     shouldUseAIForRepeat,
     similarity,

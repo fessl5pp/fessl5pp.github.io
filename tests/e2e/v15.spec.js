@@ -17,14 +17,29 @@ test('v15 Brain and layered memory enrich short Kuwaiti chat', async ({ page }) 
   const result = await page.evaluate(() => {
     const intent = window.BellaBrainV2?.classifyIntent?.('اي');
     const brainPayload = window.BellaBrainV2?.enrichPayload?.({ message: 'اي', memory: [], relationship: 'جديد' });
+    const seriousPayload = window.BellaBrainV2?.enrichPayload?.({ message: 'خايف من العملية', memory: [], styleProfile: { humor: 3, warmth: 0 } });
     const memoryPayload = window.BellaMemoryV3?.enrichPayload?.({ message: 'الحين قاعد اشرب قهوة', memory: [] });
-    return { intent, brainPayload, memoryPayload, brain: window.BellaBrainV2?.snapshot?.() };
+    return {
+      intent,
+      brainPayload,
+      seriousPayload,
+      memoryPayload,
+      brain: window.BellaBrainV2?.snapshot?.(),
+      antiRepeat: window.BellaContext?.antiRepeatProfile?.([])
+    };
   });
   expect(result.intent.intent).toBe('followup_short');
   expect(result.intent.shortFollowup).toBe(true);
   expect(result.brainPayload.brainContext.naturalKuwaitiChat).toBe(true);
+  expect(result.brainPayload.brainContext.assumeRomance).toBe(false);
+  expect(result.brainPayload.brainContext.relationshipScore).toBeGreaterThanOrEqual(0);
+  expect(result.brainPayload.brainContext.teasingLevel).toBeGreaterThanOrEqual(0);
+  expect(result.brainPayload.brainContext.teasingLevel).toBeLessThanOrEqual(3);
+  expect(result.seriousPayload.brainContext.teasingLevel).toBe(0);
+  expect(result.seriousPayload.styleProfile.humor).toBe(0);
   expect(result.memoryPayload.memory.some(x => x.includes('مؤقت للجلسة فقط'))).toBe(true);
-  expect(result.brain.version).toBe(2);
+  expect(result.brain.version).toBe(3);
+  expect(result.antiRepeat.version).toBe(2);
   expect(errors).toEqual([]);
 });
 

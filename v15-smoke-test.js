@@ -3,7 +3,7 @@ const assert = require('assert');
 const read = f => fs.readFileSync(f, 'utf8');
 
 const files = [
-  'bella-brain-v2.js','bella-memory-v3.js','bella-alive.js','bella-moments-feedback.js','bella-ai-activities.js',
+  'bella-brain-v2.js','bella-context.js','bella-memory-v3.js','bella-alive.js','bella-moments-feedback.js','bella-ai-activities.js',
   'bella-owner-dashboard-v2.js','bella-voice-v2.js','api/activity-generate.js','api/gated-activity.js',
   'lib/bella-persona.js','bella-style.js','bella-auth-bridge.js','app.js','sw.js','vercel.json',
   'supabase/migrations/20260905080207_harden_bella_rpc_grants_v15.sql'
@@ -13,6 +13,7 @@ for (const f of files) assert.ok(fs.existsSync(f), `Missing Bella v15 file: ${f}
 for (const f of files.filter(f => f.endsWith('.js') && !f.startsWith('api/') && !f.startsWith('lib/'))) new Function(read(f));
 
 const brain = read('bella-brain-v2.js');
+const context = read('bella-context.js');
 const memory = read('bella-memory-v3.js');
 const alive = read('bella-alive.js');
 const feedback = read('bella-moments-feedback.js');
@@ -31,6 +32,15 @@ const voiceV2 = read('bella-voice-v2.js');
 
 assert.ok(brain.includes('classifyIntent') && brain.includes('relationshipSnapshot'), 'Brain v2 must classify intent and relationship');
 assert.ok(brain.includes('followup_short') && brain.includes('من الربع'), 'Brain v2 must understand short followups and relationship stages');
+assert.ok(brain.includes('relationshipScore') && brain.includes('teasingLevel') && brain.includes('applyRelationshipStyle'), 'Relationship v2 must score closeness and adapt teasing/style');
+assert.ok(brain.includes('assumeRomance: false') && brain.includes('نغزة ${intent.serious ? 0 : relationship.teasingLevel}/3'), 'Relationship v2 must avoid automatic romance and expose teasing level');
+assert.ok(brain.includes('if (intent.serious)') && brain.includes('style.humor = 0'), 'Relationship v2 must disable teasing in serious contexts');
+
+assert.ok(context.includes('antiRepeatProfile') && context.includes('openingKey') && context.includes('endingKey'), 'Anti-Repetition v2 must track reply openings and endings');
+assert.ok(context.includes('recentOpenings') && context.includes('hotOpenings') && context.includes('hotLaughter'), 'Anti-Repetition v2 must detect repeated openings and laughter patterns');
+assert.ok(context.includes('افتتاحيات بيلا الأخيرة') && context.includes('ضحكات/إيموجيز تكررت مؤخرًا'), 'Recent reply context must surface repetition signals to the chat model');
+assert.ok(context.includes('similarity(existing, value) >= 0.78'), 'Anti-Repetition v2 must reject near-duplicate recent replies aggressively');
+
 assert.ok(memory.includes('sessionStorage') && memory.includes('مؤقت للجلسة فقط'), 'Memory v3 must keep temporary facts session-only');
 assert.ok(memory.includes('BellaAccountMemory?.remember') && memory.includes('explicitRemember'), 'Memory v3 must support explicit durable memory');
 assert.ok(alive.includes('وينك مختفي') && alive.includes('MIN_AWAY'), 'Bella Alive must use the approved natural return style');
@@ -49,6 +59,7 @@ assert.ok(style.includes('BellaBrainV2.enrichPayload') && style.includes('BellaM
 
 assert.ok(app.includes('const coreModules') && app.includes('const deferredModules'), 'v15 performance split must exist');
 assert.ok(app.indexOf('"bella-brain-v2.js"') < app.indexOf('"bella-runtime.js"'), 'Brain v2 must load before runtime chat calls');
+assert.ok(app.indexOf('"bella-context.js"') < app.indexOf('"bella-runtime.js"'), 'Anti-Repetition context must load before runtime chat calls');
 assert.ok(app.indexOf('"bella-owner-center.js"') > app.indexOf('const deferredModules'), 'Owner modules must be in deferred loading group');
 assert.ok(app.includes('requestIdleCallback') && app.includes('__bellaLoadDeferred'), 'Admin/cloud modules must load during idle with explicit fallback');
 assert.ok(app.includes('bella-owner-dashboard-v2.js'), 'Owner v15 dashboard must be deferred into the app');
@@ -66,4 +77,4 @@ assert.strictEqual((vercel.headers.find(r => r.source === '/')?.headers || []).f
 assert.ok(sw.includes('bella-pwa-v17-release-15'), 'PWA cache must rotate for v15');
 for (const f of ['bella-brain-v2.js','bella-memory-v3.js','bella-alive.js','bella-moments-feedback.js','bella-ai-activities.js','bella-owner-dashboard-v2.js','bella-voice-v2.js']) assert.ok(sw.includes(`/${f}?v=16`), `PWA must cache ${f}`);
 
-console.log('Bella v15 regression checks passed: natural Kuwaiti Brain, layered memory, Alive, moments learning, AI activities, Voice v2, security grants and deferred loading are wired.');
+console.log('Bella v15 regression checks passed: Relationship v2, Anti-Repetition v2, natural Kuwaiti Brain, layered memory, Alive, moments learning, AI activities, Voice v2, security grants and deferred loading are wired.');

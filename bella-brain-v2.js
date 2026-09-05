@@ -4,7 +4,7 @@
   const KEY = "bella_brain_v2";
   const MAX_DAYS = 30;
   const defaults = {
-    version: 2,
+    version: 3,
     messages: 0,
     activeDays: [],
     firstSeenAt: Date.now(),
@@ -13,7 +13,9 @@
     lastNorm: "",
     lastIntent: "new",
     affectionSignals: 0,
-    playfulSignals: 0
+    playfulSignals: 0,
+    correctionSignals: 0,
+    ventSignals: 0
   };
 
   let state = load();
@@ -21,7 +23,9 @@
   function load() {
     try {
       const saved = JSON.parse(localStorage.getItem(KEY) || "null");
-      return saved && typeof saved === "object" ? { ...defaults, ...saved } : { ...defaults };
+      const next = saved && typeof saved === "object" ? { ...defaults, ...saved } : { ...defaults };
+      next.version = 3;
+      return next;
     } catch { return { ...defaults }; }
   }
 
@@ -65,15 +69,55 @@
     return { intent: serious ? "serious" : "chat", serious, shortFollowup: words <= 3 };
   }
 
+  function relationshipScore() {
+    const messages = Math.max(0, Number(state.messages) || 0);
+    const days = Array.isArray(state.activeDays) ? state.activeDays.length : 0;
+    const affection = Math.max(0, Number(state.affectionSignals) || 0);
+    const playful = Math.max(0, Number(state.playfulSignals) || 0);
+    const corrections = Math.max(0, Number(state.correctionSignals) || 0);
+    const raw = messages * 0.5 + days * 4.8 + affection * 1.7 + playful * 1.15 + Math.min(8, corrections) * 0.35;
+    return Math.max(0, Math.min(100, Math.round(raw)));
+  }
+
   function relationshipSnapshot() {
     const messages = Math.max(0, Number(state.messages) || 0);
     const days = Array.isArray(state.activeDays) ? state.activeDays.length : 0;
+    const score = relationshipScore();
     let stage = "new";
     let label = "تو نعرف بعض";
-    if (messages >= 8 || days >= 2) { stage = "familiar"; label = "نعرف بعض"; }
-    if (messages >= 25 || days >= 4) { stage = "friends"; label = "من الربع"; }
-    if (messages >= 80 && days >= 7) { stage = "close"; label = "قريب من بيلا"; }
-    return { stage, label, messages, activeDays: days, affectionSignals: state.affectionSignals || 0 };
+    let teasingLevel = 0;
+    let warmthLevel = 1;
+
+    if (score >= 12 || messages >= 10 || days >= 2) {
+      stage = "familiar";
+      label = "نعرف بعض";
+      teasingLevel = 1;
+      warmthLevel = 1;
+    }
+    if (score >= 32 || messages >= 32 || days >= 4) {
+      stage = "friends";
+      label = "من الربع";
+      teasingLevel = 2;
+      warmthLevel = 2;
+    }
+    if ((score >= 65 && messages >= 55 && days >= 5) || (messages >= 100 && days >= 4)) {
+      stage = "close";
+      label = "قريب من بيلا";
+      teasingLevel = 3;
+      warmthLevel = 2;
+    }
+
+    return {
+      stage,
+      label,
+      score,
+      teasingLevel,
+      warmthLevel,
+      messages,
+      activeDays: days,
+      affectionSignals: Number(state.affectionSignals || 0),
+      playfulSignals: Number(state.playfulSignals || 0)
+    };
   }
 
   function record(message) {
@@ -89,6 +133,8 @@
       state.lastIntent = info.intent;
       if (info.intent === "affection") state.affectionSignals = Math.min(1000, Number(state.affectionSignals || 0) + 1);
       if (info.intent === "playful") state.playfulSignals = Math.min(1000, Number(state.playfulSignals || 0) + 1);
+      if (info.intent === "correction") state.correctionSignals = Math.min(1000, Number(state.correctionSignals || 0) + 1);
+      if (info.intent === "vent") state.ventSignals = Math.min(1000, Number(state.ventSignals || 0) + 1);
       const day = todayKey();
       if (!state.activeDays.includes(day)) state.activeDays.push(day);
       save();
@@ -96,19 +142,52 @@
     return info;
   }
 
+  function applyRelationshipStyle(styleProfile, intent, relationship) {
+    const style = { ...(styleProfile || {}) };
+    const currentHumor = Math.max(0, Math.min(3, Number(style.humor) || 0));
+    const currentWarmth = Math.max(0, Math.min(3, Number(style.warmth) || 0));
+
+    if (intent.serious) {
+      style.humor = 0;
+      style.warmth = Math.max(2, currentWarmth);
+      return style;
+    }
+
+    if (relationship.stage === "new") {
+      style.humor = Math.min(1, currentHumor);
+      style.warmth = Math.max(1, currentWarmth);
+    } else if (relationship.stage === "familiar") {
+      style.humor = Math.max(1, Math.min(2, currentHumor));
+      style.warmth = Math.max(1, currentWarmth);
+    } else if (relationship.stage === "friends") {
+      style.humor = Math.max(1, Math.min(3, currentHumor + 1));
+      style.warmth = Math.max(1, currentWarmth);
+    } else if (relationship.stage === "close") {
+      style.humor = Math.max(2, currentHumor);
+      style.warmth = Math.max(2, currentWarmth);
+    }
+    return style;
+  }
+
   function enrichPayload(payload) {
     if (!payload || typeof payload !== "object") return payload;
     const intent = record(payload.message || "");
     const relationship = relationshipSnapshot();
+    const styleProfile = applyRelationshipStyle(payload.styleProfile, intent, relationship);
     return {
       ...payload,
-      relationship: relationship.label,
+      styleProfile,
+      relationship: `${relationship.label} | قرب ${relationship.score}/100 | نغزة ${intent.serious ? 0 : relationship.teasingLevel}/3`,
       brainContext: {
         intent: intent.intent,
         shortFollowup: intent.shortFollowup,
         serious: intent.serious,
         relationshipStage: relationship.stage,
         relationshipLabel: relationship.label,
+        relationshipScore: relationship.score,
+        teasingLevel: intent.serious ? 0 : relationship.teasingLevel,
+        warmthLevel: relationship.warmthLevel,
+        assumeRomance: false,
         naturalKuwaitiChat: true
       }
     };
@@ -124,8 +203,17 @@
   }
 
   function snapshot() {
-    return { version: 2, ...relationshipSnapshot(), lastSeenAt: state.lastSeenAt, lastIntent: state.lastIntent };
+    return { version: 3, ...relationshipSnapshot(), lastSeenAt: state.lastSeenAt, lastIntent: state.lastIntent };
   }
 
-  window.BellaBrainV2 = Object.freeze({ classifyIntent, enrichPayload, relationshipSnapshot, record, markVisit, snapshot });
+  window.BellaBrainV2 = Object.freeze({
+    classifyIntent,
+    enrichPayload,
+    relationshipSnapshot,
+    relationshipScore,
+    applyRelationshipStyle,
+    record,
+    markVisit,
+    snapshot
+  });
 })();
