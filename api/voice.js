@@ -35,10 +35,10 @@ function cleanText(value) {
 
 function moodInstruction(value) {
   const mood = String(value || "chill");
-  if (mood === "happy") return "Sound upbeat and smiling, but not exaggerated.";
-  if (mood === "cute") return "Sound warm, playful, and slightly softer.";
-  if (mood === "angry") return "Sound mildly annoyed and dry, never aggressive or shouting.";
-  return "Sound relaxed, friendly, and conversational.";
+  if (mood === "happy") return "Sound lightly upbeat and smiling. Keep the pace conversational, not presenter-like.";
+  if (mood === "cute") return "Sound warm and a little softer, with playful warmth only where the actual words support it. Do not baby-talk.";
+  if (mood === "angry") return "Sound mildly annoyed, quicker and drier, never aggressive, loud, theatrical, or threatening.";
+  return "Sound relaxed, familiar, and conversational, like a short voice note to someone you know.";
 }
 
 export default async function handler(req, res) {
@@ -83,7 +83,7 @@ export default async function handler(req, res) {
         model: "gpt-4o-mini-tts",
         voice: "coral",
         input: text,
-        instructions: `Speak exactly the supplied Arabic text in a natural young Kuwaiti conversational style. Use feminine delivery, clear Gulf Arabic pronunciation, and no added words. ${moodInstruction(req.body?.mood)}`,
+        instructions: `Speak exactly the supplied Arabic text. Natural young Kuwaiti/Gulf conversational delivery, feminine voice, clear pronunciation, like a casual private voice note rather than a radio host. Do not add words, do not over-act the dialect, and do not exaggerate emojis or punctuation. ${moodInstruction(req.body?.mood)}`,
         response_format: "mp3"
       })
     });
