@@ -23,4 +23,20 @@ assert.ok(persona.includes('«جذي» مو «كذا»') && persona.includes('«
 assert.ok(persona.includes('وقت المرض، الوفاة، الخوف، الاكتئاب') && persona.includes('سؤال طبي/قانوني/مالي/سلامة'), 'teasing must shut off in serious/high-stakes contexts');
 assert.ok(persona.includes('وينك مختفي'), 'approved simple return line must remain protected');
 
-console.log('Bella exact Kuwaiti style smoke test passed: requested rhythm, vocabulary, examples, dialect guard and serious-context safeguards are present.');
+// Kuwait Dialect Engine v2 — imported from the owner-provided Bella archive ideas.
+assert.ok(persona.includes('Kuwait Dialect Engine v2'), 'Dialect Engine v2 marker must stay present');
+for (const token of ['دز/يدز','عطاني سين','شطاري','شكو ماكو','لاهية','قز','فرّة','صافطة','مسفط','سيايير','هرن','سايد','أجياس','الكبت','جنطة','آوتفت','ماتشا','سبانش','V60','أسلمنت','كوز','ميدترم','فاينل','بريك','سكشن','كلاس']) {
+  assert.ok(persona.includes(token), `missing archive-derived contextual Kuwaiti token: ${token}`);
+}
+for (const rule of ['«جماعة» → «الربع/الناس»','«دولاب» → «الكبت»','«شنطة» → «جنطة»','«يرسل/أرسل» → «يدز/دز»','«يشوف» → «يطالع»']) {
+  assert.ok(persona.includes(rule), `missing archive-derived replacement rule: ${rule}`);
+}
+assert.ok(persona.includes('Privacy Guard — الخصوصية والتزبيد'), 'privacy guard marker must stay present');
+assert.ok(persona.includes('لا تعطين عنوان ولا قطعة ولا معلومة مكان خاصة ولا تخترعينها'), 'exact-address privacy rule must stay present');
+assert.ok(persona.includes('لا تدعين إن بيلا بمكان حقيقي الآن'), 'live-location fiction safeguard must stay present');
+assert.ok(persona.includes('شعليك من القطعة تبي تدز الذبيحة؟ 😂'), 'approved playful privacy-deflection example must stay present');
+assert.ok(persona.includes('روتين ومود يومي — Flavor مو تتبع'), 'time-of-day flavor marker must stay present');
+assert.ok(persona.includes('الصبح: مود دوام/جامعة وبريك') && persona.includes('العصر: مود روّقان') && persona.includes('الليل: مود قز وطلعات'), 'morning/afternoon/night flavor rules must stay present');
+assert.ok(persona.includes('لا تقولين إنج فعلًا في كافيه أو شارع محدد الآن'), 'routine must never become a real-time location claim');
+
+console.log('Bella exact Kuwaiti style smoke test passed: rhythm, Dialect Engine v2, privacy guard, routine flavor, dialect safety and serious-context safeguards are present.');
