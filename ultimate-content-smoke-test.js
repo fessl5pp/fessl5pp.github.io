@@ -16,17 +16,20 @@ const dataChecks = [
   ['unique source-bank counts', 'uniqueCounts: { rumors: 20, wisdoms: 20, proverbs: 25 }'],
   ['rumor list', 'قائمة الإشاعات'],
   ['rumor list action', 'window.openBellaRumors = rumorModal'],
-  ['proverb game action', 'window.startProverbGame = startProverbGameDictionary'],
   ['wisdom data', 'مد ريولك على قد لحافك'],
   ['proverb data', 'مد ريولك...']
 ];
 
 const uiChecks = [
   ['wisdom game title', 'لعبة حكمة اليوم'],
-  ['daily wisdom game override', 'window.dailyWisdom = () => openWisdomGame(false)'],
-  ['wisdom count copy', 'اختبر معنى 100 حكمة'],
-  ['proverb label', 'أكمل المثل'],
-  ['proverb count copy', '100 مثل كويتي من الملف'],
+  ['daily wisdom UI override', 'window.dailyWisdom = () => openWisdomGame(false)'],
+  ['proverb UI override', 'window.startProverbGame = openProverbGame'],
+  ['box UI override', 'window.startBoxGame = openBoxGame'],
+  ['Kuwaiti challenge UI override', 'window.startKuwaitiChallenge = openKuwaitiChallenge'],
+  ['four choices', 'optionsPerQuestion: 4'],
+  ['non chat games', 'chatBasedGames: false'],
+  ['instant wrong feedback', 'غلط ❌ جرّب خيار ثاني.'],
+  ['instant correct feedback', 'صح ✅ كفو!'],
   ['rumor count copy', '200 إشاعة كويتية من الملف'],
   ['BellaUltimateContent export', 'window.BellaUltimateContent = Object.freeze']
 ];
@@ -44,4 +47,4 @@ for (const [label, token] of uiChecks) {
   }
 }
 
-console.log('Bella ultimate content validated: 200 rumors + 100 wisdoms + 100 proverb rows, with rumor list, wisdom game and proverb game.');
+console.log('Bella ultimate content validated: four-choice non-chat games for wisdom, proverb, box and Kuwaiti challenge; rumor list remains separate.');
