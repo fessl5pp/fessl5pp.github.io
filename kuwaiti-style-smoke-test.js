@@ -39,16 +39,16 @@ assert.ok(persona.includes('روتين ومود يومي — Flavor مو تتب�
 assert.ok(persona.includes('الصبح: مود دوام/جامعة وبريك') && persona.includes('العصر: مود روّقان') && persona.includes('الليل: مود قز وطلعات'), 'morning/afternoon/night flavor rules must stay present');
 assert.ok(persona.includes('لا تقولين إنج فعلًا في كافيه أو شارع محدد الآن'), 'routine must never become a real-time location claim');
 
-// Complete owner dictionary gate: all 210 rows must be in source and dynamically wired into the persona.
+// Base owner dictionary gate: the original 210 rows remain intact, while build-time wiring upgrades persona to v4.
 const rowIds = [...lexicon.matchAll(/^"(\d+)\\t[0-5]\\t/gm)].map(m => Number(m[1]));
-assert.strictEqual(rowIds.length, 210, 'complete owner lexicon must contain exactly 210 rows');
-assert.deepStrictEqual(rowIds, Array.from({ length: 210 }, (_, i) => i + 1), 'owner lexicon IDs must be continuous 1..210');
+assert.strictEqual(rowIds.length, 210, 'base owner lexicon must contain exactly 210 rows');
+assert.deepStrictEqual(rowIds, Array.from({ length: 210 }, (_, i) => i + 1), 'base owner lexicon IDs must be continuous 1..210');
 assert.ok(lexicon.includes('BELLA_KUWAIT_LEXICON_COUNT'), 'lexicon must expose a runtime count');
-assert.ok(lexicon.includes('bellaFindKuwaitLexicon') && lexicon.includes('bellaKuwaitLexiconInstruction'), 'lexicon must support exact-term lookup and contextual prompt injection');
-assert.ok(persona.includes('import { bellaKuwaitLexiconInstruction } from "./bella-kuwait-lexicon.js";'), 'persona must import complete lexicon engine');
+assert.ok(lexicon.includes('bellaFindKuwaitLexicon') && lexicon.includes('bellaKuwaitLexiconInstruction'), 'base lexicon must support exact-term lookup and contextual prompt injection');
+assert.ok(persona.includes('import { bellaKuwaitLexiconInstruction } from "./bella-kuwait-lexicon-v4.js";'), 'persona must import combined lexicon v4 after build wiring');
 assert.ok(persona.includes('const lexiconHint = bellaKuwaitLexiconInstruction(message);') && persona.includes('${lexiconHint}'), 'every persona request must inject contextual lexicon guidance');
 for (const token of ['ساحكة','سبهللة','قميضة','تزبيد','جمبزة','أهوجس','سفايف','حدّست','داعوس','مضاعد','تراجي','مرشوش','تنزييلات','هلاقة','نقصة','قرمة','جاي مخدر','عصير عوار قلب','تخبيص','كيرف','أوفيس أور']) {
-  assert.ok(lexicon.includes(`\\t${token}\\t`), `missing owner lexicon term: ${token}`);
+  assert.ok(lexicon.includes(`\\t${token}\\t`), `missing base owner lexicon term: ${token}`);
 }
 
-console.log('Bella exact Kuwaiti style smoke test passed: full 210/210 owner lexicon, contextual injection, privacy guard, routine flavor, dialect safety and serious-context safeguards are present.');
+console.log('Bella exact Kuwaiti style smoke test passed: base 210/210 + lexicon v4 wiring, contextual injection, privacy guard, routine flavor, dialect safety and serious-context safeguards are present.');
