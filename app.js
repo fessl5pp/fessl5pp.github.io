@@ -5,7 +5,7 @@
   // Bella v13 adaptive moments engine marker.
   // Bella v14 Moments Studio + AI Fresh Moments marker.
   // Bella v15 Brain v2 + natural Kuwaiti chat + Alive marker.
-  // Bella v16 Kuwaiti games dictionary: rumors + wisdoms + complete-the-proverb.
+  // Bella v15 add-on: Kuwaiti games dictionary for rumors, wisdoms and proverbs.
 
   function installSwitchInteractionFix() {
     if (document.getElementById("bellaSwitchInteractionFix")) return;
@@ -65,7 +65,7 @@
   function loadScript(file) {
     return new Promise((resolve, reject) => {
       const script = document.createElement("script");
-      script.src = `/${file}?v=18`;
+      script.src = `/${file}?v=16`;
       script.async = false;
       script.onload = resolve;
       script.onerror = () => reject(new Error(`Failed to load ${file}`));
