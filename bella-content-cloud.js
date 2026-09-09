@@ -51,9 +51,9 @@
   }
 
   const live={};
-  for(const [key,value] of Object.entries(base)) if(!["rumors","wisdoms","proverbs","boxes","kuwaitQuestions","counts"].includes(key)) Object.defineProperty(live,key,{enumerable:true,get:()=>value});
-  for(const key of ["rumors","wisdoms","proverbs","boxes","kuwaitQuestions","counts"]) Object.defineProperty(live,key,{enumerable:true,get:()=>combined[key]});
+  for(const [key,value] of Object.entries(base)) if(!["version","rumors","wisdoms","proverbs","boxes","kuwaitQuestions","counts"].includes(key)) Object.defineProperty(live,key,{enumerable:true,get:()=>value});
   Object.defineProperty(live,"version",{enumerable:true,get:()=>17});
+  for(const key of ["rumors","wisdoms","proverbs","boxes","kuwaitQuestions","counts"]) Object.defineProperty(live,key,{enumerable:true,get:()=>combined[key]});
   window.BellaGameBankV2=Object.freeze(live);
 
   async function refresh(force=false){
