@@ -34,7 +34,7 @@ assert.ok(migration.includes("status='approved' and enabled=true"), 'public cont
 assert.ok(api.includes('Owner access required'), 'AI generator must require owner');
 assert.ok(api.includes('content_ai_enabled'), 'AI generator must respect owner feature toggle');
 assert.ok(api.includes('reviewRequired:true'), 'AI generator must mark review requirement');
-assert.ok(studio.includes('status:"pending",enabled:false'), 'AI suggestions must enter pending disabled');
+assert.ok(/status\s*:\s*["']pending["']\s*,\s*enabled\s*:\s*false/.test(studio), 'AI suggestions must enter pending disabled');
 assert.ok(studio.includes('اعتماد ونشر'), 'studio must require explicit publish action');
 assert.ok(studio.includes('حفظ مسودة') && studio.includes('حفظ ونشر'), 'manual draft/publish controls missing');
 assert.ok(studio.includes('تعديل') && studio.includes('إيقاف') && studio.includes('حذف'), 'content management actions missing');
@@ -49,7 +49,7 @@ for (const key of ['leaderboard_enabled','content_ai_enabled','wisdom_game_enabl
 assert.ok(power.includes('إدارة XP') && power.includes('تصفير عداد AI'), 'advanced owner actions missing');
 assert.ok(mind.includes('سياق لعب اختياري:'), 'game-aware Bella context missing');
 assert.ok(mind.includes('لا تذكر هالمعلومة إلا إذا ركبت طبيعي'), 'game context anti-annoyance rule missing');
-assert.ok(mind.includes('state.turns-state.lastInjectedTurn>=8'), 'game context cooldown missing');
+assert.ok(/state\.turns\s*-\s*state\.lastInjectedTurn\s*>=\s*8/.test(mind), 'game context cooldown missing');
 
 for (const file of ['bella-content-cloud.js','bella-feature-controls-v2.js','bella-game-mind.js']) {
   assert.ok(app.includes(`"${file}"`), `core loader missing ${file}`);
