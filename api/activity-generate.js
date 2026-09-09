@@ -24,8 +24,12 @@ export default async function handler(req,res){
   if(req.method!=="POST") return res.status(405).json({error:"Method not allowed"});
   if(rateLimited(req)) return res.status(429).json({error:"كثرنا تحديات بسرعة 😭 جرب عقب شوي."});
   const kind=["box","proverb","quick"].includes(req.body?.kind)?req.body.kind:"quick";
-  const control=await claimBellaAi("chat");
-  if(!control.allowed) return res.status(control.reason==="maintenance"?503:429).json({error:control.reason==="maintenance"?"بيلا تحت الصيانة شوي.":"وصلنا حد الذكاء اليوم."});
+  const control=await claimBellaAi("activity");
+  if(!control.allowed) {
+    if (control.reason === "maintenance") return res.status(503).json({error:"بيلا تحت الصيانة شوي."});
+    if (control.reason === "activity_disabled") return res.status(503).json({error:"تحديات AI موقفها المالك مؤقتًا."});
+    return res.status(429).json({error:"وصلنا حد الذكاء اليوم."});
+  }
   const apiKey=process.env.OPENAI_API_KEY;
   if(!apiKey) return res.status(503).json({error:"AI is not configured"});
 
