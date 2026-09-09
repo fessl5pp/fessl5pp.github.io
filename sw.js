@@ -10,7 +10,7 @@ const CORE = [
   "/bella-account-center.js?v=16", "/bella-owner-center.js?v=16", "/bella-owner-users.js?v=16",
   "/bella-moderator-center.js?v=16", "/bella-owner-analytics.js?v=16", "/bella-owner-controls.js?v=16",
   "/bella-owner-moments.js?v=16", "/bella-owner-dashboard-v2.js?v=16", "/bella-speed.js?v=16", "/bella-ui.js?v=16",
-  "/bella-game-bank-v2.js?v=16", "/bella-kuwaiti-games-data.js?v=16", "/bella-ultimate-content.js?v=16", "/bella-moments-ui.js?v=16", "/bella-alive.js?v=16", "/bella-moments-feedback.js?v=16", "/bella-ai-activities.js?v=16",
+  "/bella-game-bank-v2.js?v=16", "/bella-game-bank-v3.js?v=16", "/bella-kuwaiti-games-data.js?v=16", "/bella-ultimate-content.js?v=16", "/bella-moments-ui.js?v=16", "/bella-alive.js?v=16", "/bella-moments-feedback.js?v=16", "/bella-ai-activities.js?v=16",
   "/bella-install.js?v=16", "/manifest.json", "/favicon.svg"
 ];
 self.addEventListener("install", event => { event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(CORE)).catch(() => null).then(() => self.skipWaiting())); });
