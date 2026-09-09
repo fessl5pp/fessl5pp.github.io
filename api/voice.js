@@ -48,10 +48,7 @@ export default async function handler(req, res) {
   }
 
   const contentType = String(req.headers?.["content-type"] || "").toLowerCase();
-  if (!contentType.includes("application/json")) {
-    return res.status(415).json({ error: "JSON required" });
-  }
-
+  if (!contentType.includes("application/json")) return res.status(415).json({ error: "JSON required" });
   const declaredLength = Number(req.headers?.["content-length"] || 0);
   if (declaredLength > 12000) return res.status(413).json({ error: "Request too large" });
   if (!rateAllowed(req)) return res.status(429).json({ error: "Voice rate limit reached" });
@@ -62,10 +59,11 @@ export default async function handler(req, res) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) return res.status(503).json({ error: "Voice service unavailable" });
 
-  const control = await claimBellaAi("chat");
+  const control = await claimBellaAi("voice");
   if (!control.allowed) {
-    const status = control.reason === "maintenance" ? 503 : 429;
-    return res.status(status).json({ error: control.reason === "maintenance" ? "Bella is under maintenance" : "Daily AI limit reached" });
+    if (control.reason === "maintenance") return res.status(503).json({ error: "Bella is under maintenance" });
+    if (control.reason === "voice_disabled") return res.status(503).json({ error: "Bella voice is disabled by owner" });
+    return res.status(429).json({ error: "Daily AI limit reached" });
   }
 
   const controller = new AbortController();
