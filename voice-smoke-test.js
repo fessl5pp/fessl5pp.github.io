@@ -30,7 +30,8 @@ assert.ok(!/window\.fetch\s*=(?!=)/.test(client), 'voice module must not replace
 assert.ok(api.includes('gpt-4o-mini-tts'), 'voice API must use the dedicated TTS model');
 assert.ok(api.includes('voice: "coral"'), 'Bella voice must stay pinned to the selected voice');
 assert.ok(api.includes('response_format: "mp3"'), 'voice API must request MP3 output');
-assert.ok(api.includes('claimBellaAi("chat")'), 'voice generation must respect the global AI budget/maintenance gate');
+assert.ok(api.includes('claimBellaAi("voice")'), 'voice generation must respect the global AI budget plus the dedicated owner voice gate');
+assert.ok(api.includes('voice_disabled'), 'voice API must expose the dedicated owner-disabled state');
 assert.ok(api.includes('MAX_TEXT_CHARS = 700'), 'voice input must stay bounded');
 assert.ok(api.includes('MAX_REQUESTS = 12'), 'voice API must have a separate rate guard');
 assert.ok(api.includes('OPENAI_TIMEOUT_MS = 18000'), 'voice API must have a bounded upstream timeout');
@@ -46,4 +47,4 @@ assert.strictEqual(rewriteMap.get('/api/voice'), '/api/gated-voice', 'Vercel mus
 assert.ok(build.includes("['bella-voice.js', 'Server-backed Bella voice with local fallback']"), 'build must validate the voice module');
 assert.ok(build.includes("owner: 'bella-voice.js'"), 'build ownership must reserve BellaVoice for its module');
 
-console.log('Bella voice smoke tests passed: server TTS, budget/account gating, local fallback, PWA and ownership are valid.');
+console.log('Bella voice smoke tests passed: server TTS, dedicated owner gate, budget/account gating, local fallback, PWA and ownership are valid.');
