@@ -6,6 +6,7 @@
   // Bella v14 Moments Studio + AI Fresh Moments marker.
   // Bella v15 Brain v2 + natural Kuwaiti chat + Alive marker.
   // Bella v16 Game Center v2 + no-repeat content + personality v3 marker.
+  // Bella v17 Owner Content Studio + AI review queue + game-aware mind + advanced owner powers marker.
 
   function installSwitchInteractionFix() {
     if (document.getElementById("bellaSwitchInteractionFix")) return;
@@ -46,8 +47,11 @@
     "bella-ui.js",
     "bella-game-bank-v2.js",
     "bella-game-bank-v3.js",
+    "bella-content-cloud.js",
     "bella-kuwaiti-games-data.js",
     "bella-ultimate-content.js",
+    "bella-feature-controls-v2.js",
+    "bella-game-mind.js",
     "bella-moments-ui.js",
     "bella-alive.js",
     "bella-moments-feedback.js",
@@ -63,6 +67,8 @@
     "bella-owner-analytics.js",
     "bella-owner-controls.js",
     "bella-owner-moments.js",
+    "bella-owner-content-studio.js",
+    "bella-owner-power-v2.js",
     "bella-owner-dashboard-v2.js"
   ];
 
