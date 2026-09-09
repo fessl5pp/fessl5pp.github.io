@@ -4,13 +4,13 @@ const CORE = [
   "/", "/index.html", "/style.css?v=11", "/bella-vnext.css?v=11", "/app.js?v=11",
   "/bella-account.js?v=16", "/bella-analytics.js?v=16", "/script.js?v=16", "/bella-legacy-plus.js?v=16",
   "/bella-config.js?v=16", "/bella-context.js?v=16", "/bella-routing.js?v=16", "/bella-moments.js?v=16",
-  "/bella-brain-v2.js?v=16", "/bella-memory-v3.js?v=16", "/bella-moments-cloud.js?v=16", "/bella-style.js?v=16",
+  "/bella-brain-v2.js?v=16", "/bella-memory-v3.js?v=16", "/bella-moments-cloud.js?v=16", "/bella-style.js?v=16", "/bella-personality-v3.js?v=16",
   "/bella-auth-bridge.js?v=16", "/bella-runtime.js?v=16", "/bella-voice.js?v=16", "/bella-voice-v2.js?v=16",
   "/bella-vnext.js?v=16", "/bella-avatar.js?v=16", "/bella-live-web.js?v=16", "/bella-account-memory.js?v=16",
   "/bella-account-center.js?v=16", "/bella-owner-center.js?v=16", "/bella-owner-users.js?v=16",
   "/bella-moderator-center.js?v=16", "/bella-owner-analytics.js?v=16", "/bella-owner-controls.js?v=16",
   "/bella-owner-moments.js?v=16", "/bella-owner-dashboard-v2.js?v=16", "/bella-speed.js?v=16", "/bella-ui.js?v=16",
-  "/bella-kuwaiti-games-data.js?v=16", "/bella-ultimate-content.js?v=16", "/bella-moments-ui.js?v=16", "/bella-alive.js?v=16", "/bella-moments-feedback.js?v=16", "/bella-ai-activities.js?v=16",
+  "/bella-game-bank-v2.js?v=16", "/bella-kuwaiti-games-data.js?v=16", "/bella-ultimate-content.js?v=16", "/bella-moments-ui.js?v=16", "/bella-alive.js?v=16", "/bella-moments-feedback.js?v=16", "/bella-ai-activities.js?v=16",
   "/bella-install.js?v=16", "/manifest.json", "/favicon.svg"
 ];
 self.addEventListener("install", event => { event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(CORE)).catch(() => null).then(() => self.skipWaiting())); });
