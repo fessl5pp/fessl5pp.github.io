@@ -7,6 +7,7 @@
   // Bella v15 Brain v2 + natural Kuwaiti chat + Alive marker.
   // Bella v16 Game Center v2 + no-repeat content + personality v3 marker.
   // Bella v17 Owner Content Studio + AI review queue + game-aware mind + advanced owner powers marker.
+  // Bella v18 Supreme owner controls + player tools + server-gated chat/voice/AI activities marker.
 
   function installSwitchInteractionFix() {
     if (document.getElementById("bellaSwitchInteractionFix")) return;
