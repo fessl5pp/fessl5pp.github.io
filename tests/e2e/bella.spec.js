@@ -33,7 +33,7 @@ test('boots cleanly and core chat controls open', async ({ page }) => {
   await expect(page.getByRole('button', { name: /رادار القز/ })).toBeVisible();
   await expect(page.getByRole('button', { name: /تحدي كويتي/ })).toBeVisible();
   await expect(page.getByRole('button', { name: /شنو بالصندوق/ })).toBeVisible();
-  await expect(page.getByRole('button', { name: /كمّل المثل/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /أكمل المثل|كمّل المثل/ })).toBeVisible();
   await page.locator('#bellaActivitiesClose').click();
 
   await expect(page.getByRole('button', { name: 'إرسال الرسالة' })).toBeVisible();
