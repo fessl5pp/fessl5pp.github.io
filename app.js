@@ -5,7 +5,7 @@
   // Bella v13 adaptive moments engine marker.
   // Bella v14 Moments Studio + AI Fresh Moments marker.
   // Bella v15 Brain v2 + natural Kuwaiti chat + Alive marker.
-  // Bella v15 add-on: Kuwaiti games dictionary for rumors, wisdoms and proverbs.
+  // Bella v16 Game Center v2 + no-repeat content + personality v3 marker.
 
   function installSwitchInteractionFix() {
     if (document.getElementById("bellaSwitchInteractionFix")) return;
@@ -32,6 +32,7 @@
     "bella-brain-v2.js",
     "bella-memory-v3.js",
     "bella-style.js",
+    "bella-personality-v3.js",
     "bella-auth-bridge.js",
     "bella-runtime.js",
     "bella-voice.js",
@@ -43,6 +44,7 @@
     "bella-account-center.js",
     "bella-speed.js",
     "bella-ui.js",
+    "bella-game-bank-v2.js",
     "bella-kuwaiti-games-data.js",
     "bella-ultimate-content.js",
     "bella-moments-ui.js",
