@@ -45,6 +45,7 @@
     "bella-speed.js",
     "bella-ui.js",
     "bella-game-bank-v2.js",
+    "bella-game-bank-v3.js",
     "bella-kuwaiti-games-data.js",
     "bella-ultimate-content.js",
     "bella-moments-ui.js",
