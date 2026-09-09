@@ -1,6 +1,7 @@
 const fs = require('fs');
 
 const bankSource = fs.readFileSync('bella-game-bank-v2.js', 'utf8');
+const bankV3Source = fs.readFileSync('bella-game-bank-v3.js', 'utf8');
 const legacyDataSource = fs.readFileSync('bella-kuwaiti-games-data.js', 'utf8');
 const uiSource = fs.readFileSync('bella-ultimate-content.js', 'utf8');
 const personalitySource = fs.readFileSync('bella-personality-v3.js', 'utf8');
@@ -8,6 +9,7 @@ const migrationSource = fs.readFileSync('supabase/migrations/20260909113100_crea
 
 for (const [file, source] of [
   ['bella-game-bank-v2.js', bankSource],
+  ['bella-game-bank-v3.js', bankV3Source],
   ['bella-kuwaiti-games-data.js', legacyDataSource],
   ['bella-ultimate-content.js', uiSource],
   ['bella-personality-v3.js', personalitySource]
@@ -20,6 +22,7 @@ for (const [file, source] of [
 
 const sandbox = {};
 new Function('window', bankSource)(sandbox);
+new Function('window', bankV3Source)(sandbox);
 const bank = sandbox.BellaGameBankV2;
 if (!bank) throw new Error('BellaGameBankV2 export missing');
 
