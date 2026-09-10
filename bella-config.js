@@ -3,7 +3,7 @@
 
   const SUPABASE_URL = "https://buxicnxkhaalwzjmbkgv.supabase.co";
   const SUPABASE_KEY = "sb_publishable_vXo33zqOIgPh-oMP6fhtvg_FbLFM7tW";
-  const REFRESH_MS = 5 * 60 * 1000;
+  const REFRESH_MS = 60 * 1000;
   const defaults = Object.freeze({
     live_web_enabled: true,
     games_enabled: true,
@@ -60,7 +60,7 @@
     ensureBannerStyles();
     let banner = document.getElementById("bellaSystemBanner");
     const text = state.maintenance_enabled
-      ? "🛠️ بيلا تحت الصيانة مؤقتًا. مركز الحساب ومركز المالك يظلون متاحين."
+      ? (state.announcement || "🛠️ بيلا تحت الصيانة مؤقتًا. مركز الحساب ومركز المالك يظلون متاحين.")
       : state.announcement;
     if (!text) {
       banner?.remove();
