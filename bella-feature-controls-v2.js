@@ -70,7 +70,7 @@
     finally{loading=false;}
     return state;
   }
-  function observe(){installGuards();decorateActivities();const o=new MutationObserver(()=>{installGuards();decorateActivities();});if(document.body)o.observe(document.body,{childList:true,subtree:true});refresh(true);setInterval(()=>refresh(false),5*60*1000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)refresh(false);});}
+  function observe(){installGuards();decorateActivities();const o=new MutationObserver(()=>{installGuards();decorateActivities();});if(document.body)o.observe(document.body,{childList:true,subtree:true});refresh(true);setInterval(()=>refresh(false),60*1000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)refresh(false);});}
   window.BellaFeatureControlsV2=Object.freeze({refresh,enabled:key=>allowed(key),snapshot:()=>({...state}),message});
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",observe,{once:true});else observe();
 })();
