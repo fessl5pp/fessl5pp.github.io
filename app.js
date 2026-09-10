@@ -8,6 +8,7 @@
   // Bella v16 Game Center v2 + no-repeat content + personality v3 marker.
   // Bella v17 Owner Content Studio + AI review queue + game-aware mind + advanced owner powers marker.
   // Bella v18 Supreme owner controls + player tools + server-gated chat/voice/AI activities marker.
+  // Bella v19 Owner Control Room + broadcasts + scheduling + bans + gifts + kill switch + deeper dashboard marker.
 
   function installSwitchInteractionFix() {
     if (document.getElementById("bellaSwitchInteractionFix")) return;
@@ -57,6 +58,7 @@
     "bella-alive.js",
     "bella-moments-feedback.js",
     "bella-ai-activities.js",
+    "bella-broadcasts-v19.js",
     "bella-install.js"
   ];
 
@@ -70,7 +72,8 @@
     "bella-owner-moments.js",
     "bella-owner-content-studio.js",
     "bella-owner-power-v2.js",
-    "bella-owner-dashboard-v2.js"
+    "bella-owner-dashboard-v2.js",
+    "bella-owner-control-room-v19.js"
   ];
 
   function loadScript(file) {
