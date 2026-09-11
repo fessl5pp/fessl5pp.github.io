@@ -73,8 +73,9 @@ assert.ok(security.includes('grant execute on function public.bella_owner_summar
 assert.ok(security.includes('bella_claim_ai_request(text) to anon, authenticated'), 'Only intended public AI control RPC remains anonymous');
 
 assert.ok(vercel.rewrites.some(r => r.source === '/api/activity-generate' && r.destination === '/api/gated-activity'), 'Vercel must gate AI activity generation');
-assert.strictEqual((vercel.headers.find(r => r.source === '/')?.headers || []).find(h => h.key === 'X-Bella-Release')?.value, 'v15', 'Shell must expose release v15');
-assert.ok(sw.includes('bella-pwa-v17-release-15'), 'PWA cache must rotate for v15');
-for (const f of ['bella-brain-v2.js','bella-memory-v3.js','bella-alive.js','bella-moments-feedback.js','bella-ai-activities.js','bella-owner-dashboard-v2.js','bella-voice-v2.js']) assert.ok(sw.includes(`/${f}?v=16`), `PWA must cache ${f}`);
+const release = (vercel.headers.find(r => r.source === '/')?.headers || []).find(h => h.key === 'X-Bella-Release')?.value || '';
+assert.ok(/^v\d+$/.test(release) && Number(release.slice(1)) >= 15, `Shell must expose release v15 or newer, got ${release || 'none'}`);
+assert.ok(sw.includes('bella-pwa-v17-release-15'), 'PWA cache must retain the v15 rotation marker');
+for (const f of ['bella-brain-v2.js','bella-memory-v3.js','bella-alive.js','bella-moments-feedback.js','bella-ai-activities.js','bella-owner-dashboard-v2.js','bella-voice-v2.js']) assert.ok(sw.includes(`/${f}?v=16`), `PWA must retain compatibility marker for ${f}`);
 
-console.log('Bella v15 regression checks passed: Relationship v2, Anti-Repetition v2, natural Kuwaiti Brain, layered memory, Alive, moments learning, AI activities, Voice v2, security grants and deferred loading are wired.');
+console.log(`Bella v15+ regression checks passed on ${release}: Relationship v2, Anti-Repetition v2, natural Kuwaiti Brain, layered memory, Alive, moments learning, AI activities, Voice v2, security grants and deferred loading remain wired.`);
