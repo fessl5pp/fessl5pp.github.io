@@ -67,8 +67,8 @@ ok(migration.includes("set search_path = ''"), 'SECURITY DEFINER functions must 
 ok(!/message_text|raw_message|stack_trace/i.test(migration), 'migration must not persist raw chat/error content');
 
 ok(app.includes('Bella v23 Adaptive Brain'), 'v23 app marker missing');
-ok(app.includes('bella-quality-v23.js') && app.includes('?v=23'), 'v23 client runtime not loaded');
-ok(sw.includes('bella-pwa-v24-release-23'), 'v23 cache generation missing');
-ok(sw.includes('/bella-quality-v23.js?v=23'), 'quality runtime is not precached');
+ok(app.includes('bella-quality-v23.js') && (app.includes('?v=23') || app.includes('?v=24')), 'v23 client runtime must remain loaded under current generation');
+ok(sw.includes('bella-pwa-v24-release-23'), 'v23 cache generation marker must remain available for regression history');
+ok(sw.includes('/bella-quality-v23.js?v=24') || sw.includes('/bella-quality-v23.js?v=23'), 'quality runtime is not precached under the current release.');
 
-console.log('Bella v23 adaptive brain checks passed: dynamic reasoning, freshness routing, relationship vector and privacy-minimal correction telemetry are wired.');
+console.log('Bella v23 adaptive brain checks passed under the current release: dynamic reasoning, freshness routing, relationship vector and privacy-minimal correction telemetry remain wired.');
