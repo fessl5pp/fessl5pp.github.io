@@ -4,6 +4,7 @@
   const SUPABASE_URL = "https://buxicnxkhaalwzjmbkgv.supabase.co";
   const SUPABASE_KEY = "sb_publishable_vXo33zqOIgPh-oMP6fhtvg_FbLFM7tW";
   const SESSION_KEY = "bella_account_session_v1";
+  const DEVICE_KEY = "bella_rollout_subject_v21";
   const DEFAULT_FLAGS = {
     leaderboard: true,
     content_ai: true,
@@ -18,7 +19,7 @@
     moments: true
   };
 
-  let flags = Object.fromEntries(Object.entries(DEFAULT_FLAGS).map(([key, effective]) => [key, { mode: "on", effective }]));
+  let flags = Object.fromEntries(Object.entries(DEFAULT_FLAGS).map(([key, effective]) => [key, { mode: "on", baseMode: "on", effective, rolloutPercent: 0 }]));
   let personaStyle = { enabled: true, brevity: "medium", humor: 1, warmth: 1, directness: .35, dialect: .8, revision: 1 };
   let currentSeason = {};
   let loading = false;
@@ -34,12 +35,25 @@
     return String(session()?.access_token || "");
   }
 
+  function rolloutSubject() {
+    try {
+      let value = localStorage.getItem(DEVICE_KEY);
+      if (!value) {
+        value = globalThis.crypto?.randomUUID?.() || `bella-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        localStorage.setItem(DEVICE_KEY, value);
+      }
+      return String(value).slice(0, 120);
+    } catch {
+      return "bella-anon";
+    }
+  }
+
   function toast(text) {
     try { window.showToast?.(text); } catch {}
   }
 
   function feature(key) {
-    return flags[key] || { mode: "on", effective: true };
+    return flags[key] || { mode: "on", baseMode: "on", effective: true, rolloutPercent: 0 };
   }
 
   function enabled(key) {
@@ -48,7 +62,9 @@
 
   function message(key) {
     const f = feature(key);
-    const suffix = f.mode === "beta" ? " تحت التجربة للمالك/البيتا حاليًا 🧪" : " موقفها المالك مؤقتًا.";
+    const suffix = f.mode === "beta"
+      ? ` تحت التجربة حاليًا${f.rolloutPercent ? ` (${f.rolloutPercent}% من المستخدمين)` : ""} 🧪`
+      : " موقفها المالك مؤقتًا.";
     const names = {
       leaderboard: "لوحة الترتيب",
       content_ai: "AI للمحتوى",
@@ -116,10 +132,7 @@
     const root = document.getElementById("bellaActivities");
     if (!root) return;
 
-    const direct = {
-      rumors: "rumor_list",
-      leader: "leaderboard"
-    };
+    const direct = { rumors: "rumor_list", leader: "leaderboard" };
     root.querySelectorAll("[data-game-center]").forEach(btn => {
       const key = direct[btn.dataset.gameCenter];
       if (!key) return;
@@ -145,18 +158,15 @@
   }
 
   async function fetchOps() {
-    const headers = {
-      apikey: SUPABASE_KEY,
-      "Content-Type": "application/json"
-    };
+    const headers = { apikey: SUPABASE_KEY, "Content-Type": "application/json" };
     if (token()) headers.Authorization = `Bearer ${token()}`;
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/bella_public_ops_v20`, {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/bella_public_ops_v21`, {
       method: "POST",
       headers,
-      body: "{}"
+      body: JSON.stringify({ p_subject: rolloutSubject() })
     });
     const data = await response.json().catch(() => null);
-    if (!response.ok) throw new Error(data?.message || `Ops v20 ${response.status}`);
+    if (!response.ok) throw new Error(data?.message || `Ops v21 ${response.status}`);
     return Array.isArray(data) ? data[0] || {} : data || {};
   }
 
@@ -172,21 +182,27 @@
         const item = remote[key] || {};
         return [key, {
           mode: ["off", "beta", "on"].includes(item.mode) ? item.mode : "on",
+          baseMode: ["off", "beta", "on"].includes(item.base_mode) ? item.base_mode : (["off", "beta", "on"].includes(item.mode) ? item.mode : "on"),
           effective: item.effective !== false,
           label: String(item.label || ""),
-          note: String(item.note || "")
+          note: String(item.note || ""),
+          rolloutPercent: Math.max(0, Math.min(100, Number(item.rollout_percent) || 0)),
+          scheduledMode: ["off", "beta", "on"].includes(item.scheduled_mode) ? item.scheduled_mode : null,
+          scheduledStart: item.scheduled_start || null,
+          scheduledEnd: item.scheduled_end || null,
+          rolloutBucket: Number.isFinite(Number(item.rollout_bucket)) ? Number(item.rollout_bucket) : null
         }];
       }));
-      if (row.persona_style && typeof row.persona_style === "object") {
-        personaStyle = { ...personaStyle, ...row.persona_style };
-      }
+      if (row.persona_style && typeof row.persona_style === "object") personaStyle = { ...personaStyle, ...row.persona_style };
       currentSeason = row.current_season && typeof row.current_season === "object" ? row.current_season : {};
       lastRefresh = Date.now();
       installGuards();
       applyGlobalControls();
-      window.dispatchEvent(new CustomEvent("bella:ops-v20", { detail: snapshot() }));
+      const detail = snapshot();
+      window.dispatchEvent(new CustomEvent("bella:ops-v21", { detail }));
+      window.dispatchEvent(new CustomEvent("bella:ops-v20", { detail }));
     } catch (error) {
-      console.warn("Bella Ops v20 public config unavailable:", error?.message || error);
+      console.warn("Bella Ops v21 public config unavailable:", error?.message || error);
       installGuards();
       applyGlobalControls();
     } finally {
@@ -199,7 +215,8 @@
     return {
       flags: JSON.parse(JSON.stringify(flags)),
       personaStyle: { ...personaStyle },
-      currentSeason: { ...currentSeason }
+      currentSeason: { ...currentSeason },
+      rolloutSubject: rolloutSubject()
     };
   }
 
@@ -210,9 +227,7 @@
 
     window.fetch = async function bellaOpsFetch(input, init = {}) {
       const url = typeof input === "string" ? input : input?.url || "";
-      if (!url.startsWith("/api/chat") || typeof init?.body !== "string") {
-        return baseFetch(input, init);
-      }
+      if (!url.startsWith("/api/chat") || typeof init?.body !== "string") return baseFetch(input, init);
 
       if (!enabled("chat_ai")) {
         return new Response(JSON.stringify({ error: message("chat_ai"), control: feature("chat_ai").mode }), {
@@ -234,6 +249,7 @@
           };
           body.personaRevision = Math.max(1, Number(personaStyle.revision) || 1);
         }
+        body.rolloutSubject = rolloutSubject();
         return baseFetch(input, { ...init, body: JSON.stringify(body) });
       } catch {
         return baseFetch(input, init);
@@ -254,22 +270,14 @@
 
     refresh(true);
     setInterval(() => refresh(false), 60 * 1000);
-    document.addEventListener("visibilitychange", () => {
-      if (!document.hidden) refresh(false);
-    });
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) refresh(false); });
     window.addEventListener("bella:account-session", () => refresh(true));
     window.addEventListener("storage", event => {
-      if (event.key === SESSION_KEY) refresh(true);
+      if (event.key === SESSION_KEY || event.key === DEVICE_KEY) refresh(true);
     });
   }
 
-  window.BellaFeatureControlsV3 = Object.freeze({
-    refresh,
-    enabled,
-    feature,
-    message,
-    snapshot
-  });
+  window.BellaFeatureControlsV3 = Object.freeze({ refresh, enabled, feature, message, snapshot });
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", observe, { once: true });
   else observe();
