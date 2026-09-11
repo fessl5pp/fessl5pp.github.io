@@ -11,7 +11,8 @@
   // Bella v19 Owner Control Room + broadcasts + scheduling + bans + gifts + kill switch + deeper dashboard marker.
   // Bella v20 Ops OS + tri-state flags + live persona tuner + seasons + badges + User 360 + rollback marker.
   // Bella v21 Control Plane + percentage beta rollouts + scheduling + persona preview + diagnostics marker.
-  // Previous validated runtime generation marker retained for legacy regression checks: ?v=16
+  // Bella v22 Resilience Lab + Safe Mode + privacy-minimal Error Center + server-side Persona A/B experiments marker.
+  // Previous validated runtime generation markers retained for legacy regression checks: ?v=16 ?v=21
   // Legacy module compatibility marker only: "bella-feature-controls-v2.js" was superseded by "bella-feature-controls-v3.js" in v20+.
 
   function installSwitchInteractionFix() {
@@ -57,6 +58,7 @@
     "bella-kuwaiti-games-data.js",
     "bella-ultimate-content.js",
     "bella-feature-controls-v3.js",
+    "bella-resilience-v22.js",
     "bella-season-v20.js",
     "bella-game-mind.js",
     "bella-moments-ui.js",
@@ -80,13 +82,14 @@
     "bella-owner-dashboard-v2.js",
     "bella-owner-control-room-v19.js",
     "bella-owner-ops-v20.js",
-    "bella-owner-control-plane-v21.js"
+    "bella-owner-control-plane-v21.js",
+    "bella-owner-resilience-v22.js"
   ];
 
   function loadScript(file) {
     return new Promise((resolve, reject) => {
       const script = document.createElement("script");
-      script.src = `/${file}?v=21`;
+      script.src = `/${file}?v=22`;
       script.async = false;
       script.onload = resolve;
       script.onerror = () => reject(new Error(`Failed to load ${file}`));
