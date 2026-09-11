@@ -36,7 +36,7 @@ async function ownerDiagnostics(req, res) {
   const owner = await requireBellaOwner(req, res);
   if (!owner) return;
 
-  const [controlPlane, persona, ownerState, resilience, adaptiveBrain] = await Promise.all([
+  const [controlPlane, persona, ownerState, resilience, adaptiveBrain, semanticMemory] = await Promise.all([
     timedCheck("control_plane", async () => {
       const data = await supabaseRpc("bella_public_ops_v21", owner.token, { p_subject: "diagnostics-owner" });
       const row = Array.isArray(data) ? data[0] || {} : data || {};
@@ -67,16 +67,24 @@ async function ownerDiagnostics(req, res) {
       const data = await supabaseRpc("bella_owner_quality_metrics_v23", owner.token, { p_days: 14 });
       const rows = Array.isArray(data) ? data : [];
       return { correctionBuckets: rows.length, correctionSignals: rows.reduce((sum, row) => sum + Math.max(0, Number(row.event_count) || 0), 0) };
+    }),
+    timedCheck("semantic_memory_v24", async () => {
+      const data = await supabaseRpc("bella_memory_hybrid_search_v24", owner.token, {
+        p_query_text: "diagnostics",
+        p_query_embedding: null,
+        p_match_count: 1
+      });
+      return { reachable: Array.isArray(data), model: "text-embedding-3-small", dimensions: 512, retrieval: "hybrid-exact+semantic" };
     })
   ]);
 
-  const checks = [controlPlane, persona, ownerState, resilience, adaptiveBrain,
+  const checks = [controlPlane, persona, ownerState, resilience, adaptiveBrain, semanticMemory,
     { name: "openai_config", ok: Boolean(process.env.OPENAI_API_KEY), latencyMs: 0, detail: { configured: Boolean(process.env.OPENAI_API_KEY) } },
     { name: "vercel_runtime", ok: true, latencyMs: 0, detail: { environment: process.env.VERCEL_ENV || "unknown", region: process.env.VERCEL_REGION || null, commit: String(process.env.VERCEL_GIT_COMMIT_SHA || "").slice(0, 12) || null } }
   ];
 
   const failed = checks.filter(check => !check.ok).length;
-  return res.status(failed ? 207 : 200).json({ status: failed ? "degraded" : "ok", release: "v23-adaptive-brain", checkedAt: new Date().toISOString(), failed, checks });
+  return res.status(failed ? 207 : 200).json({ status: failed ? "degraded" : "ok", release: "v24-semantic-memory", checkedAt: new Date().toISOString(), failed, checks });
 }
 
 export default async function handler(req, res) {
@@ -86,7 +94,7 @@ export default async function handler(req, res) {
   }
   res.setHeader("Cache-Control", "no-store, max-age=0");
   res.setHeader("X-Content-Type-Options", "nosniff");
-  res.setHeader("X-Bella-Release", "v23");
+  res.setHeader("X-Bella-Release", "v24");
   if (req.method === "HEAD") return res.status(204).end();
   if (ownerDiagnosticsRequested(req)) return ownerDiagnostics(req, res);
 
@@ -95,10 +103,13 @@ export default async function handler(req, res) {
   return res.status(200).json({
     ok: true,
     app: "Bella",
-    release: "v23",
+    release: "v24",
     controlPlane: "v21",
     resilienceLab: "v22",
     adaptiveBrain: "v23",
+    semanticMemory: "v24",
+    hybridContext: "v24",
+    contextualDialect: "v24",
     commit,
     environment,
     timestamp: new Date().toISOString()
