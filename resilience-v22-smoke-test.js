@@ -22,12 +22,12 @@ const migration = read('supabase/migrations/20260911133128_bella_resilience_lab_
 must(app, 'Bella v22 Resilience Lab + Safe Mode + privacy-minimal Error Center + server-side Persona A/B experiments marker', 'v22 app release marker missing.');
 must(app, 'bella-resilience-v22.js', 'v22 client resilience runtime is not loaded.');
 must(app, 'bella-owner-resilience-v22.js', 'v22 owner resilience console is not loaded.');
-must(app, '?v=22', 'v22 runtime cache generation missing.');
+if (!app.includes('?v=22') && !app.includes('?v=23')) throw new Error('current runtime cache generation missing.');
 
-must(sw, 'bella-pwa-v23-release-22', 'v22 service worker cache was not rotated.');
+must(sw, 'bella-pwa-v23-release-22', 'v22 service worker history marker is missing.');
 must(sw, '/app.js?v=11', 'service worker must cache the exact app.js URL requested by index.html.');
 for (const file of ['bella-resilience-v22.js','bella-owner-resilience-v22.js']) {
-  must(sw, `/${file}?v=22`, `PWA cache missing ${file}.`);
+  if (!sw.includes(`/${file}?v=22`) && !sw.includes(`/${file}?v=23`)) throw new Error(`PWA cache missing ${file}.`);
 }
 
 for (const rpc of [
@@ -70,15 +70,15 @@ for (const rpc of ['bella_owner_set_safe_mode_v22','bella_owner_set_telemetry_v2
 must(owner, 'Error Center', 'owner Error Center UI missing.');
 must(owner, 'Persona A/B Experiment', 'owner Persona experiment UI missing.');
 
-must(health, 'release: "v22"', 'health endpoint must report v22.');
+if (!health.includes('resilienceLab: "v22"')) throw new Error('health endpoint must still report the v22 resilience layer.');
 must(health, 'bella_owner_resilience_v22', 'owner diagnostics must verify the v22 resilience RPC.');
 const releaseHeader = (vercel.headers || [])
   .find(rule => rule.source === '/')?.headers
   ?.find(header => String(header.key || '').toLowerCase() === 'x-bella-release')?.value;
-if (releaseHeader !== 'v22') throw new Error('Vercel release header must report v22.');
+if (!['v22','v23'].includes(releaseHeader)) throw new Error('Vercel release header must report v22 or a forward-compatible v23 release.');
 
 const apiFunctions = fs.readdirSync('api').filter(name => name.endsWith('.js'));
 if (apiFunctions.length > 12) throw new Error(`Hobby plan guard: ${apiFunctions.length} api functions found; maximum is 12.`);
 if (fs.existsSync('api/resilience-v22.js') || fs.existsSync('api/owner-resilience-v22.js')) throw new Error('v22 must reuse existing functions instead of adding serverless endpoints.');
 
-console.log('Bella v22 resilience checks passed: Safe Mode, privacy-minimal telemetry, request-scoped Persona A/B experiments, RLS, PWA cache and Hobby-plan limits are wired.');
+console.log('Bella v22 resilience checks passed under the current release: Safe Mode, privacy-minimal telemetry, request-scoped Persona A/B experiments, RLS, PWA cache and Hobby-plan limits remain wired.');
