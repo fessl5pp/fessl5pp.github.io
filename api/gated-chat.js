@@ -2,6 +2,8 @@ import chatHandler from "./chat.js";
 import { checkBellaAccountAccess, rejectSuspendedAccount } from "../lib/bella-account-access.js";
 import { requireBellaOwner } from "../lib/bella-owner-access.js";
 import { handleBellaOwnerPersonaPreview } from "../lib/bella-owner-persona-preview.js";
+import { primeBellaResilienceRuntimeV22 } from "../lib/bella-control.js";
+import { runBellaRequestContextV22 } from "../lib/bella-request-context-v22.js";
 
 function ownerPreviewRequested(req) {
   if (req.method !== "POST") return false;
@@ -20,5 +22,8 @@ export default async function handler(req, res) {
 
   const access = await checkBellaAccountAccess(req);
   if (rejectSuspendedAccount(res, access)) return;
-  return chatHandler(req, res);
+
+  const rolloutSubject = String(req.body?.rolloutSubject || "server-control").replace(/\u0000/g, "").trim().slice(0, 120) || "server-control";
+  const resiliencePromise = primeBellaResilienceRuntimeV22(rolloutSubject, false).catch(() => null);
+  return runBellaRequestContextV22({ rolloutSubject, resiliencePromise }, () => chatHandler(req, res));
 }
