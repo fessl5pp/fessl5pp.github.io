@@ -11,9 +11,11 @@ function must(source, needle, message) {
 const app = read('app.js');
 const controls = read('bella-feature-controls-v3.js');
 const owner = read('bella-owner-control-plane-v21.js');
-const preview = read('api/owner-persona-preview.js');
-const diagnostics = read('api/owner-diagnostics.js');
+const preview = read('lib/bella-owner-persona-preview.js');
+const gatedChat = read('api/gated-chat.js');
+const diagnostics = read('api/health.js');
 const ownerAccess = read('lib/bella-owner-access.js');
+const vercel = read('vercel.json');
 const migration = read('supabase/migrations/20260911090000_bella_control_plane_v21.sql');
 
 must(app, 'bella-owner-control-plane-v21.js', 'v21 owner module is not loaded.');
@@ -30,12 +32,17 @@ for (const rpc of ['bella_owner_set_feature_rollout_v21','bella_owner_schedule_f
 }
 must(owner, '/api/owner-persona-preview', 'persona preview UI is not connected.');
 must(owner, '/api/owner-diagnostics', 'diagnostics UI is not connected.');
+must(vercel, '/api/owner-persona-preview', 'persona preview rewrite is missing.');
+must(vercel, '/api/gated-chat?ownerPreview=1', 'persona preview must reuse the existing gated-chat function.');
+must(vercel, '/api/owner-diagnostics', 'owner diagnostics rewrite is missing.');
+must(vercel, '/api/health?owner=1', 'owner diagnostics must reuse the existing health function.');
 
 must(ownerAccess, 'is_bella_owner', 'owner API guard must verify Supabase owner status.');
-must(preview, 'requireBellaOwner', 'persona preview must require owner access.');
+must(gatedChat, 'requireBellaOwner', 'owner persona preview route must require owner access.');
+must(gatedChat, 'handleBellaOwnerPersonaPreview', 'gated chat must delegate the preview helper.');
 must(preview, 'MAX_PREVIEWS', 'persona preview rate limit is missing.');
 must(preview, 'store: false', 'persona preview should not store model requests.');
-must(diagnostics, 'requireBellaOwner', 'diagnostics must require owner access.');
+must(diagnostics, 'requireBellaOwner', 'owner diagnostics mode must require owner access.');
 must(diagnostics, 'Boolean(process.env.OPENAI_API_KEY)', 'diagnostics should only report OpenAI configuration status.');
 if (/OPENAI_API_KEY\s*[:=]\s*process\.env\.OPENAI_API_KEY/.test(diagnostics)) throw new Error('Diagnostics must never return the OpenAI key.');
 
@@ -45,4 +52,8 @@ must(migration, 'hashtextextended', 'deterministic beta bucketing is missing.');
 must(migration, 'v21_feature_rollout', 'rollout actions must be audited.');
 must(migration, 'rollback_available', 'v21 rollout/schedule changes must support rollback.');
 
-console.log('Bella v21 control plane smoke checks passed: percentage rollouts, scheduling, preview lab, diagnostics, owner guards and rollback are wired.');
+if (fs.existsSync('api/owner-persona-preview.js') || fs.existsSync('api/owner-diagnostics.js')) {
+  throw new Error('v21 owner tools must not add extra Serverless Functions on the Hobby plan.');
+}
+
+console.log('Bella v21 control plane smoke checks passed: percentage rollouts, scheduling, preview lab, diagnostics, owner guards, rollback and Hobby-plan function reuse are wired.');
