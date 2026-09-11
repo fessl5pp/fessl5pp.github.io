@@ -46,7 +46,7 @@ async function ownerDiagnostics(req, res) {
   const owner = await requireBellaOwner(req, res);
   if (!owner) return;
 
-  const [controlPlane, persona, ownerState] = await Promise.all([
+  const [controlPlane, persona, ownerState, resilience] = await Promise.all([
     timedCheck("control_plane", async () => {
       const data = await supabaseRpc("bella_public_ops_v21", owner.token, { p_subject: "diagnostics-owner" });
       const row = Array.isArray(data) ? data[0] || {} : data || {};
@@ -65,6 +65,17 @@ async function ownerDiagnostics(req, res) {
       const data = await supabaseRpc("bella_owner_ops_v20", owner.token, {});
       const row = Array.isArray(data) ? data[0] || {} : data || {};
       return { readable: !!row.feature_flags };
+    }),
+    timedCheck("resilience_v22", async () => {
+      const data = await supabaseRpc("bella_owner_resilience_v22", owner.token, { p_event_limit: 5 });
+      const row = Array.isArray(data) ? data[0] || {} : data || {};
+      return {
+        safeMode: row.resilience_config?.safe_mode === true,
+        telemetryEnabled: row.resilience_config?.telemetry_enabled !== false,
+        telemetrySamplePercent: Number(row.resilience_config?.telemetry_sample_percent ?? 0),
+        experimentCount: Array.isArray(row.experiments) ? row.experiments.length : 0,
+        recentEventCount: Array.isArray(row.latest_events) ? row.latest_events.length : 0
+      };
     })
   ]);
 
@@ -72,6 +83,7 @@ async function ownerDiagnostics(req, res) {
     controlPlane,
     persona,
     ownerState,
+    resilience,
     {
       name: "openai_config",
       ok: Boolean(process.env.OPENAI_API_KEY),
@@ -93,7 +105,7 @@ async function ownerDiagnostics(req, res) {
   const failed = checks.filter(check => !check.ok).length;
   return res.status(failed ? 207 : 200).json({
     status: failed ? "degraded" : "ok",
-    release: "v21-control-plane",
+    release: "v22-resilience-lab",
     checkedAt: new Date().toISOString(),
     failed,
     checks
@@ -108,7 +120,7 @@ export default async function handler(req, res) {
 
   res.setHeader("Cache-Control", "no-store, max-age=0");
   res.setHeader("X-Content-Type-Options", "nosniff");
-  res.setHeader("X-Bella-Release", "v21");
+  res.setHeader("X-Bella-Release", "v22");
 
   if (req.method === "HEAD") return res.status(204).end();
   if (ownerDiagnosticsRequested(req)) return ownerDiagnostics(req, res);
@@ -118,8 +130,9 @@ export default async function handler(req, res) {
   return res.status(200).json({
     ok: true,
     app: "Bella",
-    release: "v21",
+    release: "v22",
     controlPlane: "v21",
+    resilienceLab: "v22",
     commit,
     environment,
     timestamp: new Date().toISOString()
