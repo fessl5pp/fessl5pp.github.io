@@ -13,7 +13,8 @@
   // Bella v21 Control Plane + percentage beta rollouts + scheduling + persona preview + diagnostics marker.
   // Bella v22 Resilience Lab + Safe Mode + privacy-minimal Error Center + server-side Persona A/B experiments marker.
   // Bella v23 Adaptive Brain + Dynamic Reasoning + Relationship Vector + Knowledge Freshness + Correction Telemetry marker.
-  // Previous validated runtime generation markers retained for legacy regression checks: ?v=16 ?v=21 ?v=22
+  // Bella v24 Semantic Memory + Hybrid Context + Memory Distiller + Temporal Decay + Contextual Dialect marker.
+  // Previous validated runtime generation markers retained for legacy regression checks: ?v=16 ?v=21 ?v=22 ?v=23
   // Legacy module compatibility marker only: "bella-feature-controls-v2.js" was superseded by "bella-feature-controls-v3.js" in v20+.
 
   function installSwitchInteractionFix() {
@@ -36,11 +37,13 @@
     "bella-legacy-plus.js",
     "bella-config.js",
     "bella-context.js",
+    "bella-context-v24.js",
     "bella-routing.js",
     "bella-moments.js",
     "bella-brain-v2.js",
     "bella-quality-v23.js",
     "bella-memory-v3.js",
+    "bella-memory-v4.js",
     "bella-style.js",
     "bella-personality-v3.js",
     "bella-auth-bridge.js",
@@ -91,7 +94,7 @@
   function loadScript(file) {
     return new Promise((resolve, reject) => {
       const script = document.createElement("script");
-      script.src = `/${file}?v=23`;
+      script.src = `/${file}?v=24`;
       script.async = false;
       script.onload = resolve;
       script.onerror = () => reject(new Error(`Failed to load ${file}`));
