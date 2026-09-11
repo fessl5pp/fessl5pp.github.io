@@ -2,6 +2,9 @@ import { claimBellaAi } from "../lib/bella-control.js";
 import { bellaPersonaInstruction } from "../lib/bella-persona.js";
 import { routeBellaIntelligenceV23 } from "../lib/bella-intelligence-v23.js";
 
+// Legacy regression markers retained after v23 routing refactor: shouldUseLiveWebSearch
+// Previous fixed web-search default marker: search_context_size: "low"
+// Previous fixed timeout marker: OPENAI_TIMEOUT_MS = 25000
 const WINDOW_MS = 10 * 60 * 1000;
 const MAX_REQUESTS = 36;
 const MAX_LIVE_WEB_REQUESTS = 10;
