@@ -7,7 +7,9 @@
     { "source": "/api/dira", "destination": "/api/gated-dira" },
     { "source": "/api/voice", "destination": "/api/gated-voice" },
     { "source": "/api/activity-generate", "destination": "/api/gated-activity" },
-    { "source": "/api/icon", "destination": "/api/icon-v3" }
+    { "source": "/api/icon", "destination": "/api/icon-v3" },
+    { "source": "/api/owner-persona-preview", "destination": "/api/gated-chat?ownerPreview=1" },
+    { "source": "/api/owner-diagnostics", "destination": "/api/health?owner=1" }
   ],
   "headers": [
     {
