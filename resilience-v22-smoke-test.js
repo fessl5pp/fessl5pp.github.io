@@ -22,12 +22,12 @@ const migration = read('supabase/migrations/20260911133128_bella_resilience_lab_
 must(app, 'Bella v22 Resilience Lab + Safe Mode + privacy-minimal Error Center + server-side Persona A/B experiments marker', 'v22 app release marker missing.');
 must(app, 'bella-resilience-v22.js', 'v22 client resilience runtime is not loaded.');
 must(app, 'bella-owner-resilience-v22.js', 'v22 owner resilience console is not loaded.');
-if (!app.includes('?v=22') && !app.includes('?v=23')) throw new Error('current runtime cache generation missing.');
+if (!app.includes('?v=22') && !app.includes('?v=23') && !app.includes('?v=24')) throw new Error('current runtime cache generation missing.');
 
 must(sw, 'bella-pwa-v23-release-22', 'v22 service worker history marker is missing.');
 must(sw, '/app.js?v=11', 'service worker must cache the exact app.js URL requested by index.html.');
 for (const file of ['bella-resilience-v22.js','bella-owner-resilience-v22.js']) {
-  if (!sw.includes(`/${file}?v=22`) && !sw.includes(`/${file}?v=23`)) throw new Error(`PWA cache missing ${file}.`);
+  if (!sw.includes(`/${file}?v=22`) && !sw.includes(`/${file}?v=23`) && !sw.includes(`/${file}?v=24`)) throw new Error(`PWA cache missing ${file}.`);
 }
 
 for (const rpc of [
@@ -75,7 +75,7 @@ must(health, 'bella_owner_resilience_v22', 'owner diagnostics must verify the v2
 const releaseHeader = (vercel.headers || [])
   .find(rule => rule.source === '/')?.headers
   ?.find(header => String(header.key || '').toLowerCase() === 'x-bella-release')?.value;
-if (!['v22','v23'].includes(releaseHeader)) throw new Error('Vercel release header must report v22 or a forward-compatible v23 release.');
+if (!['v22','v23','v24'].includes(releaseHeader)) throw new Error('Vercel release header must report v22 or a forward-compatible release.');
 
 const apiFunctions = fs.readdirSync('api').filter(name => name.endsWith('.js'));
 if (apiFunctions.length > 12) throw new Error(`Hobby plan guard: ${apiFunctions.length} api functions found; maximum is 12.`);
