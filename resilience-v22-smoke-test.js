@@ -16,7 +16,7 @@ const control = read('lib/bella-control.js');
 const context = read('lib/bella-request-context-v22.js');
 const gatedChat = read('api/gated-chat.js');
 const health = read('api/health.js');
-const vercel = read('vercel.json');
+const vercel = JSON.parse(read('vercel.json'));
 const migration = read('supabase/migrations/20260911133128_bella_resilience_lab_v22.sql');
 
 must(app, 'Bella v22 Resilience Lab + Safe Mode + privacy-minimal Error Center + server-side Persona A/B experiments marker', 'v22 app release marker missing.');
@@ -72,7 +72,10 @@ must(owner, 'Persona A/B Experiment', 'owner Persona experiment UI missing.');
 
 must(health, 'release: "v22"', 'health endpoint must report v22.');
 must(health, 'bella_owner_resilience_v22', 'owner diagnostics must verify the v22 resilience RPC.');
-must(vercel, '"X-Bella-Release", "value": "v22"', 'Vercel release header must report v22.');
+const releaseHeader = (vercel.headers || [])
+  .find(rule => rule.source === '/')?.headers
+  ?.find(header => String(header.key || '').toLowerCase() === 'x-bella-release')?.value;
+if (releaseHeader !== 'v22') throw new Error('Vercel release header must report v22.');
 
 const apiFunctions = fs.readdirSync('api').filter(name => name.endsWith('.js'));
 if (apiFunctions.length > 12) throw new Error(`Hobby plan guard: ${apiFunctions.length} api functions found; maximum is 12.`);
