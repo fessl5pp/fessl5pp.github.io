@@ -6,12 +6,8 @@ const CHECK_TIMEOUT_MS = 3000;
 
 async function timedCheck(name, fn) {
   const started = Date.now();
-  try {
-    const detail = await fn();
-    return { name, ok: true, latencyMs: Date.now() - started, detail };
-  } catch (error) {
-    return { name, ok: false, latencyMs: Date.now() - started, error: String(error?.message || error || "unknown").slice(0, 180) };
-  }
+  try { return { name, ok: true, latencyMs: Date.now() - started, detail: await fn() }; }
+  catch (error) { return { name, ok: false, latencyMs: Date.now() - started, error: String(error?.message || error || "unknown").slice(0, 180) }; }
 }
 
 async function supabaseRpc(name, token, payload = {}) {
@@ -20,20 +16,14 @@ async function supabaseRpc(name, token, payload = {}) {
   try {
     const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${name}`, {
       method: "POST",
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json"
-      },
+      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
       signal: controller.signal,
       body: JSON.stringify(payload)
     });
     const data = await response.json().catch(() => null);
     if (!response.ok) throw new Error(data?.message || `${name} HTTP ${response.status}`);
     return data;
-  } finally {
-    clearTimeout(timeout);
-  }
+  } finally { clearTimeout(timeout); }
 }
 
 function ownerDiagnosticsRequested(req) {
@@ -46,15 +36,11 @@ async function ownerDiagnostics(req, res) {
   const owner = await requireBellaOwner(req, res);
   if (!owner) return;
 
-  const [controlPlane, persona, ownerState, resilience] = await Promise.all([
+  const [controlPlane, persona, ownerState, resilience, adaptiveBrain] = await Promise.all([
     timedCheck("control_plane", async () => {
       const data = await supabaseRpc("bella_public_ops_v21", owner.token, { p_subject: "diagnostics-owner" });
       const row = Array.isArray(data) ? data[0] || {} : data || {};
-      return {
-        featureCount: Object.keys(row.feature_flags || {}).length,
-        season: row.current_season?.name || null,
-        personaRevision: Number(row.persona_style?.revision || 0)
-      };
+      return { featureCount: Object.keys(row.feature_flags || {}).length, season: row.current_season?.name || null, personaRevision: Number(row.persona_style?.revision || 0) };
     }),
     timedCheck("persona_runtime", async () => {
       const data = await supabaseRpc("bella_public_persona_server_v20", owner.token, {});
@@ -76,40 +62,21 @@ async function ownerDiagnostics(req, res) {
         experimentCount: Array.isArray(row.experiments) ? row.experiments.length : 0,
         recentEventCount: Array.isArray(row.latest_events) ? row.latest_events.length : 0
       };
+    }),
+    timedCheck("adaptive_brain_v23", async () => {
+      const data = await supabaseRpc("bella_owner_quality_metrics_v23", owner.token, { p_days: 14 });
+      const rows = Array.isArray(data) ? data : [];
+      return { correctionBuckets: rows.length, correctionSignals: rows.reduce((sum, row) => sum + Math.max(0, Number(row.event_count) || 0), 0) };
     })
   ]);
 
-  const checks = [
-    controlPlane,
-    persona,
-    ownerState,
-    resilience,
-    {
-      name: "openai_config",
-      ok: Boolean(process.env.OPENAI_API_KEY),
-      latencyMs: 0,
-      detail: { configured: Boolean(process.env.OPENAI_API_KEY) }
-    },
-    {
-      name: "vercel_runtime",
-      ok: true,
-      latencyMs: 0,
-      detail: {
-        environment: process.env.VERCEL_ENV || "unknown",
-        region: process.env.VERCEL_REGION || null,
-        commit: String(process.env.VERCEL_GIT_COMMIT_SHA || "").slice(0, 12) || null
-      }
-    }
+  const checks = [controlPlane, persona, ownerState, resilience, adaptiveBrain,
+    { name: "openai_config", ok: Boolean(process.env.OPENAI_API_KEY), latencyMs: 0, detail: { configured: Boolean(process.env.OPENAI_API_KEY) } },
+    { name: "vercel_runtime", ok: true, latencyMs: 0, detail: { environment: process.env.VERCEL_ENV || "unknown", region: process.env.VERCEL_REGION || null, commit: String(process.env.VERCEL_GIT_COMMIT_SHA || "").slice(0, 12) || null } }
   ];
 
   const failed = checks.filter(check => !check.ok).length;
-  return res.status(failed ? 207 : 200).json({
-    status: failed ? "degraded" : "ok",
-    release: "v22-resilience-lab",
-    checkedAt: new Date().toISOString(),
-    failed,
-    checks
-  });
+  return res.status(failed ? 207 : 200).json({ status: failed ? "degraded" : "ok", release: "v23-adaptive-brain", checkedAt: new Date().toISOString(), failed, checks });
 }
 
 export default async function handler(req, res) {
@@ -117,11 +84,9 @@ export default async function handler(req, res) {
     res.setHeader("Allow", "GET, HEAD");
     return res.status(405).json({ ok: false, error: "Method not allowed" });
   }
-
   res.setHeader("Cache-Control", "no-store, max-age=0");
   res.setHeader("X-Content-Type-Options", "nosniff");
-  res.setHeader("X-Bella-Release", "v22");
-
+  res.setHeader("X-Bella-Release", "v23");
   if (req.method === "HEAD") return res.status(204).end();
   if (ownerDiagnosticsRequested(req)) return ownerDiagnostics(req, res);
 
@@ -130,9 +95,10 @@ export default async function handler(req, res) {
   return res.status(200).json({
     ok: true,
     app: "Bella",
-    release: "v22",
+    release: "v23",
     controlPlane: "v21",
     resilienceLab: "v22",
+    adaptiveBrain: "v23",
     commit,
     environment,
     timestamp: new Date().toISOString()
