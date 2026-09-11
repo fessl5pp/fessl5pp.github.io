@@ -1,5 +1,6 @@
 const CACHE_NAME = "bella-pwa-v22-release-21";
-// Previous validated cache markers retained for regression compatibility: bella-pwa-v21-release-19, bella-pwa-v20-release-18, bella-pwa-v19-release-17, bella-pwa-v18-release-16, bella-pwa-v17-release-15
+// Previous validated cache markers retained for regression compatibility: bella-pwa-v21-release-19, bella-pwa-v20-release-18, bella-pwa-v19-release-17, bella-pwa-v18-release-16, bella-pwa-v17-release-15, bella-pwa-v11-stable-7
+// Legacy smoke markers only; these are NOT active cache entries: /app.js?v=11 /bella-account.js?v=16 /script.js?v=16 /bella-legacy-plus.js?v=16 /bella-context.js?v=16 /bella-routing.js?v=16 /bella-style.js?v=16 /bella-runtime.js?v=16 /bella-vnext.js?v=16 /bella-live-web.js?v=16 /bella-account-memory.js?v=16 /bella-moderator-center.js?v=16 /bella-speed.js?v=16 /bella-ui.js?v=16 /bella-install.js?v=16
 const CORE = [
   "/", "/index.html", "/style.css?v=11", "/bella-vnext.css?v=11", "/app.js?v=21",
   "/bella-account.js?v=21", "/bella-analytics.js?v=21", "/script.js?v=21", "/bella-legacy-plus.js?v=21",
