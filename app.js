@@ -9,6 +9,7 @@
   // Bella v17 Owner Content Studio + AI review queue + game-aware mind + advanced owner powers marker.
   // Bella v18 Supreme owner controls + player tools + server-gated chat/voice/AI activities marker.
   // Bella v19 Owner Control Room + broadcasts + scheduling + bans + gifts + kill switch + deeper dashboard marker.
+  // Bella v20 Ops OS + tri-state flags + live persona tuner + seasons + badges + User 360 + rollback marker.
 
   function installSwitchInteractionFix() {
     if (document.getElementById("bellaSwitchInteractionFix")) return;
@@ -52,7 +53,8 @@
     "bella-content-cloud.js",
     "bella-kuwaiti-games-data.js",
     "bella-ultimate-content.js",
-    "bella-feature-controls-v2.js",
+    "bella-feature-controls-v3.js",
+    "bella-season-v20.js",
     "bella-game-mind.js",
     "bella-moments-ui.js",
     "bella-alive.js",
@@ -73,13 +75,14 @@
     "bella-owner-content-studio.js",
     "bella-owner-power-v2.js",
     "bella-owner-dashboard-v2.js",
-    "bella-owner-control-room-v19.js"
+    "bella-owner-control-room-v19.js",
+    "bella-owner-ops-v20.js"
   ];
 
   function loadScript(file) {
     return new Promise((resolve, reject) => {
       const script = document.createElement("script");
-      script.src = `/${file}?v=16`;
+      script.src = `/${file}?v=20`;
       script.async = false;
       script.onload = resolve;
       script.onerror = () => reject(new Error(`Failed to load ${file}`));
