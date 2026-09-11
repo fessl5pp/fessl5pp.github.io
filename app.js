@@ -12,6 +12,7 @@
   // Bella v20 Ops OS + tri-state flags + live persona tuner + seasons + badges + User 360 + rollback marker.
   // Bella v21 Control Plane + percentage beta rollouts + scheduling + persona preview + diagnostics marker.
   // Previous validated runtime generation marker retained for legacy regression checks: ?v=16
+  // Legacy module compatibility marker only: "bella-feature-controls-v2.js" was superseded by "bella-feature-controls-v3.js" in v20+.
 
   function installSwitchInteractionFix() {
     if (document.getElementById("bellaSwitchInteractionFix")) return;
