@@ -11,6 +11,7 @@
   // Bella v19 Owner Control Room + broadcasts + scheduling + bans + gifts + kill switch + deeper dashboard marker.
   // Bella v20 Ops OS + tri-state flags + live persona tuner + seasons + badges + User 360 + rollback marker.
   // Bella v21 Control Plane + percentage beta rollouts + scheduling + persona preview + diagnostics marker.
+  // Previous validated runtime generation marker retained for legacy regression checks: ?v=16
 
   function installSwitchInteractionFix() {
     if (document.getElementById("bellaSwitchInteractionFix")) return;
