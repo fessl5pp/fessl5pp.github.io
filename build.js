@@ -116,7 +116,6 @@ const exclusiveOwners = [
   [/window\.BellaOwnerCenter\s*=(?!=)/, 'bella-owner-center.js', 'owner center'],
   [/window\.BellaModeratorCenter\s*=(?!=)/, 'bella-moderator-center.js', 'moderator center'],
   [/window\.BellaLiveWeb\s*=(?!=)/, 'bella-live-web.js', 'live web UI'],
-  [/window\.BellaMoments\s*=(?!=)/, 'bella-moments.js', 'moments'],
   [/window\.send\s*=(?!=)/, 'bella-vnext.js', 'send flow'],
   [/window\.getAIReply\s*=(?!=)/, 'bella-vnext.js', 'AI reply flow'],
   [/window\.updateMood\s*=(?!=)/, 'bella-vnext.js', 'mood UI'],
@@ -139,6 +138,11 @@ requireAssignment('bella-context.js', /window\.BellaContext\s*=(?!=)/, 'base Bel
 requireAssignment('bella-context-v24.js', /window\.BellaContext\s*=\s*api/, 'v24 BellaContext overlay');
 requireAssignment('bella-memory-v3.js', /window\.BellaMemoryV3\s*=(?!=)/, 'base BellaMemoryV3');
 requireAssignment('bella-memory-v4.js', /window\.BellaMemoryV3\s*=\s*api/, 'v4 BellaMemoryV3 compatibility overlay');
+requireAssignment('bella-moments.js', /window\.BellaMoments\s*=(?!=)/, 'base BellaMoments');
+requireAssignment('bella-kuwaiti-games-data.js', /window\.BellaMoments\s*=\s*wrapped/, 'Kuwaiti dictionary BellaMoments overlay');
+if (coreModules.indexOf('bella-moments.js') >= coreModules.indexOf('bella-kuwaiti-games-data.js')) {
+  fail('BellaMoments base must load before the Kuwaiti dictionary overlay');
+}
 
 const networkLayers = ['bella-auth-bridge.js', 'bella-runtime.js', 'bella-feature-controls-v3.js', 'bella-resilience-v22.js'];
 for (let i = 0; i < networkLayers.length - 1; i++) {
@@ -156,4 +160,4 @@ try { new Function(bundle); }
 catch (error) { fail(`combined browser runtime syntax error: ${error.message}`); }
 
 console.log(`Bella complete browser graph validated (${uniqueModules.length} modules, ${bundle.length} chars).`);
-console.log(`Bella runtime split validated: ${coreModules.length} core + ${deferredModules.length} deferred; layered context/memory and fetch ownership are intentional.`);
+console.log(`Bella runtime split validated: ${coreModules.length} core + ${deferredModules.length} deferred; layered context/memory/moments and fetch ownership are intentional.`);
