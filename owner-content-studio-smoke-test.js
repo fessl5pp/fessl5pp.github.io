@@ -3,7 +3,7 @@ const assert = require('assert');
 
 const files = [
   'bella-content-cloud.js',
-  'bella-feature-controls-v2.js',
+  'bella-feature-controls-v3.js',
   'bella-game-mind.js',
   'bella-owner-content-studio.js',
   'bella-owner-power-v2.js',
@@ -23,6 +23,8 @@ const api = fs.readFileSync('api/content-generate.js','utf8');
 const app = fs.readFileSync('app.js','utf8');
 const sw = fs.readFileSync('sw.js','utf8');
 const migration = fs.readFileSync('supabase/migrations/20260909084000_bella_owner_content_studio_v17.sql','utf8');
+const runtimeGeneration = app.match(/script\.src\s*=\s*`\/\$\{file\}\?v=(\d+)`/)?.[1];
+assert.ok(runtimeGeneration, 'could not resolve the active runtime generation from app.js');
 
 assert.ok(migration.includes('bella_content_items'), 'content table migration missing');
 assert.ok(migration.includes("status in ('draft','pending','approved','rejected')"), 'review status contract missing');
@@ -51,14 +53,15 @@ assert.ok(mind.includes('سياق لعب اختياري:'), 'game-aware Bella co
 assert.ok(mind.includes('لا تذكر هالمعلومة إلا إذا ركبت طبيعي'), 'game context anti-annoyance rule missing');
 assert.ok(/state\.turns\s*-\s*state\.lastInjectedTurn\s*>=\s*8/.test(mind), 'game context cooldown missing');
 
-for (const file of ['bella-content-cloud.js','bella-feature-controls-v2.js','bella-game-mind.js']) {
+for (const file of ['bella-content-cloud.js','bella-feature-controls-v3.js','bella-game-mind.js']) {
   assert.ok(app.includes(`"${file}"`), `core loader missing ${file}`);
-  assert.ok(sw.includes(`/${file}?v=16`), `PWA cache missing ${file}`);
+  assert.ok(sw.includes(`/${file}?v=${runtimeGeneration}`), `PWA cache missing ${file} at runtime generation ${runtimeGeneration}`);
 }
 for (const file of ['bella-owner-content-studio.js','bella-owner-power-v2.js']) {
   assert.ok(app.includes(`"${file}"`), `deferred loader missing ${file}`);
-  assert.ok(sw.includes(`/${file}?v=16`), `PWA cache missing ${file}`);
+  assert.ok(sw.includes(`/${file}?v=${runtimeGeneration}`), `PWA cache missing ${file} at runtime generation ${runtimeGeneration}`);
 }
-assert.ok(sw.includes('bella-pwa-v19-release-17'), 'v17 cache rotation missing');
+assert.ok(sw.includes('bella-pwa-v19-release-17'), 'v17 cache history marker missing');
+assert.ok(!app.includes('"bella-feature-controls-v2.js"'), 'superseded feature-controls-v2 must stay removed from the runtime');
 
-console.log('Bella v17 owner Content Studio validated: manual CRUD, AI pending-review flow, approved live cloud content, granular owner controls, XP tools and game-aware chat context.');
+console.log('Bella v17+ owner Content Studio validated on current runtime: manual CRUD, AI review, v3 feature controls, XP tools and game-aware context remain wired.');
