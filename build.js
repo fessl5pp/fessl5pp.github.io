@@ -107,6 +107,7 @@ const exclusiveOwners = [
   [/window\.BellaVoice\s*=(?!=)/, 'bella-voice.js', 'voice'],
   [/window\.BellaVoiceV2\s*=(?!=)/, 'bella-voice-v2.js', 'voice v2'],
   [/window\.BellaBrainV2\s*=(?!=)/, 'bella-brain-v2.js', 'brain'],
+  [/window\.BellaAvatar\s*=(?!=)/, 'bella-avatar.js', 'avatar'],
   [/window\.BellaAlive\s*=(?!=)/, 'bella-alive.js', 'alive'],
   [/window\.BellaMomentFeedback\s*=(?!=)/, 'bella-moments-feedback.js', 'moment feedback'],
   [/window\.BellaAIActivities\s*=(?!=)/, 'bella-ai-activities.js', 'AI activities'],
