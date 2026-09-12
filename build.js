@@ -26,9 +26,23 @@ if (uniqueModules.length !== browserModules.length) {
   const duplicates = browserModules.filter((file, index) => browserModules.indexOf(file) !== index);
   fail(`duplicate app modules: ${[...new Set(duplicates)].join(', ')}`);
 }
-if (!coreModules.includes('bella-vnext.js')) fail('core runtime must include bella-vnext.js');
-if (!coreModules.includes('bella-context-v24.js')) fail('core runtime must include the v24 context overlay');
-if (!coreModules.includes('bella-memory-v4.js')) fail('core runtime must include the v4 memory overlay');
+
+const criticalModules = [
+  'bella-account.js',
+  'bella-account-memory.js',
+  'bella-live-web.js',
+  'bella-legacy-plus.js',
+  'bella-style.js',
+  'bella-vnext.js',
+  'bella-context-v24.js',
+  'bella-memory-v4.js',
+  'bella-feature-controls-v3.js',
+  'bella-resilience-v22.js',
+  'bella-moderator-center.js'
+];
+for (const file of criticalModules) {
+  if (!browserModules.includes(file)) fail(`critical runtime module is not loaded: ${file}`);
+}
 if (!deferredModules.includes('bella-owner-resilience-v22.js')) fail('owner resilience UI must remain deferred');
 if (browserModules.includes('bella-feature-controls-v2.js')) fail('superseded feature-controls-v2 must not be loaded');
 
