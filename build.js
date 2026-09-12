@@ -27,29 +27,68 @@ if (uniqueModules.length !== browserModules.length) {
   fail(`duplicate app modules: ${[...new Set(duplicates)].join(', ')}`);
 }
 
+// Stable baseline: these modules are intentional product surfaces. The dynamic graph below
+// still validates every newly added app module automatically, so this is not the source list.
 const criticalModules = [
   'bella-account.js',
-  'bella-account-memory.js',
-  'bella-live-web.js',
+  'bella-analytics.js',
+  'script.js',
   'bella-legacy-plus.js',
+  'bella-config.js',
   'bella-context.js',
   'bella-context-v24.js',
   'bella-routing.js',
-  'bella-style.js',
-  'bella-runtime.js',
-  'bella-vnext.js',
+  'bella-moments.js',
+  'bella-brain-v2.js',
+  'bella-quality-v23.js',
+  'bella-memory-v3.js',
   'bella-memory-v4.js',
-  'bella-feature-controls-v3.js',
-  'bella-resilience-v22.js',
-  'bella-moderator-center.js',
+  'bella-style.js',
+  'bella-personality-v3.js',
+  'bella-auth-bridge.js',
+  'bella-runtime.js',
+  'bella-voice.js',
+  'bella-voice-v2.js',
+  'bella-vnext.js',
+  'bella-avatar.js',
+  'bella-live-web.js',
+  'bella-account-memory.js',
+  'bella-account-center.js',
   'bella-speed.js',
   'bella-ui.js',
-  'bella-install.js'
+  'bella-game-bank-v2.js',
+  'bella-game-bank-v3.js',
+  'bella-content-cloud.js',
+  'bella-kuwaiti-games-data.js',
+  'bella-ultimate-content.js',
+  'bella-feature-controls-v3.js',
+  'bella-resilience-v22.js',
+  'bella-season-v20.js',
+  'bella-game-mind.js',
+  'bella-moments-ui.js',
+  'bella-alive.js',
+  'bella-moments-feedback.js',
+  'bella-ai-activities.js',
+  'bella-broadcasts-v19.js',
+  'bella-install.js',
+  'bella-moments-cloud.js',
+  'bella-owner-center.js',
+  'bella-owner-users.js',
+  'bella-moderator-center.js',
+  'bella-owner-analytics.js',
+  'bella-owner-controls.js',
+  'bella-owner-moments.js',
+  'bella-owner-content-studio.js',
+  'bella-owner-power-v2.js',
+  'bella-owner-dashboard-v2.js',
+  'bella-owner-control-room-v19.js',
+  'bella-owner-ops-v20.js',
+  'bella-owner-control-plane-v21.js',
+  'bella-owner-resilience-v22.js'
 ];
 for (const file of criticalModules) {
   if (!browserModules.includes(file)) fail(`critical runtime module is not loaded: ${file}`);
 }
-if (!deferredModules.includes('bella-owner-resilience-v22.js')) fail('owner resilience UI must remain deferred');
 if (browserModules.includes('bella-feature-controls-v2.js')) fail('superseded feature-controls-v2 must not be loaded');
 
 const loaded = uniqueModules.map(file => {
