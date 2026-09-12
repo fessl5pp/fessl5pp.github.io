@@ -32,13 +32,19 @@ const criticalModules = [
   'bella-account-memory.js',
   'bella-live-web.js',
   'bella-legacy-plus.js',
-  'bella-style.js',
-  'bella-vnext.js',
+  'bella-context.js',
   'bella-context-v24.js',
+  'bella-routing.js',
+  'bella-style.js',
+  'bella-runtime.js',
+  'bella-vnext.js',
   'bella-memory-v4.js',
   'bella-feature-controls-v3.js',
   'bella-resilience-v22.js',
-  'bella-moderator-center.js'
+  'bella-moderator-center.js',
+  'bella-speed.js',
+  'bella-ui.js',
+  'bella-install.js'
 ];
 for (const file of criticalModules) {
   if (!browserModules.includes(file)) fail(`critical runtime module is not loaded: ${file}`);
