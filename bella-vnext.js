@@ -171,16 +171,9 @@
   }
 
   function learnFromText(text) {
-    const n = norm(text);
-    const likes = [
-      ["قهو", "يحب القهوة"], ["ماتشا", "يحب الماتشا"], ["شاي", "يحب الشاي"],
-      ["بحر", "يحب قعدات البحر"], ["ماينكرافت", "يلعب ماينكرافت"], ["روبلوكس", "يلعب روبلوكس"],
-      ["مجبوس", "يحب المجبوس"], ["شاورما", "يحب الشاورما"], ["افنيوز", "يروح الأفنيوز"], ["مارينا", "يحب مارينا/البحر"]
-    ];
-    if (hasAny(n, ["احب", "أحب", "افضل", "أفضل", "دايم", "عادة"])) {
-      for (const [key, mem] of likes) if (n.includes(key)) addMemory(mem);
-    }
-    const rememberMatch = text.match(/(?:تذكري|تذكرين|احفظي|حفظي)\s+(?:ان|إن|اني|إني)?\s*(.{3,80})/i);
+    // Durable memory is opt-in only. General preferences still influence the current
+    // conversation through history/style, but are not persisted unless the user asks.
+    const rememberMatch = text.match(/(?:تذكري|تذكرين|احفظي|حفظي|لا تنسين)\s+(?:ان|إن|اني|إني)?\s*(.{3,80})/i);
     if (rememberMatch) addMemory(rememberMatch[1]);
   }
 
@@ -508,7 +501,7 @@
     const items = v.memory.length ? v.memory.map((x, i) => `<li>${escapeHtml(x)} <button data-del="${i}">×</button></li>`).join("") : "<li>للحين ما حفظت عنك شي مفيد.</li>";
     const el = modal("bellaMemory", `
       <h2>ذاكرة بيلا 🧠</h2>
-      <p>هذي أشياء بسيطة محفوظة <b>على جهازك</b> عشان السوالف تصير أذكى.</p>
+      <p>هذي أشياء بسيطة حفظتها باختيارك <b>على جهازك</b> عشان السوالف تصير أذكى.</p>
       <ul class="memory-list">${items}</ul>
       <div class="vnext-actions"><button id="clearBellaMemory" class="danger-btn">امسحي الذاكرة</button><button class="vnext-ghost" onclick="this.closest('.vnext-modal').remove()">سكر</button></div>
     `);
@@ -519,7 +512,7 @@
   window.openPrivacy = function openPrivacy() {
     modal("bellaPrivacy", `
       <h2>الخصوصية 🔐</h2>
-      <p>بيلا تحفظ الاسم والتفضيلات البسيطة وعدادات اللعب محلياً في متصفحك عشان تكمل السالفة. تقدر تمسحها بأي وقت من زر الذاكرة.</p>
+      <p>بيلا تحفظ الاسم والإعدادات وعدادات اللعب محلياً في متصفحك عشان تكمل السالفة. الذاكرة الدائمة ما تنضاف من كلامك العادي؛ تنحفظ فقط إذا طلبت من بيلا تتذكر معلومة أو أضفتها بنفسك.</p>
       <p>ما نطلب منك كلمات مرور أو بيانات بنكية أو أرقام رسمية. رسائل الذكاء الاصطناعي تنرسل للسيرفر عشان يطلع الرد، ومفعّل عدم تخزين الردود في طلبات OpenAI قدر الإمكان.</p>
       <button class="vnext-primary" onclick="this.closest('.vnext-modal').remove()">تمام</button>
     `);
