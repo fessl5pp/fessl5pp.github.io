@@ -15,7 +15,6 @@
   // Bella v23 Adaptive Brain + Dynamic Reasoning + Relationship Vector + Knowledge Freshness + Correction Telemetry marker.
   // Bella v24 Semantic Memory + Hybrid Context + Memory Distiller + Temporal Decay + Contextual Dialect marker.
   // Previous validated runtime generation markers retained for legacy regression checks: ?v=16 ?v=21 ?v=22 ?v=23
-  // Legacy module compatibility marker only: "bella-feature-controls-v2.js" was superseded by "bella-feature-controls-v3.js" in v20+.
 
   function installSwitchInteractionFix() {
     if (document.getElementById("bellaSwitchInteractionFix")) return;
