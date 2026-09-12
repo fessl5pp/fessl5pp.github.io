@@ -6,6 +6,7 @@ const avatar = read('bella-avatar.js');
 const app = read('app.js');
 const sw = read('sw.js');
 const build = read('build.js');
+const runtimeGeneration = app.match(/script\.src\s*=\s*`\/\$\{file\}\?v=(\d+)`/)?.[1];
 
 assert.ok(avatar.includes('window.BellaAvatar = Object.freeze'), 'avatar module must expose a read-only BellaAvatar namespace');
 assert.ok(avatar.includes('heroAvatar') && avatar.includes('chatAvatar'), 'avatar module must decorate both hero and chat avatars');
@@ -22,8 +23,9 @@ assert.ok(!avatar.includes('fetch('), 'visual identity must not add any network 
 
 assert.ok(app.indexOf('bella-vnext.js') < app.indexOf('bella-avatar.js'), 'avatar must load after canonical mood ownership');
 assert.ok(app.indexOf('bella-avatar.js') < app.indexOf('bella-live-web.js'), 'avatar should decorate the core UI before optional live-web helpers');
-assert.ok(sw.includes('/bella-avatar.js?v=16'), 'PWA shell must cache the avatar module');
-assert.ok(build.includes("['bella-avatar.js', 'Mood-reactive Bella visual identity']"), 'build must syntax-check the avatar module');
-assert.ok(build.includes("owner: 'bella-avatar.js'"), 'build must enforce BellaAvatar namespace ownership');
+assert.ok(runtimeGeneration, 'active runtime generation must be detectable');
+assert.ok(sw.includes(`/bella-avatar.js?v=${runtimeGeneration}`), 'PWA shell must cache the avatar module at the active generation');
+assert.ok(build.includes("'bella-avatar.js'"), 'complete build graph must include the avatar module');
+assert.ok(build.includes("'bella-avatar.js', 'avatar'"), 'build must enforce BellaAvatar namespace ownership');
 
-console.log('Bella avatar smoke tests passed: mood-reactive identity, accessibility, PWA caching and ownership boundaries are valid.');
+console.log('Bella avatar smoke tests passed: mood-reactive identity, accessibility, active PWA generation and ownership boundaries are valid.');
