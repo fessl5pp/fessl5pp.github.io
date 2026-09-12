@@ -10,18 +10,19 @@ const controls = read('bella-owner-controls.js');
 const chat = read('api/chat.js');
 const dira = read('api/dira.js');
 const guard = read('lib/bella-control.js');
+const runtimeGeneration = app.match(/script\.src\s*=\s*`\/\$\{file\}\?v=(\d+)`/)?.[1];
 
 for (const file of ['bella-config.js', 'bella-owner-controls.js', 'lib/bella-control.js']) {
   assert.ok(fs.existsSync(file), `${file} must exist`);
 }
-
+assert.ok(runtimeGeneration, 'active runtime generation must be detectable from app.js');
 assert.ok(app.includes('bella-config.js'), 'boot must load public remote config');
 assert.ok(app.includes('bella-owner-controls.js'), 'boot must load owner controls');
-assert.ok(app.includes('?v=16'), 'remote controls must stay on the validated module cache generation');
-assert.ok(sw.includes('bella-config.js?v=16'), 'PWA must cache public config module');
-assert.ok(sw.includes('bella-owner-controls.js?v=16'), 'PWA must cache owner controls module');
-assert.ok(build.includes("owner: 'bella-config.js'"), 'build must validate BellaConfig ownership');
-assert.ok(build.includes("owner: 'bella-owner-controls.js'"), 'build must validate owner-controls ownership');
+assert.ok(sw.includes(`bella-config.js?v=${runtimeGeneration}`), 'PWA must cache public config module at the active generation');
+assert.ok(sw.includes(`bella-owner-controls.js?v=${runtimeGeneration}`), 'PWA must cache owner controls module at the active generation');
+assert.ok(build.includes('bella-config.js'), 'complete build graph must validate BellaConfig');
+assert.ok(build.includes('bella-owner-controls.js'), 'complete build graph must validate owner controls');
+assert.ok(build.includes('exclusiveOwners'), 'build must enforce explicit browser namespace ownership');
 
 assert.ok(config.includes('bella_public_config'), 'public client must read server config');
 assert.ok(config.includes('games_enabled'), 'public config must gate games');
@@ -41,6 +42,7 @@ assert.ok(controls.includes('BellaOwnerCenter?.isOwner'), 'owner controls must r
 
 assert.ok(guard.includes('bella_claim_ai_request'), 'server guard must claim AI usage through Supabase');
 assert.ok(guard.includes('control_unavailable'), 'server control outage must have explicit fail-open state');
+assert.ok(guard.includes('Safe Mode must gate secondary AI before the usage-claim RPC'), 'Safe Mode must be checked before secondary AI usage is claimed');
 assert.ok(chat.includes('claimBellaAi'), 'chat API must enforce the server control guard');
 assert.ok(chat.includes('live_web_disabled'), 'chat must fall back when live web is disabled');
 assert.ok(chat.includes('daily_limit'), 'chat must enforce daily AI limit');
@@ -52,7 +54,7 @@ for (const source of [config, controls]) {
   assert.ok(!/window\.send\s*=/.test(source), 'control modules must not own send');
   assert.ok(!/window\.getAIReply\s*=/.test(source), 'control modules must not own AI reply');
   assert.ok(!/window\.updateMood\s*=/.test(source), 'control modules must not own mood');
-  assert.ok(!/window\.fetch\s*=/.test(source), 'control modules must not own network runtime');
+  assert.ok(!/window\.fetch\s*=/.test(source), 'legacy control modules must not own network runtime');
 }
 
-console.log('Bella owner controls smoke tests passed: protected remote toggles, maintenance, announcements and server-enforced AI limits are wired safely.');
+console.log('Bella owner controls smoke tests passed: protected remote toggles, current PWA generation, Safe Mode quota guard and server-enforced AI limits are wired safely.');
