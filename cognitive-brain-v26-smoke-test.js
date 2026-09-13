@@ -57,7 +57,7 @@ must(control, 'applyCognitiveBrainV26', 'OpenAI request patch does not apply the
 for (const model of ['gpt-5.6-luna','gpt-5.6-terra','gpt-5.6-sol']) must(cognition, model, `missing adaptive model ${model}.`);
 must(control, 'body.model = plan.model.id', 'server-side model selection is not active.');
 must(control, 'fetchOpenAiWithFallback', 'model availability fallback is missing.');
-must(control, 'gpt-5-mini', 'existing model fallback must remain available.');
+must(cognition, 'fallback: "gpt-5-mini"', 'existing model fallback must remain available.');
 ok(!gated.includes('req.body?.model') && !gated.includes('req.body.model'), 'client must never choose the trusted model tier.');
 
 must(health, 'cognitiveBrain: "v26"', 'health endpoint must expose the v26 cognitive brain.');
