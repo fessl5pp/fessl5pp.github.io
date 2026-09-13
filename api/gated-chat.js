@@ -4,7 +4,7 @@ import { requireBellaOwner } from "../lib/bella-owner-access.js";
 import { handleBellaOwnerPersonaPreview } from "../lib/bella-owner-persona-preview.js";
 import { primeBellaResilienceRuntimeV22 } from "../lib/bella-control.js";
 import { runBellaRequestContextV22 } from "../lib/bella-request-context-v22.js";
-import { enrichBellaSemanticMemoryV24 } from "../lib/bella-semantic-memory-v24.js";
+import { enrichBellaSemanticMemoryV30 } from "../lib/bella-semantic-memory-v30.js";
 import { routeBellaMetacognitionV27, bellaMetacognitionInstructionV27, reviewBellaAnswerV27 } from "../lib/bella-metacognition-v27.js";
 import {
   createBellaBrainTelemetryStateV29,
@@ -27,14 +27,13 @@ function exposeMetacognitionDiagnostics(req, res, plan, telemetryState) {
     res.setHeader("X-Bella-Cognitive-Brain", "v27");
     res.setHeader("X-Bella-Base-Cognition", "v26");
     res.setHeader("X-Bella-Brain-Telemetry", "v29");
+    res.setHeader("X-Bella-Memory-Intelligence", "v30");
     res.setHeader("X-Bella-Model-Tier", String(plan.model?.tier || "unknown"));
     res.setHeader("X-Bella-Verification", String(plan.verification?.mode || "light"));
     res.setHeader("X-Bella-Confidence", String(plan.confidence?.tier || "unknown"));
     res.setHeader("X-Bella-Critic", plan.critic?.enabled ? "selected" : "skipped");
   } catch {}
 
-  // Critic-selected turns must be buffered so the internal reviewer can inspect the
-  // complete draft before anything is sent to the browser. Normal chat still streams.
   if (plan.critic?.enabled) {
     if (req.body && typeof req.body === "object") req.body = { ...req.body, stream: false };
     if (req.headers && typeof req.headers === "object") req.headers.accept = "application/json";
@@ -70,6 +69,7 @@ function exposeMetacognitionDiagnostics(req, res, plan, telemetryState) {
           cognitiveBrain: "v27",
           baseCognition: "v26",
           brainTelemetry: "v29",
+          memoryIntelligence: "v30",
           taskKind: plan.task?.kind || "knowledge",
           modelTier: plan.model?.tier || "unknown",
           verification: plan.verification?.mode || "light",
@@ -95,8 +95,6 @@ export default async function handler(req, res) {
   const access = await checkBellaAccountAccess(req);
   if (rejectSuspendedAccount(res, access)) return;
 
-  // v27 metacognition is derived server-side only. The browser cannot select model,
-  // critic mode, confidence tier, verification mode or trusted cognitive instructions.
   const metacognitivePlan = routeBellaMetacognitionV27({
     message: req.body?.message,
     history: Array.isArray(req.body?.history) ? req.body.history : []
@@ -105,20 +103,21 @@ export default async function handler(req, res) {
   brainTelemetryV29.startedAt = requestStartedAt;
   exposeMetacognitionDiagnostics(req, res, metacognitivePlan, brainTelemetryV29);
 
-  // Keep the proven v26 model router, but attach v27's trusted metacognitive guidance
-  // to the same request-scoped plan so the first draft is calibrated before any critic pass.
   const cognitivePlan = {
     ...metacognitivePlan.cognition,
     metacognitiveInstruction: bellaMetacognitionInstructionV27(metacognitivePlan)
   };
 
-  // v24 only enriches explicitly saved durable memories. Failure is non-blocking:
-  // core chat remains available even if embeddings or Supabase retrieval are degraded.
+  // v30 only retrieves explicit durable memories. It ranks them by semantic/keyword
+  // relevance plus importance, confidence, confirmation recency and bounded recall use.
+  // Failure is non-blocking so the core chat never depends on memory availability.
   try {
-    req.bellaSemanticMemoryV24 = await enrichBellaSemanticMemoryV24(req);
+    req.bellaSemanticMemoryV30 = await enrichBellaSemanticMemoryV30(req);
   } catch {
-    req.bellaSemanticMemoryV24 = { active: false, reason: "degraded" };
+    req.bellaSemanticMemoryV30 = { active: false, reason: "degraded", version: "v30" };
   }
+  // Compatibility for diagnostics/code that still looks for the v24 slot.
+  req.bellaSemanticMemoryV24 = req.bellaSemanticMemoryV30;
 
   const rolloutSubject = String(req.body?.rolloutSubject || "server-control").replace(/\u0000/g, "").trim().slice(0, 120) || "server-control";
   const resiliencePromise = primeBellaResilienceRuntimeV22(rolloutSubject, false).catch(() => null);
@@ -131,8 +130,6 @@ export default async function handler(req, res) {
       brainTelemetryV29
     }, () => chatHandler(req, res));
   } finally {
-    // Await a short, bounded aggregate write after the response work completes. The
-    // recorder never receives message/history/memory/name/user-id/IP data and skips guests.
     await recordBellaBrainQualityV29({
       req,
       access,
