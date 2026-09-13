@@ -6,6 +6,11 @@ function fail(message) {
   process.exit(1);
 }
 function ok(condition, message) { if (!condition) fail(message); }
+function moduleGeneration(source, file) {
+  const escaped = file.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const matches = [...source.matchAll(new RegExp(`/${escaped}\\?v=(\\d+)`, 'g'))];
+  return Math.max(0, ...matches.map(match => Number(match[1]) || 0));
+}
 
 const router = fs.readFileSync('lib/bella-intelligence-v23.js', 'utf8');
 const chat = fs.readFileSync('api/chat.js', 'utf8');
@@ -67,8 +72,10 @@ ok(migration.includes("set search_path = ''"), 'SECURITY DEFINER functions must 
 ok(!/message_text|raw_message|stack_trace/i.test(migration), 'migration must not persist raw chat/error content');
 
 ok(app.includes('Bella v23 Adaptive Brain'), 'v23 app marker missing');
-ok(app.includes('bella-quality-v23.js') && (app.includes('?v=23') || app.includes('?v=24') || app.includes('?v=25')), 'v23 client runtime must remain loaded under current generation');
+ok(app.includes('bella-quality-v23.js'), 'v23 client runtime must remain loaded.');
+const appGeneration = Number(app.match(/script\.src = `\/\$\{file\}\?v=(\d+)`/)?.[1] || 0);
+ok(appGeneration >= 23, `v23 client runtime cache generation is too old: ${appGeneration || 'missing'}`);
 ok(sw.includes('bella-pwa-v24-release-23'), 'v23 cache generation marker must remain available for regression history');
-ok(sw.includes('/bella-quality-v23.js?v=25') || sw.includes('/bella-quality-v23.js?v=24') || sw.includes('/bella-quality-v23.js?v=23'), 'quality runtime is not precached under the current release.');
+ok(moduleGeneration(sw, 'bella-quality-v23.js') >= 23, 'quality runtime is not precached under the current release.');
 
 console.log('Bella v23 adaptive brain checks passed under the current release: dynamic reasoning, freshness routing, relationship vector and privacy-minimal correction telemetry remain wired.');
