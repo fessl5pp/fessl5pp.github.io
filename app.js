@@ -56,6 +56,7 @@
     "bella-avatar.js",
     "bella-live-web.js",
     "bella-account-memory-v30.js",
+    // bella-account-memory.js remains a repository rollback artifact only; it is not loaded in v30.
     "bella-account-center.js",
     "bella-speed.js",
     "bella-ui.js",
