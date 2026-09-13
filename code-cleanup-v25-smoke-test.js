@@ -49,7 +49,7 @@ must(prepare, 'unreferenced Bella JS shipped', 'static release must reject unref
 ok(!fs.existsSync('bella-feature-controls-v2.js'), 'superseded feature-controls-v2 must stay deleted.');
 ok(!fs.existsSync('moments-v3-smoke-test.js'), 'obsolete Moments v3 smoke test must stay deleted.');
 
-// v25 release wiring.
+// v25 shell/runtime release wiring. The chat intelligence implementation remains v24 by design.
 ok(pkg.version === '2.5.0', 'package release must be 2.5.0.');
 must(app, 'Bella v25 Cleanup & Hardening', 'v25 app marker is missing.');
 must(app, '?v=25', 'v25 runtime cache generation is missing.');
@@ -57,8 +57,8 @@ must(sw, 'bella-pwa-v26-release-25', 'v25 service-worker cache rotation is missi
 must(sw, '?v=25', 'service worker must precache the v25 runtime generation.');
 must(health, 'release: "v25"', 'health endpoint must report v25.');
 must(health, 'cleanupHardening: "v25"', 'health endpoint must expose the v25 cleanup/hardening layer.');
-must(chat, 'release: "v25"', 'chat intelligence metadata must report v25.');
-must(chat, 'X-Bella-Release", "v25"', 'stream release header must report v25.');
+must(health, 'databasePolicyHygiene: "v25"', 'health endpoint must expose v25 DB policy hygiene.');
+must(chat, 'X-Bella-Release", "v24"', 'v24 chat intelligence layer marker must stay stable until that layer itself changes.');
 const releaseHeader = (vercel.headers || []).find(rule => rule.source === '/')?.headers?.find(header => String(header.key || '').toLowerCase() === 'x-bella-release')?.value;
 ok(releaseHeader === 'v25', 'Vercel shell release header must report v25.');
 
