@@ -1,0 +1,23 @@
+{
+  "version": "v28",
+  "overallMinimum": 0.95,
+  "categoryMinimums": {
+    "social": 1,
+    "correction": 0.93,
+    "technical": 0.9,
+    "deep_technical": 1,
+    "freshness": 0.92,
+    "ambiguity": 0.9,
+    "followup": 0.9,
+    "sensitive": 0.9,
+    "transform": 0.9
+  },
+  "hardContracts": [
+    "kuwaiti_identity",
+    "anti_fabrication",
+    "natural_dialect",
+    "hidden_reasoning_privacy",
+    "critic_store_false",
+    "server_side_routing"
+  ]
+}
