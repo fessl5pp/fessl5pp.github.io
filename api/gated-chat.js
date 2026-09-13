@@ -5,7 +5,7 @@ import { handleBellaOwnerPersonaPreview } from "../lib/bella-owner-persona-previ
 import { primeBellaResilienceRuntimeV22 } from "../lib/bella-control.js";
 import { runBellaRequestContextV22 } from "../lib/bella-request-context-v22.js";
 import { enrichBellaSemanticMemoryV24 } from "../lib/bella-semantic-memory-v24.js";
-import { routeBellaMetacognitionV27, reviewBellaAnswerV27 } from "../lib/bella-metacognition-v27.js";
+import { routeBellaMetacognitionV27, bellaMetacognitionInstructionV27, reviewBellaAnswerV27 } from "../lib/bella-metacognition-v27.js";
 
 function ownerPreviewRequested(req) {
   if (req.method !== "POST") return false;
@@ -91,6 +91,13 @@ export default async function handler(req, res) {
   });
   exposeMetacognitionDiagnostics(req, res, metacognitivePlan);
 
+  // Keep the proven v26 model router, but attach v27's trusted metacognitive guidance
+  // to the same request-scoped plan so the first draft is calibrated before any critic pass.
+  const cognitivePlan = {
+    ...metacognitivePlan.cognition,
+    metacognitiveInstruction: bellaMetacognitionInstructionV27(metacognitivePlan)
+  };
+
   // v24 only enriches explicitly saved durable memories. Failure is non-blocking:
   // core chat remains available even if embeddings or Supabase retrieval are degraded.
   try {
@@ -104,7 +111,7 @@ export default async function handler(req, res) {
   return runBellaRequestContextV22({
     rolloutSubject,
     resiliencePromise,
-    cognitivePlan: metacognitivePlan.cognition,
+    cognitivePlan,
     metacognitivePlan
   }, () => chatHandler(req, res));
 }
