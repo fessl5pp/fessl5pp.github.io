@@ -15,7 +15,8 @@
   // Bella v23 Adaptive Brain + Dynamic Reasoning + Relationship Vector + Knowledge Freshness + Correction Telemetry marker.
   // Bella v24 Semantic Memory + Hybrid Context + Memory Distiller + Temporal Decay + Contextual Dialect marker.
   // Bella v25 Cleanup & Hardening + complete runtime graph validation + explicit durable memory + DB policy hygiene + Safe Mode quota protection marker.
-  // Previous validated runtime generation markers retained for regression checks: ?v=16 ?v=21 ?v=22 ?v=23 ?v=24
+  // Bella v30 Memory Intelligence v5 + topic/contradiction awareness + confidence/importance/recall ranking marker.
+  // Previous validated runtime generation markers retained for regression checks: ?v=16 ?v=21 ?v=22 ?v=23 ?v=24 ?v=25
 
   function installSwitchInteractionFix() {
     if (document.getElementById("bellaSwitchInteractionFix")) return;
@@ -44,6 +45,7 @@
     "bella-quality-v23.js",
     "bella-memory-v3.js",
     "bella-memory-v4.js",
+    "bella-memory-v5.js",
     "bella-style.js",
     "bella-personality-v3.js",
     "bella-auth-bridge.js",
@@ -53,7 +55,7 @@
     "bella-vnext.js",
     "bella-avatar.js",
     "bella-live-web.js",
-    "bella-account-memory.js",
+    "bella-account-memory-v30.js",
     "bella-account-center.js",
     "bella-speed.js",
     "bella-ui.js",
@@ -94,7 +96,7 @@
   function loadScript(file) {
     return new Promise((resolve, reject) => {
       const script = document.createElement("script");
-      script.src = `/${file}?v=25`;
+      script.src = `/${file}?v=30`;
       script.async = false;
       script.onload = resolve;
       script.onerror = () => reject(new Error(`Failed to load ${file}`));
