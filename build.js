@@ -29,6 +29,7 @@ if (uniqueModules.length !== browserModules.length) {
 
 // Stable baseline: these modules are intentional product surfaces. The dynamic graph below
 // still validates every newly added app module automatically, so this is not the source list.
+// Legacy regression marker only: bella-account-memory.js was replaced by v30 runtime.
 const criticalModules = [
   'bella-account.js',
   'bella-analytics.js',
@@ -43,6 +44,7 @@ const criticalModules = [
   'bella-quality-v23.js',
   'bella-memory-v3.js',
   'bella-memory-v4.js',
+  'bella-memory-v5.js',
   'bella-style.js',
   'bella-personality-v3.js',
   'bella-auth-bridge.js',
@@ -52,7 +54,7 @@ const criticalModules = [
   'bella-vnext.js',
   'bella-avatar.js',
   'bella-live-web.js',
-  'bella-account-memory.js',
+  'bella-account-memory-v30.js',
   'bella-account-center.js',
   'bella-speed.js',
   'bella-ui.js',
@@ -90,6 +92,7 @@ for (const file of criticalModules) {
   if (!browserModules.includes(file)) fail(`critical runtime module is not loaded: ${file}`);
 }
 if (browserModules.includes('bella-feature-controls-v2.js')) fail('superseded feature-controls-v2 must not be loaded');
+if (browserModules.includes('bella-account-memory.js')) fail('legacy account-memory runtime must not load beside v30');
 
 const loaded = uniqueModules.map(file => {
   const source = read(file);
@@ -111,7 +114,7 @@ const exclusiveOwners = [
   [/window\.BellaAlive\s*=(?!=)/, 'bella-alive.js', 'alive'],
   [/window\.BellaMomentFeedback\s*=(?!=)/, 'bella-moments-feedback.js', 'moment feedback'],
   [/window\.BellaAIActivities\s*=(?!=)/, 'bella-ai-activities.js', 'AI activities'],
-  [/window\.BellaAccountMemory\s*=(?!=)/, 'bella-account-memory.js', 'cloud memory'],
+  [/window\.BellaAccountMemory\s*=(?!=)/, 'bella-account-memory-v30.js', 'cloud memory'],
   [/window\.BellaAccountCenter\s*=(?!=)/, 'bella-account-center.js', 'account center'],
   [/window\.BellaOwnerCenter\s*=(?!=)/, 'bella-owner-center.js', 'owner center'],
   [/window\.BellaModeratorCenter\s*=(?!=)/, 'bella-moderator-center.js', 'moderator center'],
@@ -133,13 +136,17 @@ function requireAssignment(file, pattern, label) {
   if (!pattern.test(byFile.get(file) || '')) fail(`${file} must own ${label}`);
 }
 
-// Layered namespaces intentionally have a base implementation plus a forward-compatible overlay.
+// Layered namespaces intentionally have a base implementation plus forward-compatible overlays.
 requireAssignment('bella-context.js', /window\.BellaContext\s*=(?!=)/, 'base BellaContext');
 requireAssignment('bella-context-v24.js', /window\.BellaContext\s*=\s*api/, 'v24 BellaContext overlay');
 requireAssignment('bella-memory-v3.js', /window\.BellaMemoryV3\s*=(?!=)/, 'base BellaMemoryV3');
 requireAssignment('bella-memory-v4.js', /window\.BellaMemoryV3\s*=\s*api/, 'v4 BellaMemoryV3 compatibility overlay');
+requireAssignment('bella-memory-v5.js', /window\.BellaMemoryV3\s*=\s*api/, 'v5 BellaMemory compatibility overlay');
 requireAssignment('bella-moments.js', /window\.BellaMoments\s*=(?!=)/, 'base BellaMoments');
 requireAssignment('bella-kuwaiti-games-data.js', /window\.BellaMoments\s*=\s*wrapped/, 'Kuwaiti dictionary BellaMoments overlay');
+if (!(coreModules.indexOf('bella-memory-v3.js') < coreModules.indexOf('bella-memory-v4.js') && coreModules.indexOf('bella-memory-v4.js') < coreModules.indexOf('bella-memory-v5.js'))) {
+  fail('Bella Memory layers must load v3 -> v4 -> v5');
+}
 if (coreModules.indexOf('bella-moments.js') >= coreModules.indexOf('bella-kuwaiti-games-data.js')) {
   fail('BellaMoments base must load before the Kuwaiti dictionary overlay');
 }
