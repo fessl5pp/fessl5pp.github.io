@@ -61,7 +61,8 @@ must(health, 'brainQualityTelemetry: "v29"', 'public health must expose v29 tele
 must(health, 'signed-in-aggregate-only', 'public health must disclose telemetry sampling scope.');
 must(health, 'brainQualityRawTextStored: false', 'public health must declare raw text is not stored.');
 
-ok(pkg.version === '2.9.0', 'package release must be 2.9.0.');
+const [major, minor] = String(pkg.version || '0.0.0').split('.').map(Number);
+ok(major > 2 || (major === 2 && minor >= 9), `package release must be 2.9.0 or newer; got ${pkg.version}.`);
 const apiFunctions = fs.readdirSync('api').filter(name => name.endsWith('.js'));
 ok(apiFunctions.length <= 12, `Hobby-plan guard: ${apiFunctions.length} API functions found; maximum is 12.`);
 
