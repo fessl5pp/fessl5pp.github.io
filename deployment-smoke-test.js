@@ -4,6 +4,14 @@ function fail(message) {
   console.error(`Bella deployment regression failed: ${message}`);
   process.exit(1);
 }
+function currentAppGeneration(source) {
+  return Number(source.match(/script\.src = `\/\$\{file\}\?v=(\d+)`/)?.[1] || 0);
+}
+function moduleGeneration(source, file) {
+  const escaped = file.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const matches = [...source.matchAll(new RegExp(`/${escaped}\\?v=(\\d+)`, 'g'))];
+  return Math.max(0, ...matches.map(match => Number(match[1]) || 0));
+}
 
 const vercel = JSON.parse(fs.readFileSync('vercel.json', 'utf8'));
 const app = fs.readFileSync('app.js', 'utf8');
@@ -24,24 +32,28 @@ for (const source of ['/', '/index.html', '/sw.js', '/app.js']) {
 }
 
 const releaseHeader = headerRule('/')?.headers?.find(header => header.key.toLowerCase() === 'x-bella-release')?.value;
-if (releaseHeader !== 'v25') fail('The production shell must expose Bella release v25.');
+const shellRelease = Number(String(releaseHeader || '').match(/^v(\d+)$/)?.[1] || 0);
+if (shellRelease < 25) fail(`The production shell must expose Bella release v25 or newer; got ${releaseHeader || 'missing'}.`);
 
 if (!app.includes('Bella v25 Cleanup & Hardening')) fail('app.js v25 release marker is missing.');
-if (!app.includes('?v=25')) fail('Runtime modules must use the v25 cache generation.');
+const generation = currentAppGeneration(app);
+if (generation < 25) fail(`Runtime modules must use cache generation v25 or newer; got ${generation || 'missing'}.`);
 if (!app.includes('const coreModules') || !app.includes('const deferredModules')) fail('core/deferred performance split is missing.');
-for (const moduleName of ['bella-brain-v2.js','bella-quality-v23.js','bella-context-v24.js','bella-memory-v3.js','bella-memory-v4.js','bella-alive.js','bella-owner-dashboard-v2.js','bella-feature-controls-v3.js','bella-season-v20.js','bella-owner-ops-v20.js','bella-owner-control-plane-v21.js','bella-resilience-v22.js','bella-owner-resilience-v22.js']) {
-  if (!app.includes(moduleName)) fail(`v25 app loader missing ${moduleName}.`);
-  if (!sw.includes(`/${moduleName}?v=25`)) fail(`v25 service worker missing ${moduleName}.`);
+for (const moduleName of ['bella-brain-v2.js','bella-quality-v23.js','bella-context-v24.js','bella-memory-v3.js','bella-memory-v4.js','bella-memory-v5.js','bella-alive.js','bella-owner-dashboard-v2.js','bella-feature-controls-v3.js','bella-season-v20.js','bella-owner-ops-v20.js','bella-owner-control-plane-v21.js','bella-resilience-v22.js','bella-owner-resilience-v22.js']) {
+  if (!app.includes(moduleName)) fail(`current app loader missing ${moduleName}.`);
+  if (moduleGeneration(sw, moduleName) < 25) fail(`current service worker missing ${moduleName} under a v25-or-newer generation.`);
 }
-if (!sw.includes('bella-pwa-v26-release-25')) fail('Service worker cache generation was not rotated for v25.');
+if (!app.includes('bella-account-memory-v30.js')) fail('current app loader must use Bella account memory v30.');
+if (moduleGeneration(sw, 'bella-account-memory-v30.js') < 30) fail('service worker must precache Bella account memory v30.');
+if (!sw.includes('bella-pwa-v26-release-25')) fail('Service worker must retain the v25 cache-generation history marker.');
 if (!sw.includes('/app.js?v=11')) fail('Service worker must cache the exact app entry requested by index.html.');
-if (!sw.includes('?v=25')) fail('Service worker must precache the v25 runtime generation.');
 if (!sw.includes('cache: "no-store"')) fail('Navigation requests must bypass stale browser HTTP caches.');
 
-if (!health.includes('release: "v25"')) fail('Deployment health endpoint must report release v25.');
+if (!health.includes('release: "v25"')) fail('Deployment health endpoint must preserve the stable shell release v25.');
 if (!health.includes('cleanupHardening: "v25"')) fail('Deployment health endpoint must expose v25 cleanup hardening.');
 if (!health.includes('databasePolicyHygiene: "v25"')) fail('Deployment health endpoint must expose v25 DB policy hygiene.');
-if (!health.includes('semanticMemory: "v24"')) fail('Deployment health endpoint must preserve the v24 semantic-memory layer.');
+if (!(health.includes('semanticMemory: "v24"') || health.includes('semanticMemory: "v30"'))) fail('Deployment health endpoint must expose semantic memory v24 or newer.');
+if (!health.includes('memoryIntelligence: "v30"')) fail('Deployment health endpoint must expose Memory Intelligence v30.');
 if (!health.includes('hybridContext: "v24"')) fail('Deployment health endpoint must preserve the v24 hybrid-context layer.');
 if (!health.includes('contextualDialect: "v24"')) fail('Deployment health endpoint must preserve the v24 dialect selector.');
 if (!health.includes('adaptiveBrain: "v23"')) fail('Deployment health endpoint must preserve the v23 adaptive brain layer.');
@@ -50,7 +62,7 @@ if (!health.includes('VERCEL_GIT_COMMIT_SHA')) fail('Deployment health endpoint 
 if (!health.includes('Cache-Control')) fail('Deployment health endpoint must be non-cacheable.');
 if (!chat.includes('routeBellaIntelligenceV23') || !chat.includes('reasoning: { effort: intelligence.reasoning.effort }')) fail('Dynamic reasoning router is not active in chat.');
 if (!chat.includes('selectBellaDialectV24')) fail('Contextual dialect selector is not active in chat.');
-if (!gated.includes('enrichBellaSemanticMemoryV24')) fail('Semantic memory enrichment is not active in gated chat.');
+if (!(gated.includes('enrichBellaSemanticMemoryV30') || gated.includes('enrichBellaSemanticMemoryV24'))) fail('Semantic memory enrichment is not active in gated chat.');
 if (!cleanup.includes('Safe Mode must gate secondary AI before the usage-claim RPC')) fail('v25 Safe Mode quota regression protection is missing.');
 
-console.log('Bella v25 deployment regression checks passed: cleanup hardening, DB policy hygiene, Safe Mode quota protection, v24 semantic memory, v23 adaptive reasoning and v22 resilience remain active.');
+console.log('Bella deployment regression checks passed: v25 cleanup hardening, v22-v29 brain layers and v30 Memory Intelligence remain active under the current runtime generation.');
