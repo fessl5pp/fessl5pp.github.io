@@ -80,12 +80,13 @@ async function ownerDiagnostics(req, res) {
 
   const checks = [controlPlane, persona, ownerState, resilience, adaptiveBrain, semanticMemory,
     { name: "cognitive_brain_v26", ok: true, latencyMs: 0, detail: { routing: "adaptive", models: ["luna", "terra", "sol"], verification: "context+self-check+web" } },
+    { name: "metacognitive_brain_v27", ok: true, latencyMs: 0, detail: { confidence: "calibrated", critic: "selective", assumptions: "tracked", liveWebCritic: "skipped-by-design" } },
     { name: "openai_config", ok: Boolean(process.env.OPENAI_API_KEY), latencyMs: 0, detail: { configured: Boolean(process.env.OPENAI_API_KEY) } },
     { name: "vercel_runtime", ok: true, latencyMs: 0, detail: { environment: process.env.VERCEL_ENV || "unknown", region: process.env.VERCEL_REGION || null, commit: String(process.env.VERCEL_GIT_COMMIT_SHA || "").slice(0, 12) || null } }
   ];
 
   const failed = checks.filter(check => !check.ok).length;
-  return res.status(failed ? 207 : 200).json({ status: failed ? "degraded" : "ok", release: "v25-cleanup-hardening+brain-v26", checkedAt: new Date().toISOString(), failed, checks });
+  return res.status(failed ? 207 : 200).json({ status: failed ? "degraded" : "ok", release: "v25-cleanup-hardening+brain-v27", checkedAt: new Date().toISOString(), failed, checks });
 }
 
 export default async function handler(req, res) {
@@ -96,7 +97,7 @@ export default async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store, max-age=0");
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("X-Bella-Release", "v25");
-  res.setHeader("X-Bella-Cognitive-Brain", "v26");
+  res.setHeader("X-Bella-Cognitive-Brain", "v27");
   if (req.method === "HEAD") return res.status(204).end();
   if (ownerDiagnosticsRequested(req)) return ownerDiagnostics(req, res);
 
@@ -114,9 +115,13 @@ export default async function handler(req, res) {
     contextualDialect: "v24",
     cleanupHardening: "v25",
     databasePolicyHygiene: "v25",
-    cognitiveBrain: "v26",
+    baseCognitiveBrain: "v26",
+    cognitiveBrain: "v27",
+    metacognitiveBrain: "v27",
     adaptiveModelRouting: "luna-terra-sol",
-    verificationLayer: "v26",
+    confidenceCalibration: "v27",
+    selectiveCritic: "v27",
+    assumptionTracking: "v27",
     commit,
     environment,
     timestamp: new Date().toISOString()
