@@ -68,13 +68,21 @@ async function ownerDiagnostics(req, res) {
       const rows = Array.isArray(data) ? data : [];
       return { correctionBuckets: rows.length, correctionSignals: rows.reduce((sum, row) => sum + Math.max(0, Number(row.event_count) || 0), 0) };
     }),
-    timedCheck("semantic_memory_v24", async () => {
-      const data = await supabaseRpc("bella_memory_hybrid_search_v24", owner.token, {
+    timedCheck("memory_intelligence_v30", async () => {
+      const data = await supabaseRpc("bella_memory_hybrid_search_v30", owner.token, {
         p_query_text: "diagnostics",
         p_query_embedding: null,
         p_match_count: 1
       });
-      return { reachable: Array.isArray(data), model: "text-embedding-3-small", dimensions: 512, retrieval: "hybrid-exact+semantic" };
+      return {
+        reachable: Array.isArray(data),
+        model: "text-embedding-3-small",
+        dimensions: 512,
+        retrieval: "semantic+keyword+confidence+importance+confirmation+recall",
+        cloudCapacity: 48,
+        promptWorkingSet: 12,
+        contradictions: "superseded"
+      };
     }),
     timedCheck("brain_quality_v29", async () => {
       const data = await supabaseRpc("bella_owner_brain_quality_v29", owner.token, { p_days: 14 });
@@ -105,12 +113,13 @@ async function ownerDiagnostics(req, res) {
     { name: "metacognitive_brain_v27", ok: true, latencyMs: 0, detail: { confidence: "calibrated", critic: "selective", assumptions: "tracked", liveWebCritic: "skipped-by-design" } },
     { name: "evaluation_harness_v28", ok: true, latencyMs: 0, detail: { corpusCases: 95, categories: 9, overallFloorPercent: 95, hardContracts: 6, ciBlocking: true } },
     { name: "brain_quality_telemetry_v29", ok: true, latencyMs: 0, detail: { privacy: "aggregate-only", sample: "signed-in", rawText: false, identifiersStored: false } },
+    { name: "memory_intelligence_v30", ok: true, latencyMs: 0, detail: { topicAware: true, contradictionAware: true, confidenceAware: true, recallReinforcement: true, cloudCapacity: 48, promptWorkingSet: 12 } },
     { name: "openai_config", ok: Boolean(process.env.OPENAI_API_KEY), latencyMs: 0, detail: { configured: Boolean(process.env.OPENAI_API_KEY) } },
     { name: "vercel_runtime", ok: true, latencyMs: 0, detail: { environment: process.env.VERCEL_ENV || "unknown", region: process.env.VERCEL_REGION || null, commit: String(process.env.VERCEL_GIT_COMMIT_SHA || "").slice(0, 12) || null } }
   ];
 
   const failed = checks.filter(check => !check.ok).length;
-  return res.status(failed ? 207 : 200).json({ status: failed ? "degraded" : "ok", release: "v25-cleanup-hardening+brain-v27+eval-v28+telemetry-v29", checkedAt: new Date().toISOString(), failed, checks });
+  return res.status(failed ? 207 : 200).json({ status: failed ? "degraded" : "ok", release: "v25-cleanup-hardening+brain-v27+eval-v28+telemetry-v29+memory-v30", checkedAt: new Date().toISOString(), failed, checks });
 }
 
 export default async function handler(req, res) {
@@ -124,6 +133,7 @@ export default async function handler(req, res) {
   res.setHeader("X-Bella-Cognitive-Brain", "v27");
   res.setHeader("X-Bella-Evaluation-Harness", "v28");
   res.setHeader("X-Bella-Brain-Telemetry", "v29");
+  res.setHeader("X-Bella-Memory-Intelligence", "v30");
   if (req.method === "HEAD") return res.status(204).end();
   if (ownerDiagnosticsRequested(req)) return ownerDiagnostics(req, res);
 
@@ -136,7 +146,7 @@ export default async function handler(req, res) {
     controlPlane: "v21",
     resilienceLab: "v22",
     adaptiveBrain: "v23",
-    semanticMemory: "v24",
+    semanticMemory: "v30",
     hybridContext: "v24",
     contextualDialect: "v24",
     cleanupHardening: "v25",
@@ -155,6 +165,12 @@ export default async function handler(req, res) {
     brainQualityTelemetry: "v29",
     brainQualityTelemetryScope: "signed-in-aggregate-only",
     brainQualityRawTextStored: false,
+    memoryIntelligence: "v30",
+    memoryModel: "v5",
+    memoryCloudCapacity: 48,
+    memoryPromptWorkingSet: 12,
+    memoryContradictionPolicy: "supersede-old",
+    memoryRecallReinforcement: true,
     commit,
     environment,
     timestamp: new Date().toISOString()
