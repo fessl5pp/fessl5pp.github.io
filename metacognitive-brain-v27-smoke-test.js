@@ -20,7 +20,7 @@ const health = read('api/health.js');
 
 const executable = [v23, v26, v27]
   .map(source => source.replace(/^import .*$/gm, '').replace(/export async function /g, 'async function ').replace(/export function /g, 'function '))
-  .join('\n') + '\nthis.__brain={routeBellaMetacognitionV27,bellaMetacognitionInstructionV27};';
+  .join('\n') + '\nthis.__brain={routeBellaMetacognitionV27,bellaMetacognitionInstructionV27,bellaCognitionInstructionV26};';
 const sandbox = { URL, AbortController, setTimeout, clearTimeout };
 vm.runInNewContext(executable, sandbox);
 const brain = sandbox.__brain;
@@ -45,6 +45,7 @@ const correction = brain.routeBellaMetacognitionV27({
   history: [{ role: 'assistant', content: 'يمكن المشكلة من insert policy' }]
 });
 ok(correction.task.correction === true, 'user correction signal must survive into v27.');
+ok(correction.task.social === false, 'correction must not be downgraded to social intent.');
 ok(correction.critic.enabled === true, 'complex technical correction must select the critic.');
 ok(correction.assumptions.preserveUserCorrection === true, 'latest correction must override prior assumptions.');
 
@@ -60,6 +61,8 @@ const instruction = brain.bellaMetacognitionInstructionV27(ambiguous);
 must(instruction, 'لا تحولي الاحتمال إلى حقيقة', 'v27 must calibrate uncertainty.');
 must(instruction, 'لا تعرضي سلسلة التفكير', 'v27 must keep private reasoning hidden.');
 must(instruction, 'سؤالًا واحدًا محددًا', 'v27 must constrain clarification behavior.');
+const firstPass = brain.bellaCognitionInstructionV26({ ...ambiguous.cognition, metacognitiveInstruction: instruction });
+must(firstPass, 'Bella Metacognitive Brain v27', 'v27 guidance must reach the first-pass model, not only the critic.');
 
 must(v27, 'reviewBellaAnswerV27', 'selective critic implementation is missing.');
 must(v27, 'KEEP', 'critic must support no-op KEEP decisions.');
@@ -69,9 +72,10 @@ must(v27, 'store: false', 'critic calls must not enable OpenAI response storage.
 must(v27, '<REVIEW_INPUT>', 'critic input must be explicitly delimited as untrusted data.');
 
 must(gated, 'routeBellaMetacognitionV27', 'gated chat must derive v27 plan server-side.');
+must(gated, 'bellaMetacognitionInstructionV27', 'gated chat must inject v27 guidance into the first draft.');
 must(gated, 'reviewBellaAnswerV27', 'gated chat must run the selective critic before sending selected replies.');
 must(gated, 'stream: false', 'critic-selected replies must be buffered before delivery.');
-must(gated, 'cognitivePlan: metacognitivePlan.cognition', 'v26 model routing must remain request-scoped under v27.');
+must(gated, 'metacognitiveInstruction:', 'request-scoped v26 plan must carry v27 metacognitive guidance.');
 must(gated, 'metacognitivePlan', 'v27 plan must remain request-scoped.');
 ok(!gated.includes('req.body?.model') && !gated.includes('req.body.model'), 'client must never select the trusted model/critic tier.');
 
@@ -81,4 +85,4 @@ must(health, 'selectiveCritic: "v27"', 'health endpoint must expose the v27 crit
 const apiFunctions = fs.readdirSync('api').filter(name => name.endsWith('.js'));
 ok(apiFunctions.length <= 12, `Hobby-plan guard: ${apiFunctions.length} API functions found; maximum is 12.`);
 
-console.log('Bella v27 metacognitive brain checks passed: confidence calibration, assumption tracking, selective buffered critic, correction priority, live-web critic isolation and v26 model routing compatibility are wired.');
+console.log('Bella v27 metacognitive brain checks passed: first-pass confidence calibration, assumption tracking, selective buffered critic, correction priority, live-web critic isolation and v26 model routing compatibility are wired.');
