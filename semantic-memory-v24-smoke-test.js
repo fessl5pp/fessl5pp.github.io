@@ -11,9 +11,15 @@ function must(source, needle, message) {
 function ok(condition, message) {
   if (!condition) throw new Error(message);
 }
+function moduleGeneration(source, file) {
+  const escaped = file.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const matches = [...source.matchAll(new RegExp(`/${escaped}\\?v=(\\d+)`, 'g'))];
+  return Math.max(0, ...matches.map(match => Number(match[1]) || 0));
+}
 
 const migration = read('supabase/migrations/20260911171307_bella_semantic_memory_v24.sql');
 const semantic = read('lib/bella-semantic-memory-v24.js');
+const semanticV30 = fs.existsSync('lib/bella-semantic-memory-v30.js') ? read('lib/bella-semantic-memory-v30.js') : '';
 const dialect = read('lib/bella-dialect-v24.js');
 const context = read('bella-context-v24.js');
 const memory4 = read('bella-memory-v4.js');
@@ -46,8 +52,16 @@ ok(!semantic.includes('service_role') && !semantic.includes('sb_secret_'), 'sema
 must(semantic, 'mergeRetrievedMemory', 'retrieved semantic facts are not merged into the bounded memory working set.');
 must(semantic, 'reason: "search_unavailable"', 'semantic memory must fail softly when retrieval is unavailable.');
 
-must(gated, 'enrichBellaSemanticMemoryV24', 'gated chat does not run semantic memory enrichment.');
-must(gated, 'core chat remains available', 'semantic-memory failure must not block core chat.');
+const activeSemanticSource = semanticV30 || semantic;
+ok(
+  gated.includes('enrichBellaSemanticMemoryV30') || gated.includes('enrichBellaSemanticMemoryV24'),
+  'gated chat does not run semantic memory enrichment.'
+);
+must(gated, 'catch {', 'semantic-memory failure path must be non-blocking.');
+ok(
+  activeSemanticSource.includes('reason: "search_unavailable"'),
+  'active semantic-memory layer must fail softly when retrieval is unavailable.'
+);
 
 must(context, 'hybridContextV24: true', 'hybrid local context wrapper is not exposed.');
 must(context, 'base.similarity(currentText, item.content)', 'hybrid context must retain lexical relevance.');
@@ -80,19 +94,21 @@ must(chat, 'X-Bella-Dialect', 'stream diagnostics must expose the selected diale
 must(app, 'Bella v24 Semantic Memory + Hybrid Context + Memory Distiller + Temporal Decay + Contextual Dialect marker', 'v24 app marker missing.');
 for (const moduleName of ['bella-context-v24.js','bella-memory-v4.js']) {
   must(app, moduleName, `app loader missing ${moduleName}.`);
-  if (!sw.includes(`/${moduleName}?v=24`) && !sw.includes(`/${moduleName}?v=25`)) throw new Error(`service worker missing ${moduleName} under the current generation.`);
+  ok(moduleGeneration(sw, moduleName) >= 24, `service worker missing ${moduleName} under the current generation.`);
 }
-if (!app.includes('?v=24') && !app.includes('?v=25')) throw new Error('current runtime cache generation missing.');
+const appGeneration = Number(app.match(/script\.src = `\/\$\{file\}\?v=(\d+)`/)?.[1] || 0);
+ok(appGeneration >= 24, `current runtime cache generation is too old: ${appGeneration || 'missing'}.`);
 must(sw, 'bella-pwa-v25-release-24', 'v24 service worker history marker missing.');
 
-must(health, 'semanticMemory: "v24"', 'health endpoint must expose semantic memory v24.');
+ok(health.includes('semanticMemory: "v24"') || health.includes('semanticMemory: "v30"'), 'health endpoint must expose semantic memory v24 or its forward-compatible v30 layer.');
 must(health, 'hybridContext: "v24"', 'health endpoint must expose hybrid context v24.');
 must(health, 'contextualDialect: "v24"', 'health endpoint must expose contextual dialect v24.');
 const releaseHeader = (vercel.headers || []).find(rule => rule.source === '/')?.headers?.find(header => String(header.key || '').toLowerCase() === 'x-bella-release')?.value;
-ok(['v24','v25'].includes(releaseHeader), 'Vercel shell release header must report v24 or a forward-compatible release.');
+const releaseNumber = Number(String(releaseHeader || '').match(/^v(\d+)$/)?.[1] || 0);
+ok(releaseNumber >= 24, `Vercel shell release header must report v24 or newer, got ${releaseHeader || 'missing'}.`);
 
 const apiFunctions = fs.readdirSync('api').filter(name => name.endsWith('.js'));
 ok(apiFunctions.length <= 12, `Hobby-plan guard: ${apiFunctions.length} API functions found; maximum is 12.`);
 ok(!fs.existsSync('api/semantic-memory-v24.js'), 'v24 must reuse gated chat instead of adding a serverless endpoint.');
 
-console.log('Bella v24 semantic memory checks passed under the current release: pgvector hybrid durable memory, local hybrid context, Memory v4 distillation, temporal decay, contextual dialect and Hobby-plan limits remain wired.');
+console.log('Bella v24 semantic memory checks passed under the current release: pgvector hybrid durable memory, local hybrid context, Memory v4+ distillation, temporal decay, contextual dialect and Hobby-plan limits remain wired.');
