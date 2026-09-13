@@ -28,6 +28,14 @@ const social = brain.routeBellaCognitionV26({ message: 'هلا شلونج', hist
 ok(social.model.tier === 'luna' && social.model.id === 'gpt-5.6-luna', 'simple social chat must use Luna.');
 ok(social.reasoning.effort === 'low', 'simple social chat must keep low reasoning.');
 
+const technical = brain.routeBellaCognitionV26({ message: 'شلون أصلح خطأ API في Supabase؟', history: [] });
+ok(technical.model.tier === 'terra' && technical.model.id === 'gpt-5.6-terra', 'ordinary technical help must use Terra at minimum.');
+ok(technical.verification.mode === 'self-check', 'technical help must self-check assumptions and failure modes.');
+
+const explanation = brain.routeBellaCognitionV26({ message: 'اشرح لي ليش السماء زرقا', history: [] });
+ok(explanation.model.tier === 'terra', 'explanatory questions must use Terra at minimum.');
+ok(explanation.task.explanatory === true, 'explanatory intent must be detected explicitly.');
+
 const focused = brain.routeBellaCognitionV26({
   message: 'طيب ليش صار جذي؟',
   history: [{ role: 'user', content: 'الموقع يعطيني خطأ بعد تسجيل الدخول' }, { role: 'assistant', content: 'خلنا نفحص السبب' }]
@@ -65,4 +73,4 @@ must(health, 'cognitiveBrain: "v26"', 'health endpoint must expose the v26 cogni
 const apiFunctions = fs.readdirSync('api').filter(name => name.endsWith('.js'));
 ok(apiFunctions.length <= 12, `Hobby-plan guard: ${apiFunctions.length} API functions found; maximum is 12.`);
 
-console.log('Bella v26 cognitive brain checks passed: adaptive Luna/Terra/Sol model routing, intent/ambiguity planning, private self-check, freshness verification, model fallback and request-scoped trust boundaries are wired.');
+console.log('Bella v26 cognitive brain checks passed: Luna social speed, Terra technical/explanatory reasoning, Sol deep analysis, ambiguity resolution, private self-check, freshness verification, model fallback and request-scoped trust boundaries are wired.');
