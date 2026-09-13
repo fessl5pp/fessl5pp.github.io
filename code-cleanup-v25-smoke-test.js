@@ -49,8 +49,9 @@ must(prepare, 'unreferenced Bella JS shipped', 'static release must reject unref
 ok(!fs.existsSync('bella-feature-controls-v2.js'), 'superseded feature-controls-v2 must stay deleted.');
 ok(!fs.existsSync('moments-v3-smoke-test.js'), 'obsolete Moments v3 smoke test must stay deleted.');
 
-// v25 shell/runtime release wiring. The chat intelligence implementation remains v24 by design.
-ok(pkg.version === '2.5.0', 'package release must be 2.5.0.');
+// v25 shell/runtime release wiring remains a minimum compatibility floor for newer releases.
+const [pkgMajor, pkgMinor] = String(pkg.version || '0.0.0').split('.').map(Number);
+ok(pkgMajor > 2 || (pkgMajor === 2 && pkgMinor >= 5), `package release must be 2.5.0 or newer; got ${pkg.version}.`);
 must(app, 'Bella v25 Cleanup & Hardening', 'v25 app marker is missing.');
 must(app, '?v=25', 'v25 runtime cache generation is missing.');
 must(sw, 'bella-pwa-v26-release-25', 'v25 service-worker cache rotation is missing.');
@@ -65,4 +66,4 @@ ok(releaseHeader === 'v25', 'Vercel shell release header must report v25.');
 const apiFunctions = fs.readdirSync('api').filter(name => name.endsWith('.js'));
 ok(apiFunctions.length <= 12, `Hobby-plan guard: ${apiFunctions.length} API functions found; maximum is 12.`);
 
-console.log('Bella v25 cleanup & hardening checks passed: policy hygiene, explicit memory, Safe Mode quota protection, dead-code-resistant build graph and release wiring are valid.');
+console.log('Bella v25 cleanup & hardening checks passed under the current release: policy hygiene, explicit memory, Safe Mode quota protection, dead-code-resistant build graph and release wiring remain valid.');
