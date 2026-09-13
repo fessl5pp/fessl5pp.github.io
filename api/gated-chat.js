@@ -5,6 +5,7 @@ import { handleBellaOwnerPersonaPreview } from "../lib/bella-owner-persona-previ
 import { primeBellaResilienceRuntimeV22 } from "../lib/bella-control.js";
 import { runBellaRequestContextV22 } from "../lib/bella-request-context-v22.js";
 import { enrichBellaSemanticMemoryV24 } from "../lib/bella-semantic-memory-v24.js";
+import { routeBellaCognitionV26 } from "../lib/bella-cognition-v26.js";
 
 function ownerPreviewRequested(req) {
   if (req.method !== "POST") return false;
@@ -12,6 +13,34 @@ function ownerPreviewRequested(req) {
   if (String(req?.query?.ownerPreview || "") === "1") return true;
   try { return new URL(req.url || "/", "https://bella.local").searchParams.get("ownerPreview") === "1"; }
   catch { return false; }
+}
+
+function exposeCognitionDiagnostics(res, plan) {
+  if (!res || !plan) return;
+  try {
+    res.setHeader("X-Bella-Cognitive-Brain", "v26");
+    res.setHeader("X-Bella-Model-Tier", String(plan.model?.tier || "unknown"));
+    res.setHeader("X-Bella-Verification", String(plan.verification?.mode || "light"));
+  } catch {}
+
+  if (typeof res.json !== "function") return;
+  const originalJson = res.json.bind(res);
+  res.json = payload => {
+    if (payload && typeof payload === "object" && !Array.isArray(payload) && payload.intelligence && typeof payload.intelligence === "object") {
+      payload = {
+        ...payload,
+        intelligence: {
+          ...payload.intelligence,
+          cognitiveBrain: "v26",
+          taskKind: plan.task?.kind || "knowledge",
+          modelTier: plan.model?.tier || "unknown",
+          verification: plan.verification?.mode || "light",
+          ambiguity: plan.ambiguity?.tier || "low"
+        }
+      };
+    }
+    return originalJson(payload);
+  };
 }
 
 export default async function handler(req, res) {
@@ -24,6 +53,14 @@ export default async function handler(req, res) {
   const access = await checkBellaAccountAccess(req);
   if (rejectSuspendedAccount(res, access)) return;
 
+  // v26 cognition is derived server-side only. The client cannot choose model tier,
+  // verification mode or trusted cognitive instructions.
+  const cognitivePlan = routeBellaCognitionV26({
+    message: req.body?.message,
+    history: Array.isArray(req.body?.history) ? req.body.history : []
+  });
+  exposeCognitionDiagnostics(res, cognitivePlan);
+
   // v24 only enriches explicitly saved durable memories. Failure is non-blocking:
   // core chat remains available even if embeddings or Supabase retrieval are degraded.
   try {
@@ -34,5 +71,5 @@ export default async function handler(req, res) {
 
   const rolloutSubject = String(req.body?.rolloutSubject || "server-control").replace(/\u0000/g, "").trim().slice(0, 120) || "server-control";
   const resiliencePromise = primeBellaResilienceRuntimeV22(rolloutSubject, false).catch(() => null);
-  return runBellaRequestContextV22({ rolloutSubject, resiliencePromise }, () => chatHandler(req, res));
+  return runBellaRequestContextV22({ rolloutSubject, resiliencePromise, cognitivePlan }, () => chatHandler(req, res));
 }
