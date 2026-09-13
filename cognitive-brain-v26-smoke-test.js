@@ -57,7 +57,7 @@ must(instruction, 'لا تعرضي سلسلة التفكير الداخلية', 
 must(instruction, 'الحالات الطرفية', 'technical cognition must check edge cases.');
 
 const v26Direct = gated.includes('routeBellaCognitionV26');
-const v26Layered = gated.includes('routeBellaMetacognitionV27') && gated.includes('cognitivePlan: metacognitivePlan.cognition');
+const v26Layered = gated.includes('routeBellaMetacognitionV27') && gated.includes('const cognitivePlan =') && gated.includes('metacognitivePlan.cognition');
 ok(v26Direct || v26Layered, 'gated chat must derive or preserve the v26 cognitive plan server-side.');
 ok(gated.includes('cognitivePlan') && gated.includes('runBellaRequestContextV22'), 'cognitive plan must stay request-scoped via AsyncLocalStorage.');
 must(gated, 'X-Bella-Cognitive-Brain', 'cognition diagnostics header is missing.');
