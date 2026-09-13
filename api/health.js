@@ -84,7 +84,7 @@ async function ownerDiagnostics(req, res) {
   ];
 
   const failed = checks.filter(check => !check.ok).length;
-  return res.status(failed ? 207 : 200).json({ status: failed ? "degraded" : "ok", release: "v24-semantic-memory", checkedAt: new Date().toISOString(), failed, checks });
+  return res.status(failed ? 207 : 200).json({ status: failed ? "degraded" : "ok", release: "v25-cleanup-hardening", checkedAt: new Date().toISOString(), failed, checks });
 }
 
 export default async function handler(req, res) {
@@ -94,7 +94,7 @@ export default async function handler(req, res) {
   }
   res.setHeader("Cache-Control", "no-store, max-age=0");
   res.setHeader("X-Content-Type-Options", "nosniff");
-  res.setHeader("X-Bella-Release", "v24");
+  res.setHeader("X-Bella-Release", "v25");
   if (req.method === "HEAD") return res.status(204).end();
   if (ownerDiagnosticsRequested(req)) return ownerDiagnostics(req, res);
 
@@ -103,13 +103,15 @@ export default async function handler(req, res) {
   return res.status(200).json({
     ok: true,
     app: "Bella",
-    release: "v24",
+    release: "v25",
     controlPlane: "v21",
     resilienceLab: "v22",
     adaptiveBrain: "v23",
     semanticMemory: "v24",
     hybridContext: "v24",
     contextualDialect: "v24",
+    cleanupHardening: "v25",
+    databasePolicyHygiene: "v25",
     commit,
     environment,
     timestamp: new Date().toISOString()
