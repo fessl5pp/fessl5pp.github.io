@@ -56,9 +56,11 @@ must(instruction, 'هل جاوبت المطلوب؟', 'cognitive instruction mus
 must(instruction, 'لا تعرضي سلسلة التفكير الداخلية', 'cognitive instruction must keep hidden reasoning private.');
 must(instruction, 'الحالات الطرفية', 'technical cognition must check edge cases.');
 
-must(gated, 'routeBellaCognitionV26', 'gated chat must derive the cognitive plan server-side.');
-must(gated, 'cognitivePlan }, () => chatHandler', 'cognitive plan must stay request-scoped via AsyncLocalStorage.');
-must(gated, 'X-Bella-Cognitive-Brain', 'v26 cognition diagnostics header is missing.');
+const v26Direct = gated.includes('routeBellaCognitionV26');
+const v26Layered = gated.includes('routeBellaMetacognitionV27') && gated.includes('cognitivePlan: metacognitivePlan.cognition');
+ok(v26Direct || v26Layered, 'gated chat must derive or preserve the v26 cognitive plan server-side.');
+ok(gated.includes('cognitivePlan') && gated.includes('runBellaRequestContextV22'), 'cognitive plan must stay request-scoped via AsyncLocalStorage.');
+must(gated, 'X-Bella-Cognitive-Brain', 'cognition diagnostics header is missing.');
 must(gated, 'X-Bella-Model-Tier', 'model tier diagnostics header is missing.');
 
 must(control, 'applyCognitiveBrainV26', 'OpenAI request patch does not apply the v26 brain.');
@@ -68,9 +70,9 @@ must(control, 'fetchOpenAiWithFallback', 'model availability fallback is missing
 must(cognition, 'fallback: "gpt-5-mini"', 'existing model fallback must remain available.');
 ok(!gated.includes('req.body?.model') && !gated.includes('req.body.model'), 'client must never choose the trusted model tier.');
 
-must(health, 'cognitiveBrain: "v26"', 'health endpoint must expose the v26 cognitive brain.');
+ok(health.includes('cognitiveBrain: "v26"') || health.includes('baseCognitiveBrain: "v26"'), 'health endpoint must preserve the v26 cognitive layer under newer brains.');
 
 const apiFunctions = fs.readdirSync('api').filter(name => name.endsWith('.js'));
 ok(apiFunctions.length <= 12, `Hobby-plan guard: ${apiFunctions.length} API functions found; maximum is 12.`);
 
-console.log('Bella v26 cognitive brain checks passed: Luna social speed, Terra technical/explanatory reasoning, Sol deep analysis, ambiguity resolution, private self-check, freshness verification, model fallback and request-scoped trust boundaries are wired.');
+console.log('Bella v26 cognitive brain checks passed under the current release: Luna social speed, Terra technical/explanatory reasoning, Sol deep analysis, ambiguity resolution, private self-check, freshness verification, model fallback and request-scoped trust boundaries remain wired.');
