@@ -6,6 +6,12 @@ import { primeBellaResilienceRuntimeV22 } from "../lib/bella-control.js";
 import { runBellaRequestContextV22 } from "../lib/bella-request-context-v22.js";
 import { enrichBellaSemanticMemoryV24 } from "../lib/bella-semantic-memory-v24.js";
 import { routeBellaMetacognitionV27, bellaMetacognitionInstructionV27, reviewBellaAnswerV27 } from "../lib/bella-metacognition-v27.js";
+import {
+  createBellaBrainTelemetryStateV29,
+  markBellaBrainCriticV29,
+  markBellaBrainResponseV29,
+  recordBellaBrainQualityV29
+} from "../lib/bella-brain-telemetry-v29.js";
 
 function ownerPreviewRequested(req) {
   if (req.method !== "POST") return false;
@@ -15,11 +21,12 @@ function ownerPreviewRequested(req) {
   catch { return false; }
 }
 
-function exposeMetacognitionDiagnostics(req, res, plan) {
+function exposeMetacognitionDiagnostics(req, res, plan, telemetryState) {
   if (!res || !plan) return;
   try {
     res.setHeader("X-Bella-Cognitive-Brain", "v27");
     res.setHeader("X-Bella-Base-Cognition", "v26");
+    res.setHeader("X-Bella-Brain-Telemetry", "v29");
     res.setHeader("X-Bella-Model-Tier", String(plan.model?.tier || "unknown"));
     res.setHeader("X-Bella-Verification", String(plan.verification?.mode || "light"));
     res.setHeader("X-Bella-Confidence", String(plan.confidence?.tier || "unknown"));
@@ -37,10 +44,12 @@ function exposeMetacognitionDiagnostics(req, res, plan) {
   const originalJson = res.json.bind(res);
   res.json = async payload => {
     let next = payload;
+    markBellaBrainResponseV29(telemetryState, payload);
     const successfulReply = res.statusCode >= 200 && res.statusCode < 300 && payload && typeof payload.reply === "string";
     let review = { reply: successfulReply ? payload.reply : "", applied: false, reason: plan.critic?.enabled ? "not-run" : "not-selected", tier: plan.critic?.tier || "none" };
 
     if (successfulReply && plan.critic?.enabled) {
+      const criticStartedAt = Date.now();
       review = await reviewBellaAnswerV27({
         apiKey: process.env.OPENAI_API_KEY,
         message: req.body?.message,
@@ -48,6 +57,7 @@ function exposeMetacognitionDiagnostics(req, res, plan) {
         draft: payload.reply,
         plan
       });
+      markBellaBrainCriticV29(telemetryState, review, Date.now() - criticStartedAt);
     }
 
     if (payload && typeof payload === "object" && !Array.isArray(payload)) {
@@ -59,6 +69,7 @@ function exposeMetacognitionDiagnostics(req, res, plan) {
           ...intelligence,
           cognitiveBrain: "v27",
           baseCognition: "v26",
+          brainTelemetry: "v29",
           taskKind: plan.task?.kind || "knowledge",
           modelTier: plan.model?.tier || "unknown",
           verification: plan.verification?.mode || "light",
@@ -80,6 +91,7 @@ export default async function handler(req, res) {
     return handleBellaOwnerPersonaPreview(req, res);
   }
 
+  const requestStartedAt = Date.now();
   const access = await checkBellaAccountAccess(req);
   if (rejectSuspendedAccount(res, access)) return;
 
@@ -89,7 +101,9 @@ export default async function handler(req, res) {
     message: req.body?.message,
     history: Array.isArray(req.body?.history) ? req.body.history : []
   });
-  exposeMetacognitionDiagnostics(req, res, metacognitivePlan);
+  const brainTelemetryV29 = createBellaBrainTelemetryStateV29(metacognitivePlan);
+  brainTelemetryV29.startedAt = requestStartedAt;
+  exposeMetacognitionDiagnostics(req, res, metacognitivePlan, brainTelemetryV29);
 
   // Keep the proven v26 model router, but attach v27's trusted metacognitive guidance
   // to the same request-scoped plan so the first draft is calibrated before any critic pass.
@@ -108,10 +122,23 @@ export default async function handler(req, res) {
 
   const rolloutSubject = String(req.body?.rolloutSubject || "server-control").replace(/\u0000/g, "").trim().slice(0, 120) || "server-control";
   const resiliencePromise = primeBellaResilienceRuntimeV22(rolloutSubject, false).catch(() => null);
-  return runBellaRequestContextV22({
-    rolloutSubject,
-    resiliencePromise,
-    cognitivePlan,
-    metacognitivePlan
-  }, () => chatHandler(req, res));
+  try {
+    return await runBellaRequestContextV22({
+      rolloutSubject,
+      resiliencePromise,
+      cognitivePlan,
+      metacognitivePlan,
+      brainTelemetryV29
+    }, () => chatHandler(req, res));
+  } finally {
+    // Await a short, bounded aggregate write after the response work completes. The
+    // recorder never receives message/history/memory/name/user-id/IP data and skips guests.
+    await recordBellaBrainQualityV29({
+      req,
+      access,
+      plan: metacognitivePlan,
+      state: brainTelemetryV29,
+      statusCode: res.statusCode
+    }).catch(() => null);
+  }
 }
