@@ -10,6 +10,13 @@ function must(source, needle, message) {
 function ok(condition, message) {
   if (!condition) throw new Error(message);
 }
+function currentAppGeneration(source) {
+  return Number(source.match(/script\.src = `\/\$\{file\}\?v=(\d+)`/)?.[1] || 0);
+}
+function maxCachedGeneration(source) {
+  const matches = [...source.matchAll(/\/bella-[a-z0-9-]+\.js\?v=(\d+)/gi)];
+  return Math.max(0, ...matches.map(match => Number(match[1]) || 0));
+}
 
 const migration = read('supabase/migrations/20260913084908_bella_v25_policy_hygiene.sql');
 const vnext = read('bella-vnext.js');
@@ -53,15 +60,16 @@ ok(!fs.existsSync('moments-v3-smoke-test.js'), 'obsolete Moments v3 smoke test m
 const [pkgMajor, pkgMinor] = String(pkg.version || '0.0.0').split('.').map(Number);
 ok(pkgMajor > 2 || (pkgMajor === 2 && pkgMinor >= 5), `package release must be 2.5.0 or newer; got ${pkg.version}.`);
 must(app, 'Bella v25 Cleanup & Hardening', 'v25 app marker is missing.');
-must(app, '?v=25', 'v25 runtime cache generation is missing.');
-must(sw, 'bella-pwa-v26-release-25', 'v25 service-worker cache rotation is missing.');
-must(sw, '?v=25', 'service worker must precache the v25 runtime generation.');
-must(health, 'release: "v25"', 'health endpoint must report v25.');
+ok(currentAppGeneration(app) >= 25, `runtime cache generation must be v25 or newer; got ${currentAppGeneration(app) || 'missing'}.`);
+must(sw, 'bella-pwa-v26-release-25', 'v25 service-worker cache rotation history is missing.');
+ok(maxCachedGeneration(sw) >= 25, `service worker must precache a v25-or-newer runtime generation; got ${maxCachedGeneration(sw) || 'missing'}.`);
+must(health, 'release: "v25"', 'health endpoint must report the stable shell release v25.');
 must(health, 'cleanupHardening: "v25"', 'health endpoint must expose the v25 cleanup/hardening layer.');
 must(health, 'databasePolicyHygiene: "v25"', 'health endpoint must expose v25 DB policy hygiene.');
 must(chat, 'X-Bella-Release", "v24"', 'v24 chat intelligence layer marker must stay stable until that layer itself changes.');
 const releaseHeader = (vercel.headers || []).find(rule => rule.source === '/')?.headers?.find(header => String(header.key || '').toLowerCase() === 'x-bella-release')?.value;
-ok(releaseHeader === 'v25', 'Vercel shell release header must report v25.');
+const releaseNumber = Number(String(releaseHeader || '').match(/^v(\d+)$/)?.[1] || 0);
+ok(releaseNumber >= 25, `Vercel shell release header must report v25 or newer; got ${releaseHeader || 'missing'}.`);
 
 const apiFunctions = fs.readdirSync('api').filter(name => name.endsWith('.js'));
 ok(apiFunctions.length <= 12, `Hobby-plan guard: ${apiFunctions.length} API functions found; maximum is 12.`);
