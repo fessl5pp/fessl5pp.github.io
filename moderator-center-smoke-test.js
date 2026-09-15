@@ -12,6 +12,7 @@ const app = read('app.js');
 const sw = read('sw.js');
 const build = read('build.js');
 const runtimeGeneration = app.match(/script\.src\s*=\s*`\/\$\{file\}\?v=(\d+)`/)?.[1];
+const pwaCore = sw.match(/const CORE = \[([\s\S]*?)\];/)?.[1] || '';
 
 assert.ok(moderator.includes('is_bella_moderator'), 'moderator center must verify server-side staff access');
 assert.ok(moderator.includes('bella_moderator_users'), 'moderator center must use the privacy-limited user list');
@@ -32,7 +33,7 @@ assert.ok(!/window\.getAIReply\s*=(?!=)/.test(moderator), 'moderator center must
 assert.ok(ownerUsers.includes('set_role') && ownerUsers.includes('bella_owner_manage_user'), 'staff role assignment must remain owner-owned');
 assert.ok(app.indexOf('bella-owner-users.js') < app.indexOf('bella-moderator-center.js'), 'moderator center must load after owner user management');
 assert.ok(runtimeGeneration, 'active runtime generation must be detectable');
-assert.ok(sw.includes(`/bella-moderator-center.js?v=${runtimeGeneration}`), 'PWA cache must include moderator center at the active generation');
+assert.ok(!pwaCore.includes(`/bella-moderator-center.js?v=${runtimeGeneration}`), 'moderator center must be lazy-loaded, not precached for normal users');
 assert.ok(build.includes("'bella-moderator-center.js', 'moderator center'"), 'build validator must enforce moderator center namespace ownership');
 
-console.log('Bella moderator center smoke tests passed: limited staff access, protected accounts, current cache generation and namespace ownership are wired.');
+console.log('Bella moderator center smoke tests passed: limited staff access, protected accounts, lazy loading and namespace ownership are wired.');
