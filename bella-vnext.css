@@ -84,3 +84,41 @@
   .top-island{padding:9px 10px;gap:5px}.mini{min-width:48px}.mini span{font-size:9px}.mood-pill{font-size:10px;padding:7px 8px}
   .hero h1{font-size:30px}.vnext-card{border-radius:24px;padding:19px 15px}.header-actions .tiny{padding:7px 10px}
 }
+
+/* Bella v33 Performance Polish
+   Touch/mobile Safari gets the same visual language without expensive full-screen GPU filters. */
+@media (hover:none) and (pointer:coarse), (max-width:759px){
+  body::before{display:none!important}
+  .top-island,
+  .hero,
+  .chat-win,
+  .header,
+  .input-area,
+  .modal,
+  .vnext-modal,
+  .vnext-toast,
+  .bella-popup{
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important;
+  }
+  .top-island{background:rgba(15,18,27,.96)!important}
+  .hero{background:linear-gradient(145deg,#151925,#0e1119)!important}
+  .chat-win{background:#080a0f!important}
+  .header{background:#10131b!important}
+  .input-area{background:#0d1017!important}
+  .modal,.vnext-modal{background:rgba(4,5,9,.94)!important}
+  .hero::before{filter:none!important;opacity:.42!important}
+  .chat-win.active{animation:none!important}
+  .bella-identity-avatar::before{animation:none!important;filter:blur(5px)!important;opacity:.34!important}
+  .bella-eye{animation-duration:8.5s!important}
+  .btn,.ghost,.tiny,.send,.badge,.m,.bella-identity-avatar,.bella-face,.bella-eye,.bella-brow,.bella-mouth,.bella-blush{
+    transition-duration:.08s!important;
+  }
+  .m,.badge,.mode-panel,.quick-suggestions button{contain:paint}
+}
+
+@media (max-width:430px){
+  .hero::before{display:none!important}
+  .bella-identity-avatar::before{display:none!important}
+  .m.user{box-shadow:none!important}
+}
