@@ -108,10 +108,16 @@
     const moderatorButton = modal.querySelector("#bellaModeratorSettings");
     if (!admin || !ownerButton || !moderatorButton) return;
 
+    // v34: owner/moderator code is no longer parsed for every visitor. Load it
+    // only when Settings actually needs to determine management access.
+    try { await window.__bellaLoadDeferred?.(); } catch {}
+    if (!modal.isConnected) return;
+
     let ownerAllowed = false;
     let moderatorAllowed = false;
     try { ownerAllowed = Boolean(await window.BellaOwnerCenter?.refresh?.()); } catch {}
     try { moderatorAllowed = Boolean(await window.BellaModeratorCenter?.refresh?.()); } catch {}
+    if (!modal.isConnected) return;
 
     ownerButton.hidden = !ownerAllowed;
     moderatorButton.hidden = !moderatorAllowed;
