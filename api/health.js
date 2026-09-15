@@ -115,12 +115,15 @@ async function ownerDiagnostics(req, res) {
     { name: "brain_quality_telemetry_v29", ok: true, latencyMs: 0, detail: { privacy: "aggregate-only", sample: "signed-in", rawText: false, identifiersStored: false } },
     { name: "memory_intelligence_v30", ok: true, latencyMs: 0, detail: { topicAware: true, contradictionAware: true, confidenceAware: true, recallReinforcement: true, cloudCapacity: 48, promptWorkingSet: 12 } },
     { name: "goal_thread_intelligence_v31", ok: true, latencyMs: 0, detail: { state: "request-scoped", followupResolution: true, constraintCarryover: true, expandedMemoryQuery: true, persisted: false } },
+    { name: "visual_system_v32", ok: true, latencyMs: 0, detail: { responsive: true, desktopAppShell: true, mobileFullScreen: true } },
+    { name: "performance_polish_v33", ok: true, latencyMs: 0, detail: { parallelCoreFetch: true, mobileGpuLight: true } },
+    { name: "comprehensive_qa_v34", ok: true, latencyMs: 0, detail: { lazyAdmin: true, dedupedLoader: true, pwaCache: "v34", avatar: "v10", browserE2E: true } },
     { name: "openai_config", ok: Boolean(process.env.OPENAI_API_KEY), latencyMs: 0, detail: { configured: Boolean(process.env.OPENAI_API_KEY) } },
     { name: "vercel_runtime", ok: true, latencyMs: 0, detail: { environment: process.env.VERCEL_ENV || "unknown", region: process.env.VERCEL_REGION || null, commit: String(process.env.VERCEL_GIT_COMMIT_SHA || "").slice(0, 12) || null } }
   ];
 
   const failed = checks.filter(check => !check.ok).length;
-  return res.status(failed ? 207 : 200).json({ status: failed ? "degraded" : "ok", release: "v25-cleanup-hardening+brain-v27+eval-v28+telemetry-v29+memory-v30+thread-v31", checkedAt: new Date().toISOString(), failed, checks });
+  return res.status(failed ? 207 : 200).json({ status: failed ? "degraded" : "ok", release: "v25-cleanup-hardening+brain-v27+eval-v28+telemetry-v29+memory-v30+thread-v31+visual-v32+perf-v33+qa-v34", checkedAt: new Date().toISOString(), failed, checks });
 }
 
 export default async function handler(req, res) {
@@ -131,6 +134,8 @@ export default async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store, max-age=0");
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("X-Bella-Release", "v25");
+  res.setHeader("X-Bella-Site-Release", "v34");
+  res.setHeader("X-Bella-Avatar", "v10");
   res.setHeader("X-Bella-Cognitive-Brain", "v27");
   res.setHeader("X-Bella-Evaluation-Harness", "v28");
   res.setHeader("X-Bella-Brain-Telemetry", "v29");
@@ -145,6 +150,13 @@ export default async function handler(req, res) {
     ok: true,
     app: "Bella",
     release: "v25",
+    siteRelease: "v34",
+    visualSystem: "v32",
+    performancePolish: "v33",
+    comprehensiveQA: "v34",
+    avatar: "v10",
+    pwaCache: "v34",
+    lazyAdminModules: true,
     controlPlane: "v21",
     resilienceLab: "v22",
     adaptiveBrain: "v23",
