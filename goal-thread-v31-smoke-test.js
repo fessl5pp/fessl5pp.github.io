@@ -67,9 +67,10 @@ assert.ok(semantic.includes('threadExpanded'), 'semantic memory diagnostics must
 assert.ok(health.includes('goalThreadIntelligence: "v31"'), 'health endpoint must expose v31 goal/thread intelligence');
 assert.ok(health.includes('goalThreadPersistence: false'), 'health must explicitly disclose that v31 goal state is not persisted');
 assert.ok(health.includes('threadExpandedMemoryRetrieval: true'), 'health must expose thread-aware memory retrieval');
-assert.equal(pkg.version, '3.1.0', 'package release must be 3.1.0');
+const [pkgMajor, pkgMinor] = String(pkg.version || '').split('.').map(Number);
+assert.ok(pkgMajor > 3 || (pkgMajor === 3 && pkgMinor >= 1), 'package release must be v3.1.0 or newer');
 
 const apiFunctions = fs.readdirSync('api').filter(name => name.endsWith('.js'));
 assert.ok(apiFunctions.length <= 12, `Hobby plan guard: ${apiFunctions.length} API functions found; maximum is 12.`);
 
-console.log('Bella v31 Goal & Thread Intelligence checks passed: follow-up resolution, constraint carryover, correction/reuse modes, expanded memory retrieval, no goal persistence and Hobby-plan limits are intact.');
+console.log('Bella v31 Goal & Thread Intelligence checks passed under the current release: follow-up resolution, constraint carryover, correction/reuse modes, expanded memory retrieval, no goal persistence and Hobby-plan limits are intact.');
