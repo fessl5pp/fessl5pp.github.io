@@ -24,6 +24,7 @@ const app = fs.readFileSync('app.js','utf8');
 const sw = fs.readFileSync('sw.js','utf8');
 const migration = fs.readFileSync('supabase/migrations/20260909084000_bella_owner_content_studio_v17.sql','utf8');
 const runtimeGeneration = app.match(/script\.src\s*=\s*`\/\$\{file\}\?v=(\d+)`/)?.[1];
+const pwaCore = sw.match(/const CORE = \[([\s\S]*?)\];/)?.[1] || '';
 assert.ok(runtimeGeneration, 'could not resolve the active runtime generation from app.js');
 
 assert.ok(migration.includes('bella_content_items'), 'content table migration missing');
@@ -55,13 +56,14 @@ assert.ok(/state\.turns\s*-\s*state\.lastInjectedTurn\s*>=\s*8/.test(mind), 'gam
 
 for (const file of ['bella-content-cloud.js','bella-feature-controls-v3.js','bella-game-mind.js']) {
   assert.ok(app.includes(`"${file}"`), `core loader missing ${file}`);
-  assert.ok(sw.includes(`/${file}?v=${runtimeGeneration}`), `PWA cache missing ${file} at runtime generation ${runtimeGeneration}`);
+  assert.ok(pwaCore.includes(`/${file}?v=${runtimeGeneration}`), `PWA core missing ${file} at runtime generation ${runtimeGeneration}`);
 }
 for (const file of ['bella-owner-content-studio.js','bella-owner-power-v2.js']) {
   assert.ok(app.includes(`"${file}"`), `deferred loader missing ${file}`);
-  assert.ok(sw.includes(`/${file}?v=${runtimeGeneration}`), `PWA cache missing ${file} at runtime generation ${runtimeGeneration}`);
+  assert.ok(!pwaCore.includes(`/${file}?v=${runtimeGeneration}`), `lazy admin module ${file} must not be precached for normal users`);
 }
+assert.ok(app.includes('const adminModules = deferredModules.filter'), 'v34 admin lazy-loading split missing');
 assert.ok(sw.includes('bella-pwa-v19-release-17'), 'v17 cache history marker missing');
 assert.ok(!app.includes('"bella-feature-controls-v2.js"'), 'superseded feature-controls-v2 must stay removed from the runtime');
 
-console.log('Bella v17+ owner Content Studio validated on current runtime: manual CRUD, AI review, v3 feature controls, XP tools and game-aware context remain wired.');
+console.log('Bella v17+ owner Content Studio validated: public game runtime remains precached while owner studio/power stay protected and lazy-loaded.');
