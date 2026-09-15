@@ -6,6 +6,8 @@ const app = read('app.js');
 const ui = read('bella-ui.js');
 const avatar = read('bella-avatar.js');
 const sw = read('sw.js');
+const health = read('api/health.js');
+const vercel = JSON.parse(read('vercel.json'));
 const e2e = read('tests/e2e/bella.spec.js');
 const pkg = JSON.parse(read('package.json'));
 
@@ -42,6 +44,20 @@ for (const mood of ['mood-happy', 'mood-cute', 'mood-angry']) {
   assert.ok(!rule[1].includes('transform:'), `${mood} must not change avatar crop/scale.`);
 }
 
+assert.ok(health.includes('siteRelease: "v34"'), 'health endpoint must expose the current site release separately from stable shell compatibility.');
+assert.ok(health.includes('comprehensiveQA: "v34"'), 'health endpoint must expose v34 QA status.');
+assert.ok(health.includes('performancePolish: "v33"'), 'health endpoint must preserve v33 performance marker.');
+assert.ok(health.includes('avatar: "v10"'), 'health endpoint must expose approved avatar v10.');
+assert.ok(health.includes('lazyAdminModules: true'), 'health endpoint must expose lazy-admin runtime state.');
+assert.ok(health.includes('X-Bella-Site-Release') && health.includes('X-Bella-Avatar'), 'health response must send site/avatar diagnostic headers.');
+for (const route of ['/', '/index.html']) {
+  const rule = (vercel.headers || []).find(item => item.source === route);
+  const headers = new Map((rule?.headers || []).map(item => [String(item.key).toLowerCase(), item.value]));
+  assert.strictEqual(headers.get('x-bella-site-release'), 'v34', `${route} must advertise site release v34.`);
+  assert.strictEqual(headers.get('x-bella-avatar'), 'v10', `${route} must advertise avatar v10.`);
+  assert.strictEqual(headers.get('x-bella-release'), 'v25', `${route} must preserve stable v25 compatibility header.`);
+}
+
 assert.ok(e2e.includes('approved Bella avatar v10 loads and keeps a stable crop across moods'), 'browser E2E must cover avatar v10.');
 assert.ok(e2e.includes('has no horizontal layout overflow'), 'browser E2E must cover mobile overflow.');
 assert.ok(e2e.includes('script[data-bella-module^="bella-owner-"]'), 'browser E2E must verify lazy owner bundles.');
@@ -55,4 +71,4 @@ assert.ok(String(pkg.scripts?.['vercel-build'] || '').includes('comprehensive-v3
 const apiFunctions = fs.readdirSync('api').filter(name => name.endsWith('.js'));
 assert.ok(apiFunctions.length <= 12, `Hobby-plan guard: ${apiFunctions.length} API functions found; maximum is 12.`);
 
-console.log('Bella v34 comprehensive QA checks passed: deduped runtime loading, lazy admin, fresh resilient PWA cache, stable avatar v10 and browser regression coverage are locked in.');
+console.log('Bella v34 comprehensive QA checks passed: runtime/PWA hardening, stable avatar v10, lazy admin, health diagnostics and browser regression coverage are locked in.');
