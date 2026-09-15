@@ -12,6 +12,9 @@ const app = fs.readFileSync('app.js','utf8');
 const sw = fs.readFileSync('sw.js','utf8');
 const migration = fs.readFileSync('supabase/migrations/20260910100000_bella_owner_control_room_v19.sql','utf8');
 const auditMigration = fs.readFileSync('supabase/migrations/20260910101500_bella_owner_permission_audit_v19.sql','utf8');
+const runtimeGeneration = app.match(/script\.src\s*=\s*`\/\$\{file\}\?v=(\d+)`/)?.[1];
+const pwaCore = sw.match(/const CORE = \[([\s\S]*?)\];/)?.[1] || '';
+assert.ok(runtimeGeneration, 'active runtime generation must be detectable');
 
 for (const needle of ['bella_broadcasts','bella_user_gifts','bella_owner_set_ban','bella_owner_set_progress','bella_owner_adjust_xp','bella_owner_schedule_maintenance','bella_owner_schedule_announcement','bella_owner_send_gift','bella_owner_kill_switch','bella_owner_dashboard_v4','bella_owner_ops_state']) {
   assert.ok(migration.includes(needle), `v19 migration missing ${needle}`);
@@ -29,11 +32,11 @@ assert.ok(ownerUi.includes('bella_owner_dashboard_v4') && ownerUi.includes('/api
 assert.ok(publicUi.includes('bella_public_broadcasts') && publicUi.includes('bella_my_gifts'), 'broadcast/gift client missing');
 assert.ok(publicUi.includes('bella_mark_gift_viewed'), 'gift acknowledgement missing');
 
-for (const file of ['bella-broadcasts-v19.js','bella-owner-control-room-v19.js']) {
-  assert.ok(app.includes(`"${file}"`), `app loader missing ${file}`);
-  assert.ok(sw.includes(`/${file}?v=16`), `PWA cache missing ${file}`);
-}
+assert.ok(app.includes('"bella-broadcasts-v19.js"'), 'app loader missing public broadcasts');
+assert.ok(pwaCore.includes(`/bella-broadcasts-v19.js?v=${runtimeGeneration}`), 'PWA core must keep public broadcasts available offline');
+assert.ok(app.includes('"bella-owner-control-room-v19.js"'), 'deferred loader missing owner control room');
+assert.ok(!pwaCore.includes(`/bella-owner-control-room-v19.js?v=${runtimeGeneration}`), 'owner control room must be lazy-loaded, not precached for normal users');
 assert.ok(app.includes('Bella v19 Owner Control Room'), 'v19 release marker missing');
-assert.ok(sw.includes('bella-pwa-v21-release-19'), 'v19 service-worker cache rotation missing');
+assert.ok(sw.includes('bella-pwa-v21-release-19'), 'v19 service-worker cache history marker missing');
 
-console.log('Bella v19 owner control room validated: broadcasts, scheduling, temporary/permanent bans, exact XP+Level, gifts, system health, kill switch, deeper dashboard and audited legacy permissions.');
+console.log('Bella v19 owner control room validated: public broadcasts stay available while privileged controls load only on demand.');
