@@ -6,6 +6,7 @@ import { primeBellaResilienceRuntimeV22 } from "../lib/bella-control.js";
 import { runBellaRequestContextV22 } from "../lib/bella-request-context-v22.js";
 import { enrichBellaSemanticMemoryV30 } from "../lib/bella-semantic-memory-v30.js";
 import { routeBellaMetacognitionV27, bellaMetacognitionInstructionV27, reviewBellaAnswerV27 } from "../lib/bella-metacognition-v27.js";
+import { buildBellaGoalThreadV31, bellaGoalThreadInstructionV31 } from "../lib/bella-goal-thread-v31.js";
 import {
   createBellaBrainTelemetryStateV29,
   markBellaBrainCriticV29,
@@ -21,13 +22,15 @@ function ownerPreviewRequested(req) {
   catch { return false; }
 }
 
-function exposeMetacognitionDiagnostics(req, res, plan, telemetryState) {
+function exposeMetacognitionDiagnostics(req, res, plan, telemetryState, goalThread) {
   if (!res || !plan) return;
   try {
     res.setHeader("X-Bella-Cognitive-Brain", "v27");
     res.setHeader("X-Bella-Base-Cognition", "v26");
     res.setHeader("X-Bella-Brain-Telemetry", "v29");
     res.setHeader("X-Bella-Memory-Intelligence", "v30");
+    res.setHeader("X-Bella-Goal-Thread", "v31");
+    res.setHeader("X-Bella-Thread-Mode", String(goalThread?.mode || "new"));
     res.setHeader("X-Bella-Model-Tier", String(plan.model?.tier || "unknown"));
     res.setHeader("X-Bella-Verification", String(plan.verification?.mode || "light"));
     res.setHeader("X-Bella-Confidence", String(plan.confidence?.tier || "unknown"));
@@ -70,6 +73,10 @@ function exposeMetacognitionDiagnostics(req, res, plan, telemetryState) {
           baseCognition: "v26",
           brainTelemetry: "v29",
           memoryIntelligence: "v30",
+          goalThreadIntelligence: "v31",
+          threadMode: goalThread?.mode || "new",
+          goalKind: goalThread?.goalKind || "unknown",
+          threadResolvedFromHistory: goalThread?.resolvedFromHistory === true,
           taskKind: plan.task?.kind || "knowledge",
           modelTier: plan.model?.tier || "unknown",
           verification: plan.verification?.mode || "light",
@@ -95,28 +102,41 @@ export default async function handler(req, res) {
   const access = await checkBellaAccountAccess(req);
   if (rejectSuspendedAccount(res, access)) return;
 
-  const metacognitivePlan = routeBellaMetacognitionV27({
+  // v31 is ephemeral and server-derived from the current request + recent user/assistant history.
+  // It never persists goals/constraints and never lets the client choose trusted model/instruction state.
+  const goalThreadV31 = buildBellaGoalThreadV31({
     message: req.body?.message,
     history: Array.isArray(req.body?.history) ? req.body.history : []
   });
+  req.bellaGoalThreadV31 = goalThreadV31;
+
+  // For short follow-ups, route cognition using the resolved anchor + current follow-up so
+  // "كمل" on a technical/deep task does not collapse into a generic lightweight turn.
+  const planningMessage = goalThreadV31.resolvedFromHistory
+    ? goalThreadV31.retrievalQuery
+    : req.body?.message;
+  const metacognitivePlan = routeBellaMetacognitionV27({
+    message: planningMessage,
+    history: Array.isArray(req.body?.history) ? req.body.history : []
+  });
+  metacognitivePlan.goalThreadV31 = goalThreadV31;
+
   const brainTelemetryV29 = createBellaBrainTelemetryStateV29(metacognitivePlan);
   brainTelemetryV29.startedAt = requestStartedAt;
-  exposeMetacognitionDiagnostics(req, res, metacognitivePlan, brainTelemetryV29);
+  exposeMetacognitionDiagnostics(req, res, metacognitivePlan, brainTelemetryV29, goalThreadV31);
 
   const cognitivePlan = {
     ...metacognitivePlan.cognition,
-    metacognitiveInstruction: bellaMetacognitionInstructionV27(metacognitivePlan)
+    metacognitiveInstruction: `${bellaMetacognitionInstructionV27(metacognitivePlan)}\n\n${bellaGoalThreadInstructionV31(goalThreadV31)}`
   };
 
-  // v30 only retrieves explicit durable memories. It ranks them by semantic/keyword
-  // relevance plus importance, confidence, confirmation recency and bounded recall use.
-  // Failure is non-blocking so the core chat never depends on memory availability.
+  // v30 durable-memory retrieval can use v31's expanded retrieval query for short follow-ups,
+  // while the actual user message remains untouched. Failure is non-blocking.
   try {
     req.bellaSemanticMemoryV30 = await enrichBellaSemanticMemoryV30(req);
   } catch {
     req.bellaSemanticMemoryV30 = { active: false, reason: "degraded", version: "v30" };
   }
-  // Compatibility for diagnostics/code that still looks for the v24 slot.
   req.bellaSemanticMemoryV24 = req.bellaSemanticMemoryV30;
 
   const rolloutSubject = String(req.body?.rolloutSubject || "server-control").replace(/\u0000/g, "").trim().slice(0, 120) || "server-control";
