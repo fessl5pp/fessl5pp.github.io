@@ -114,12 +114,13 @@ async function ownerDiagnostics(req, res) {
     { name: "evaluation_harness_v28", ok: true, latencyMs: 0, detail: { corpusCases: 95, categories: 9, overallFloorPercent: 95, hardContracts: 6, ciBlocking: true } },
     { name: "brain_quality_telemetry_v29", ok: true, latencyMs: 0, detail: { privacy: "aggregate-only", sample: "signed-in", rawText: false, identifiersStored: false } },
     { name: "memory_intelligence_v30", ok: true, latencyMs: 0, detail: { topicAware: true, contradictionAware: true, confidenceAware: true, recallReinforcement: true, cloudCapacity: 48, promptWorkingSet: 12 } },
+    { name: "goal_thread_intelligence_v31", ok: true, latencyMs: 0, detail: { state: "request-scoped", followupResolution: true, constraintCarryover: true, expandedMemoryQuery: true, persisted: false } },
     { name: "openai_config", ok: Boolean(process.env.OPENAI_API_KEY), latencyMs: 0, detail: { configured: Boolean(process.env.OPENAI_API_KEY) } },
     { name: "vercel_runtime", ok: true, latencyMs: 0, detail: { environment: process.env.VERCEL_ENV || "unknown", region: process.env.VERCEL_REGION || null, commit: String(process.env.VERCEL_GIT_COMMIT_SHA || "").slice(0, 12) || null } }
   ];
 
   const failed = checks.filter(check => !check.ok).length;
-  return res.status(failed ? 207 : 200).json({ status: failed ? "degraded" : "ok", release: "v25-cleanup-hardening+brain-v27+eval-v28+telemetry-v29+memory-v30", checkedAt: new Date().toISOString(), failed, checks });
+  return res.status(failed ? 207 : 200).json({ status: failed ? "degraded" : "ok", release: "v25-cleanup-hardening+brain-v27+eval-v28+telemetry-v29+memory-v30+thread-v31", checkedAt: new Date().toISOString(), failed, checks });
 }
 
 export default async function handler(req, res) {
@@ -134,6 +135,7 @@ export default async function handler(req, res) {
   res.setHeader("X-Bella-Evaluation-Harness", "v28");
   res.setHeader("X-Bella-Brain-Telemetry", "v29");
   res.setHeader("X-Bella-Memory-Intelligence", "v30");
+  res.setHeader("X-Bella-Goal-Thread", "v31");
   if (req.method === "HEAD") return res.status(204).end();
   if (ownerDiagnosticsRequested(req)) return ownerDiagnostics(req, res);
 
@@ -171,6 +173,12 @@ export default async function handler(req, res) {
     memoryPromptWorkingSet: 12,
     memoryContradictionPolicy: "supersede-old",
     memoryRecallReinforcement: true,
+    goalThreadIntelligence: "v31",
+    goalThreadState: "request-scoped",
+    goalThreadPersistence: false,
+    followupResolution: true,
+    constraintCarryover: true,
+    threadExpandedMemoryRetrieval: true,
     commit,
     environment,
     timestamp: new Date().toISOString()
