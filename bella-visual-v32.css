@@ -1,0 +1,489 @@
+/* Bella v32 — Visual System
+   Pure presentation layer: preserves all existing DOM ids and runtime ownership. */
+:root{
+  --bella-bg:#07080d;
+  --bella-bg-soft:#0c0f17;
+  --bella-surface:rgba(18,21,31,.78);
+  --bella-surface-strong:rgba(21,25,36,.94);
+  --bella-surface-soft:rgba(255,255,255,.045);
+  --bella-line:rgba(255,255,255,.09);
+  --bella-line-strong:rgba(255,255,255,.15);
+  --bella-text:#f8f9fc;
+  --bella-muted:#9ba5b6;
+  --bella-accent:#8b7cff;
+  --bella-accent-2:#ff79b8;
+  --bella-cyan:#66e3ff;
+  --bella-success:#66d99a;
+  --bella-danger:#ff7a86;
+  --bella-gold:#f4c869;
+  --bella-radius-xl:34px;
+  --bella-radius-lg:24px;
+  --bella-radius-md:18px;
+  --bella-shadow:0 30px 90px rgba(0,0,0,.42);
+  --bella-shadow-soft:0 18px 48px rgba(0,0,0,.28);
+}
+
+html{background:#07080d}
+body{
+  color:var(--bella-text);
+  background:
+    radial-gradient(circle at 15% 8%,rgba(139,124,255,.18),transparent 28%),
+    radial-gradient(circle at 86% 16%,rgba(255,121,184,.12),transparent 25%),
+    radial-gradient(circle at 50% 100%,rgba(102,227,255,.08),transparent 32%),
+    linear-gradient(180deg,#07080d 0%,#0a0d14 55%,#07090e 100%)!important;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text",Tahoma,Arial,sans-serif;
+  letter-spacing:.005em;
+}
+
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:-1;
+  opacity:.24;
+  background-image:
+    linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.014) 1px,transparent 1px);
+  background-size:42px 42px;
+  mask-image:linear-gradient(to bottom,rgba(0,0,0,.75),transparent 78%);
+}
+
+.wrap{
+  width:min(1120px,100%);
+  padding:18px 10px 130px;
+  scrollbar-width:none;
+}
+.wrap::-webkit-scrollbar{display:none}
+
+/* Status island */
+.top-island{
+  width:min(760px,calc(100% - 8px));
+  top:14px;
+  margin-bottom:24px;
+  padding:9px 12px;
+  border-radius:22px;
+  background:rgba(16,19,28,.74);
+  border:1px solid rgba(255,255,255,.085);
+  box-shadow:0 14px 42px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.05);
+  backdrop-filter:blur(26px) saturate(130%);
+  -webkit-backdrop-filter:blur(26px) saturate(130%);
+}
+.top-island::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  border-radius:inherit;
+  background:linear-gradient(100deg,rgba(139,124,255,.08),transparent 38%,rgba(102,227,255,.05));
+}
+.mini{position:relative;min-width:70px;padding:5px 8px;border-radius:14px}
+.mini b{font-size:15px;color:#fff;letter-spacing:.01em}
+.mini span{font-size:10px;color:#7f8a9b;margin-top:2px;display:block}
+.mood-pill{
+  position:relative;
+  min-width:128px;
+  text-align:center;
+  padding:9px 12px;
+  border:1px solid rgba(139,124,255,.22);
+  background:linear-gradient(135deg,rgba(139,124,255,.13),rgba(255,121,184,.08));
+  font-size:11px;
+  font-weight:800;
+  color:#e9e7ff;
+  box-shadow:none;
+}
+
+/* Landing hero */
+.hero{
+  position:relative;
+  overflow:hidden;
+  width:min(820px,100%);
+  min-height:430px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  padding:54px 34px 42px;
+  border-radius:var(--bella-radius-xl);
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.072),rgba(255,255,255,.022)),
+    rgba(14,17,25,.76);
+  border:1px solid rgba(255,255,255,.10);
+  box-shadow:var(--bella-shadow);
+  backdrop-filter:blur(28px) saturate(125%);
+  -webkit-backdrop-filter:blur(28px) saturate(125%);
+}
+.hero::before{
+  content:"";
+  position:absolute;
+  width:460px;
+  height:460px;
+  top:-245px;
+  left:50%;
+  transform:translateX(-50%);
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(139,124,255,.26),rgba(255,121,184,.08) 42%,transparent 72%);
+  filter:blur(8px);
+  pointer-events:none;
+}
+.hero::after{
+  content:"بيلا · الكويت";
+  position:absolute;
+  top:18px;
+  right:22px;
+  padding:7px 11px;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:999px;
+  background:rgba(255,255,255,.035);
+  color:#828c9d;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.02em;
+}
+.hero-top{position:relative;z-index:2;flex-direction:column;gap:14px}
+.hero-top .txt{text-align:center}
+.hero-top .txt b{display:block;font-size:22px;letter-spacing:.02em}
+.hero-top .txt span{font-size:12px;color:#8e98a8}
+.logo{
+  width:112px!important;
+  height:112px!important;
+  font-size:0!important;
+  border:0!important;
+  box-shadow:0 18px 58px rgba(0,0,0,.36),0 0 0 1px rgba(255,255,255,.08)!important;
+}
+.hero h1{
+  position:relative;
+  z-index:2;
+  max-width:650px;
+  margin:22px auto 10px;
+  font-size:clamp(30px,5vw,48px);
+  line-height:1.15;
+  letter-spacing:-.025em;
+  text-wrap:balance;
+}
+.hero .sub{
+  position:relative;
+  z-index:2;
+  max-width:610px;
+  margin:0 auto;
+  color:#a7b0c0;
+  font-size:14px;
+  line-height:1.9;
+  text-wrap:balance;
+}
+.hero-actions{position:relative;z-index:2;margin-top:25px;gap:9px}
+.btn,.ghost,.tiny,.send,.bella-settings-tools button,.bella-activities-grid button{
+  transition:transform .16s ease,border-color .18s ease,background .18s ease,box-shadow .18s ease,opacity .18s ease;
+}
+.btn{
+  min-height:48px;
+  padding:0 22px;
+  border-radius:15px;
+  background:linear-gradient(135deg,#8878ff,#b073ff 50%,#ec79b9);
+  box-shadow:0 12px 28px rgba(120,95,255,.22),inset 0 1px 0 rgba(255,255,255,.22);
+  font-size:14px;
+}
+.ghost{
+  min-height:48px;
+  padding:0 18px;
+  border-radius:15px;
+  background:rgba(255,255,255,.045);
+  border-color:rgba(255,255,255,.09);
+  color:#dce1ea;
+}
+.btn:hover,.ghost:hover,.tiny:hover,.bella-activities-grid button:hover,.bella-settings-tools button:hover{transform:translateY(-1px)}
+.btn:active,.ghost:active,.tiny:active{transform:scale(.98)}
+
+/* Badges */
+.badges-wrap{
+  width:min(820px,100%);
+  margin-top:14px;
+  padding:15px 17px 17px;
+  border-radius:22px;
+  background:rgba(15,18,27,.56);
+  border-color:rgba(255,255,255,.07);
+  box-shadow:0 18px 50px rgba(0,0,0,.22);
+}
+.badges-head{margin-bottom:10px;color:#dce1e9;font-size:12px}
+.badges-head span{color:#7f8999}
+.badges{gap:8px}
+.badge{
+  min-height:56px;
+  display:grid;
+  place-items:center;
+  padding:10px 7px;
+  border-radius:14px;
+  background:rgba(255,255,255,.032);
+  border-color:rgba(255,255,255,.065);
+  font-size:11px;
+  box-shadow:none;
+}
+.badge.on{
+  background:linear-gradient(145deg,rgba(244,200,105,.13),rgba(255,255,255,.035));
+  border-color:rgba(244,200,105,.24);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+/* Chat shell */
+.chat-win{
+  background:rgba(5,7,11,.72);
+  backdrop-filter:blur(22px) saturate(110%);
+  -webkit-backdrop-filter:blur(22px) saturate(110%);
+}
+.chat-win.active{animation:bellaV32ChatIn .18s ease-out}
+.header{
+  padding:12px 14px;
+  background:rgba(14,17,25,.86);
+  border-bottom-color:rgba(255,255,255,.075);
+  backdrop-filter:blur(24px);
+  -webkit-backdrop-filter:blur(24px);
+}
+.header .left{gap:11px;min-width:0}
+.header .avatar{
+  width:46px!important;
+  height:46px!important;
+  font-size:0!important;
+  border:0!important;
+}
+.title{min-width:0}
+.title b{font-size:14px;letter-spacing:.01em}
+.title span{display:block;max-width:52vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px;color:#8994a4;font-size:10px}
+.title::after{
+  content:"";
+  display:inline-block;
+  width:6px;
+  height:6px;
+  margin-right:6px;
+  border-radius:50%;
+  background:#67d89a;
+  box-shadow:0 0 0 4px rgba(103,216,154,.09);
+  vertical-align:middle;
+}
+.header-actions{gap:5px!important}
+.tiny{
+  width:38px;
+  height:38px;
+  display:grid;
+  place-items:center;
+  padding:0!important;
+  border-radius:12px!important;
+  background:rgba(255,255,255,.045);
+  border-color:rgba(255,255,255,.075);
+  color:#d6dce6;
+  font-size:14px;
+}
+
+.msg-box{
+  padding:24px 18px 26px;
+  gap:10px;
+  background:
+    radial-gradient(circle at 50% 0%,rgba(139,124,255,.045),transparent 28%),
+    transparent;
+}
+.m{
+  max-width:min(74%,680px);
+  padding:11px 14px 10px;
+  border-radius:18px;
+  font-size:14px;
+  line-height:1.78;
+  box-shadow:none;
+  border:1px solid transparent;
+}
+.m.bot{
+  align-self:flex-start;
+  background:rgba(255,255,255,.058);
+  border-color:rgba(255,255,255,.07);
+  border-bottom-left-radius:7px;
+  color:#f1f3f7;
+}
+.m.user{
+  align-self:flex-end;
+  background:linear-gradient(135deg,#7164e9,#895fd9 62%,#ad5d96);
+  border-color:rgba(255,255,255,.09);
+  border-bottom-right-radius:7px;
+  color:#fff;
+  box-shadow:0 9px 24px rgba(85,60,180,.14);
+}
+.m.system{
+  max-width:90%;
+  background:rgba(255,255,255,.035);
+  border-color:rgba(255,255,255,.06);
+  color:#8d97a6;
+  font-size:10px;
+  padding:7px 11px;
+  box-shadow:none;
+}
+.vnext-time{font-size:8px!important;opacity:.36!important;margin-top:4px!important}
+.source-row{border-top-color:rgba(255,255,255,.06)!important;gap:5px!important}
+.source-row a{background:rgba(102,227,255,.07)!important;border-color:rgba(102,227,255,.13)!important;color:#9fefff!important}
+
+.mode-panel{
+  margin:0 14px 8px;
+  padding:9px 12px;
+  border-radius:15px;
+  background:rgba(255,255,255,.032);
+  border-color:rgba(255,255,255,.06);
+  box-shadow:none;
+}
+.mode-head{margin:0;min-height:26px;font-size:10px;font-weight:700;color:#7f8998}
+.mode-head b{
+  padding:5px 9px;
+  border:0;
+  background:rgba(139,124,255,.09);
+  color:#c8c1ff;
+  font-size:10px;
+}
+.mode-grid{gap:6px}
+.mode-card{min-height:70px;border-radius:14px;background:rgba(255,255,255,.03);border-color:rgba(255,255,255,.06)}
+.mode-card .mode-icon{font-size:20px}.mode-card .mode-name{font-size:11px}.mode-card small{font-size:9px}
+
+.quick-suggestions{
+  padding:7px 14px 5px;
+  gap:6px;
+  background:transparent;
+  border-top:0;
+}
+.quick-suggestions button{
+  padding:7px 11px;
+  background:rgba(255,255,255,.035);
+  border-color:rgba(255,255,255,.065);
+  color:#aeb7c5;
+  font-size:10px;
+  font-weight:700;
+}
+.input-area{
+  margin:0;
+  padding:10px 14px calc(10px + env(safe-area-inset-bottom));
+  background:rgba(13,16,23,.92);
+  border-top-color:rgba(255,255,255,.065);
+  gap:8px;
+  backdrop-filter:blur(26px);
+  -webkit-backdrop-filter:blur(26px);
+}
+.input-area input{
+  min-height:48px;
+  background:rgba(255,255,255,.045);
+  border-color:rgba(255,255,255,.075);
+  border-radius:15px;
+  padding:11px 14px;
+  color:#fff;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.025);
+}
+.input-area input::placeholder{color:#687383}
+.input-area input:focus{border-color:rgba(139,124,255,.42);box-shadow:0 0 0 3px rgba(139,124,255,.08)}
+.send{
+  min-width:72px;
+  min-height:48px;
+  padding:0 15px;
+  border-radius:15px;
+  background:linear-gradient(135deg,#7f70f4,#a364df 65%,#d86da6);
+  box-shadow:0 10px 22px rgba(104,80,220,.17);
+  font-size:12px;
+}
+.mic-btn{width:48px!important;height:48px!important;flex-basis:48px!important;border-radius:15px!important;background:rgba(255,255,255,.045)!important;border-color:rgba(255,255,255,.075)!important}
+
+/* Modals and tools */
+.modal,.vnext-modal{background:rgba(4,5,9,.72)!important;backdrop-filter:blur(26px)!important;-webkit-backdrop-filter:blur(26px)!important}
+.card,.vnext-card,.bella-activities-card{
+  border-radius:28px!important;
+  background:linear-gradient(180deg,rgba(24,28,39,.97),rgba(12,14,21,.99))!important;
+  border:1px solid rgba(255,255,255,.09)!important;
+  box-shadow:0 32px 100px rgba(0,0,0,.54)!important;
+}
+.vnext-card h2,.card h2{letter-spacing:-.01em}
+.vnext-input{background:rgba(255,255,255,.045)!important;border-color:rgba(255,255,255,.075)!important}
+.vnext-primary{background:linear-gradient(135deg,#8272f8,#c768c5)!important}
+.vnext-ghost{background:rgba(255,255,255,.04)!important;border-color:rgba(255,255,255,.07)!important}
+.memory-list li{background:rgba(255,255,255,.035)!important;border-color:rgba(255,255,255,.065)!important}
+.bella-setting-row{border-bottom-color:rgba(255,255,255,.06)!important}
+.bella-settings-tools button,.bella-activities-grid button{
+  background:rgba(255,255,255,.035)!important;
+  border-color:rgba(255,255,255,.065)!important;
+}
+.bella-activities-grid button:hover,.bella-settings-tools button:hover{background:rgba(139,124,255,.075)!important;border-color:rgba(139,124,255,.16)!important}
+.bella-switch-track{background:#272c36!important;border-color:rgba(255,255,255,.07)!important}
+.bella-switch input:checked + .bella-switch-track{background:linear-gradient(135deg,#8070f4,#b866cf)!important}
+.vnext-toast,.bella-popup{
+  background:rgba(18,21,30,.94)!important;
+  border-color:rgba(255,255,255,.085)!important;
+  box-shadow:0 18px 48px rgba(0,0,0,.34)!important;
+  backdrop-filter:blur(18px);
+}
+
+/* Themes keep identity while changing accent */
+body.theme-pink{--bella-accent:#ff6ca9;--bella-accent-2:#c66cff}
+body.theme-gold{--bella-accent:#e4b65e;--bella-accent-2:#b87740}
+body.theme-night{--bella-accent:#8779ff;--bella-accent-2:#55d8ef}
+body.theme-pearl{--bella-accent:#79dff4;--bella-accent-2:#b9eff8}
+body.theme-diwa{--bella-accent:#d0a35c;--bella-accent-2:#8f5f35}
+
+/* Keyboard/accessibility */
+button:focus-visible,input:focus-visible,.theme-swatch:focus-visible{
+  outline:2px solid rgba(142,129,255,.82);
+  outline-offset:2px;
+}
+button:disabled{transform:none!important;filter:saturate(.6)}
+
+@keyframes bellaV32ChatIn{
+  from{opacity:0;transform:scale(.992)}
+  to{opacity:1;transform:scale(1)}
+}
+
+/* Desktop app-window treatment */
+@media (min-width:760px){
+  body{padding:22px 18px 100px}
+  .chat-win{
+    inset:26px;
+    width:min(940px,calc(100vw - 52px));
+    height:min(800px,calc(100dvh - 52px));
+    margin:auto;
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:28px;
+    overflow:hidden;
+    box-shadow:0 40px 130px rgba(0,0,0,.58),0 0 0 1px rgba(255,255,255,.025);
+  }
+  .chat-win.active{display:flex}
+  .header{padding:13px 16px}
+  .msg-box{padding:28px 26px}
+  .input-area{padding-left:18px;padding-right:18px}
+}
+
+@media (max-width:759px){
+  body{padding:12px 9px 100px}
+  .wrap{padding-top:4px}
+  .top-island{top:8px;margin-bottom:13px;border-radius:18px;padding:7px 8px;gap:3px}
+  .mini{min-width:48px;padding:4px 3px}.mini b{font-size:12px}.mini span{font-size:8px}
+  .mood-pill{min-width:auto;font-size:9px;padding:7px 8px}
+  .hero{min-height:390px;padding:44px 18px 30px;border-radius:27px}
+  .hero::after{top:13px;right:14px;font-size:9px}
+  .logo{width:94px!important;height:94px!important}
+  .hero-top .txt b{font-size:19px}
+  .hero h1{font-size:32px;margin-top:18px}
+  .hero .sub{font-size:12px;line-height:1.8}
+  .hero-actions{width:100%;margin-top:20px}
+  .hero-actions .btn{width:100%}
+  .hero-actions .ghost{flex:1;min-width:130px}
+  .badges-wrap{border-radius:19px;padding:13px 12px}
+  .badges{display:flex;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}.badges::-webkit-scrollbar{display:none}
+  .badge{min-width:104px;flex:0 0 auto}
+  .chat-win{inset:0;border-radius:0}
+  .msg-box{padding:18px 12px 20px}
+  .m{max-width:86%;font-size:13px}
+  .mode-panel{margin-left:10px;margin-right:10px}
+  .input-area{padding-left:10px;padding-right:10px}
+  .send{min-width:64px;padding:0 12px}
+}
+
+@media (max-width:390px){
+  .top-island .mini:nth-child(3){display:none}
+  .hero{padding-left:14px;padding-right:14px}
+  .hero h1{font-size:29px}
+  .hero-actions .ghost{min-width:0;font-size:11px;padding:0 12px}
+  .header .avatar{width:42px!important;height:42px!important}
+  .tiny{width:35px;height:35px}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .chat-win.active{animation:none!important}
+  .btn,.ghost,.tiny,.send,.badge,.m{transition:none!important}
+}
