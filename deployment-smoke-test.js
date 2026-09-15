@@ -16,6 +16,7 @@ function moduleGeneration(source, file) {
 const vercel = JSON.parse(fs.readFileSync('vercel.json', 'utf8'));
 const app = fs.readFileSync('app.js', 'utf8');
 const sw = fs.readFileSync('sw.js', 'utf8');
+const pwaCore = sw.match(/const CORE = \[([\s\S]*?)\];/)?.[1] || '';
 const health = fs.readFileSync('api/health.js', 'utf8');
 const chat = fs.readFileSync('api/chat.js', 'utf8');
 const gated = fs.readFileSync('api/gated-chat.js', 'utf8');
@@ -39,13 +40,30 @@ if (!app.includes('Bella v25 Cleanup & Hardening')) fail('app.js v25 release mar
 const generation = currentAppGeneration(app);
 if (generation < 25) fail(`Runtime modules must use cache generation v25 or newer; got ${generation || 'missing'}.`);
 if (!app.includes('const coreModules') || !app.includes('const deferredModules')) fail('core/deferred performance split is missing.');
-for (const moduleName of ['bella-brain-v2.js','bella-quality-v23.js','bella-context-v24.js','bella-memory-v3.js','bella-memory-v4.js','bella-memory-v5.js','bella-alive.js','bella-owner-dashboard-v2.js','bella-feature-controls-v3.js','bella-season-v20.js','bella-owner-ops-v20.js','bella-owner-control-plane-v21.js','bella-resilience-v22.js','bella-owner-resilience-v22.js']) {
+
+const coreModules = [
+  'bella-brain-v2.js','bella-quality-v23.js','bella-context-v24.js','bella-memory-v3.js','bella-memory-v4.js','bella-memory-v5.js',
+  'bella-alive.js','bella-feature-controls-v3.js','bella-season-v20.js','bella-resilience-v22.js'
+];
+for (const moduleName of coreModules) {
   if (!app.includes(moduleName)) fail(`current app loader missing ${moduleName}.`);
-  if (moduleGeneration(sw, moduleName) < 25) fail(`current service worker missing ${moduleName} under a v25-or-newer generation.`);
+  if (moduleGeneration(pwaCore, moduleName) < 25) fail(`current service-worker core missing ${moduleName} under a v25-or-newer generation.`);
 }
+
+const lazyAdminModules = [
+  'bella-owner-dashboard-v2.js','bella-owner-ops-v20.js','bella-owner-control-plane-v21.js','bella-owner-resilience-v22.js'
+];
+for (const moduleName of lazyAdminModules) {
+  if (!app.includes(moduleName)) fail(`current deferred app loader missing ${moduleName}.`);
+  if (moduleGeneration(pwaCore, moduleName) >= 25) fail(`${moduleName} must remain lazy and outside the normal-user PWA precache.`);
+}
+if (!app.includes('const adminModules = deferredModules.filter')) fail('v34 lazy-admin runtime split is missing.');
+if (!app.includes('const schedule = () => loadBackground()')) fail('normal boot must not parse all owner/admin modules.');
+
 if (!app.includes('bella-account-memory-v30.js')) fail('current app loader must use Bella account memory v30.');
-if (moduleGeneration(sw, 'bella-account-memory-v30.js') < 30) fail('service worker must precache Bella account memory v30.');
+if (moduleGeneration(pwaCore, 'bella-account-memory-v30.js') < 30) fail('service worker must precache Bella account memory v30.');
 if (!sw.includes('bella-pwa-v26-release-25')) fail('Service worker must retain the v25 cache-generation history marker.');
+if (!sw.includes('bella-pwa-v34-comprehensive-qa')) fail('Service worker must expose the v34 cache generation.');
 if (!sw.includes('/app.js?v=11')) fail('Service worker must cache the exact app entry requested by index.html.');
 if (!sw.includes('cache: "no-store"')) fail('Navigation requests must bypass stale browser HTTP caches.');
 
@@ -65,4 +83,4 @@ if (!chat.includes('selectBellaDialectV24')) fail('Contextual dialect selector i
 if (!(gated.includes('enrichBellaSemanticMemoryV30') || gated.includes('enrichBellaSemanticMemoryV24'))) fail('Semantic memory enrichment is not active in gated chat.');
 if (!cleanup.includes('Safe Mode must gate secondary AI before the usage-claim RPC')) fail('v25 Safe Mode quota regression protection is missing.');
 
-console.log('Bella deployment regression checks passed: v25 cleanup hardening, v22-v29 brain layers and v30 Memory Intelligence remain active under the current runtime generation.');
+console.log('Bella deployment regression checks passed: core runtime is precached, privileged admin runtime is lazy, and v22-v30 intelligence layers remain active.');
