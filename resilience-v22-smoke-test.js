@@ -22,18 +22,18 @@ const gatedChat = read('api/gated-chat.js');
 const health = read('api/health.js');
 const vercel = JSON.parse(read('vercel.json'));
 const migration = read('supabase/migrations/20260911133128_bella_resilience_lab_v22.sql');
+const pwaCore = sw.match(/const CORE = \[([\s\S]*?)\];/)?.[1] || '';
 
 must(app, 'Bella v22 Resilience Lab + Safe Mode + privacy-minimal Error Center + server-side Persona A/B experiments marker', 'v22 app release marker missing.');
 must(app, 'bella-resilience-v22.js', 'v22 client resilience runtime is not loaded.');
-must(app, 'bella-owner-resilience-v22.js', 'v22 owner resilience console is not loaded.');
-const appGeneration = Number(app.match(/script\.src = `\/\$\{file\}\?v=(\d+)`/)?.[1] || 0);
+must(app, 'bella-owner-resilience-v22.js', 'v22 owner resilience console is not in deferred runtime graph.');
+const appGeneration = Number(app.match(/script\.src\s*=\s*`\/\$\{file\}\?v=(\d+)`/)?.[1] || 0);
 if (appGeneration < 22) throw new Error(`current runtime cache generation is too old: ${appGeneration || 'missing'}.`);
 
 must(sw, 'bella-pwa-v23-release-22', 'v22 service worker history marker is missing.');
 must(sw, '/app.js?v=11', 'service worker must cache the exact app.js URL requested by index.html.');
-for (const file of ['bella-resilience-v22.js','bella-owner-resilience-v22.js']) {
-  if (!hasCurrentModule(sw, file, 22)) throw new Error(`PWA cache missing current ${file}.`);
-}
+if (!hasCurrentModule(pwaCore, 'bella-resilience-v22.js', 22)) throw new Error('PWA core missing current bella-resilience-v22.js.');
+if (hasCurrentModule(pwaCore, 'bella-owner-resilience-v22.js', 22)) throw new Error('owner resilience console must be lazy-loaded, not precached for every visitor.');
 
 for (const rpc of [
   'bella_public_resilience_v22',
@@ -88,4 +88,4 @@ const apiFunctions = fs.readdirSync('api').filter(name => name.endsWith('.js'));
 if (apiFunctions.length > 12) throw new Error(`Hobby plan guard: ${apiFunctions.length} api functions found; maximum is 12.`);
 if (fs.existsSync('api/resilience-v22.js') || fs.existsSync('api/owner-resilience-v22.js')) throw new Error('v22 must reuse existing functions instead of adding serverless endpoints.');
 
-console.log('Bella v22 resilience checks passed under the current release: Safe Mode, privacy-minimal telemetry, request-scoped Persona A/B experiments, RLS, PWA cache and Hobby-plan limits remain wired.');
+console.log('Bella v22 resilience checks passed: client resilience remains in the offline core and the privileged resilience console is lazy-loaded.');
