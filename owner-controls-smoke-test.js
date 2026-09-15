@@ -11,15 +11,16 @@ const chat = read('api/chat.js');
 const dira = read('api/dira.js');
 const guard = read('lib/bella-control.js');
 const runtimeGeneration = app.match(/script\.src\s*=\s*`\/\$\{file\}\?v=(\d+)`/)?.[1];
+const pwaCore = sw.match(/const CORE = \[([\s\S]*?)\];/)?.[1] || '';
 
 for (const file of ['bella-config.js', 'bella-owner-controls.js', 'lib/bella-control.js']) {
   assert.ok(fs.existsSync(file), `${file} must exist`);
 }
 assert.ok(runtimeGeneration, 'active runtime generation must be detectable from app.js');
 assert.ok(app.includes('bella-config.js'), 'boot must load public remote config');
-assert.ok(app.includes('bella-owner-controls.js'), 'boot must load owner controls');
-assert.ok(sw.includes(`bella-config.js?v=${runtimeGeneration}`), 'PWA must cache public config module at the active generation');
-assert.ok(sw.includes(`bella-owner-controls.js?v=${runtimeGeneration}`), 'PWA must cache owner controls module at the active generation');
+assert.ok(app.includes('bella-owner-controls.js'), 'runtime graph must include owner controls');
+assert.ok(pwaCore.includes(`/bella-config.js?v=${runtimeGeneration}`), 'PWA must cache public config module at the active generation');
+assert.ok(!pwaCore.includes(`/bella-owner-controls.js?v=${runtimeGeneration}`), 'owner controls must be lazy-loaded instead of precached for normal users');
 assert.ok(build.includes('bella-config.js'), 'complete build graph must validate BellaConfig');
 assert.ok(build.includes('bella-owner-controls.js'), 'complete build graph must validate owner controls');
 assert.ok(build.includes('exclusiveOwners'), 'build must enforce explicit browser namespace ownership');
@@ -57,4 +58,4 @@ for (const source of [config, controls]) {
   assert.ok(!/window\.fetch\s*=/.test(source), 'legacy control modules must not own network runtime');
 }
 
-console.log('Bella owner controls smoke tests passed: protected remote toggles, current PWA generation, Safe Mode quota guard and server-enforced AI limits are wired safely.');
+console.log('Bella owner controls smoke tests passed: public config stays in the offline core while protected owner controls are lazy-loaded.');
