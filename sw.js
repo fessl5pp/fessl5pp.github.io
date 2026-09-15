@@ -1,4 +1,5 @@
 const CACHE_NAME = "bella-pwa-v31-release-30";
+// Bella v32 visual layer is additive over the validated v30 runtime generation.
 // Previous validated cache markers retained for regression compatibility: bella-pwa-v26-release-25, bella-pwa-v25-release-24, bella-pwa-v24-release-23, bella-pwa-v23-release-22, bella-pwa-v22-release-21, bella-pwa-v21-release-19, bella-pwa-v20-release-18, bella-pwa-v19-release-17, bella-pwa-v18-release-16, bella-pwa-v17-release-15, bella-pwa-v16-release-14, bella-pwa-v15-release-13, bella-pwa-v14-release-12, bella-pwa-v13-release-11, bella-pwa-v12-release-10, bella-pwa-v11-stable-7
 // Legacy smoke markers only; these are NOT active cache entries.
 // /app.js?v=11
@@ -10,7 +11,7 @@ const CACHE_NAME = "bella-pwa-v31-release-30";
 // /bella-game-bank-v2.js?v=16 /bella-game-bank-v3.js?v=16 /bella-content-cloud.js?v=16 /bella-kuwaiti-games-data.js?v=16 /bella-ultimate-content.js?v=16
 // /bella-game-mind.js?v=16 /bella-moments-ui.js?v=16 /bella-alive.js?v=16 /bella-moments-feedback.js?v=16 /bella-ai-activities.js?v=16 /bella-broadcasts-v19.js?v=16 /bella-install.js?v=16
 const CORE = [
-  "/", "/index.html", "/style.css?v=11", "/bella-vnext.css?v=11", "/app.js?v=11",
+  "/", "/index.html", "/style.css?v=11", "/bella-vnext.css?v=11", "/bella-visual-v32.css?v=32", "/app.js?v=11",
   "/bella-account.js?v=30", "/bella-analytics.js?v=30", "/script.js?v=30", "/bella-legacy-plus.js?v=30",
   "/bella-config.js?v=30", "/bella-context.js?v=30", "/bella-context-v24.js?v=30", "/bella-routing.js?v=30", "/bella-moments.js?v=30",
   "/bella-brain-v2.js?v=30", "/bella-quality-v23.js?v=30", "/bella-memory-v3.js?v=30", "/bella-memory-v4.js?v=30", "/bella-memory-v5.js?v=30", "/bella-moments-cloud.js?v=30", "/bella-style.js?v=30", "/bella-personality-v3.js?v=30",
