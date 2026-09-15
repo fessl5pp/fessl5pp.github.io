@@ -28,6 +28,7 @@ const exactFiles = new Set([
   'index.html',
   'style.css',
   'bella-vnext.css',
+  'bella-visual-v32.css',
   'app.js',
   'sw.js',
   'manifest.json',
@@ -37,7 +38,7 @@ const exactFiles = new Set([
 
 // Copy image assets only when current shipped source actually references them.
 const referenceSource = [
-  read('index.html'), read('style.css'), read('bella-vnext.css'), read('manifest.json'),
+  read('index.html'), read('style.css'), read('bella-vnext.css'), read('bella-visual-v32.css'), read('manifest.json'),
   ...moduleFiles.map(read)
 ].join('\n');
 const imageExtensions = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg']);
@@ -55,7 +56,7 @@ for (const file of exactFiles) {
 }
 
 const required = [
-  'index.html', 'style.css', 'bella-vnext.css', 'app.js', 'sw.js',
+  'index.html', 'style.css', 'bella-vnext.css', 'bella-visual-v32.css', 'app.js', 'sw.js',
   'manifest.json', 'favicon.svg', 'bella-vnext.js', 'bella-runtime.js', 'bella-voice.js',
   'bella-context-v24.js', 'bella-memory-v4.js', 'bella-feature-controls-v3.js', 'bella-resilience-v22.js'
 ];
