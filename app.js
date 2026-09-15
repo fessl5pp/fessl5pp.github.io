@@ -17,6 +17,7 @@
   // Bella v25 Cleanup & Hardening + complete runtime graph validation + explicit durable memory + DB policy hygiene + Safe Mode quota protection marker.
   // Bella v30 Memory Intelligence v5 + topic/contradiction awareness + confidence/importance/recall ranking marker.
   // Bella v33 Performance Polish + parallel core fetch + mobile GPU-light visual mode marker.
+  // Bella v34 Comprehensive QA + deduped loader + lazy admin + fresh PWA shell marker.
   // Previous validated runtime generation markers retained for regression checks: ?v=16 ?v=21 ?v=22 ?v=23 ?v=24 ?v=25
 
   function installSwitchInteractionFix() {
@@ -57,7 +58,7 @@
     "bella-avatar.js",
     "bella-live-web.js",
     "bella-account-memory-v30.js",
-    // bella-account-memory.js remains a repository rollback artifact only; it is not loaded in v30.
+    // bella-account-memory.js remains a repository rollback artifact only; it is not loaded in v30+.
     "bella-account-center.js",
     "bella-speed.js",
     "bella-ui.js",
@@ -78,6 +79,8 @@
     "bella-install.js"
   ];
 
+  // Keep this literal list for build/static graph validation. v34 only warms the
+  // cloud moments module automatically; owner/moderator tooling is truly on-demand.
   const deferredModules = [
     "bella-moments-cloud.js",
     "bella-owner-center.js",
@@ -94,19 +97,29 @@
     "bella-owner-control-plane-v21.js",
     "bella-owner-resilience-v22.js"
   ];
+  const backgroundModules = deferredModules.filter(file => file === "bella-moments-cloud.js");
+  const adminModules = deferredModules.filter(file => file !== "bella-moments-cloud.js");
+  const scriptPromises = new Map();
 
   function loadScript(file) {
-    return new Promise((resolve, reject) => {
+    if (scriptPromises.has(file)) return scriptPromises.get(file);
+    const promise = new Promise((resolve, reject) => {
       const script = document.createElement("script");
       script.src = `/${file}?v=30`;
       // Dynamic classic scripts default to async=true. Setting async=false before
-      // insertion keeps execution order while allowing the browser to fetch the
-      // whole list concurrently instead of paying 42 serial network waits.
+      // insertion keeps execution order while allowing downloads to overlap.
       script.async = false;
-      script.onload = resolve;
+      script.dataset.bellaModule = file;
+      script.onload = () => resolve(true);
       script.onerror = () => reject(new Error(`Failed to load ${file}`));
       document.head.appendChild(script);
+    }).catch(error => {
+      // A transient network failure must be retryable on a later user action.
+      scriptPromises.delete(file);
+      throw error;
     });
+    scriptPromises.set(file, promise);
+    return promise;
   }
 
   function loadList(list) {
@@ -125,11 +138,24 @@
     if (!banner.isConnected && inputArea) inputArea.insertAdjacentElement("beforebegin", banner);
   }
 
+  let backgroundPromise = null;
+  function loadBackground() {
+    if (backgroundPromise) return backgroundPromise;
+    backgroundPromise = loadList(backgroundModules).catch(error => {
+      console.warn("Bella background module skipped:", error?.message || error);
+      backgroundPromise = null;
+      return false;
+    });
+    window.__bellaBackgroundBoot = backgroundPromise;
+    return backgroundPromise;
+  }
+
   let deferredPromise = null;
   function loadDeferred() {
     if (deferredPromise) return deferredPromise;
-    deferredPromise = loadList(deferredModules).catch(error => {
-      console.warn("Bella deferred modules skipped:", error?.message || error);
+    deferredPromise = loadBackground().then(() => loadList(adminModules)).catch(error => {
+      console.warn("Bella admin modules skipped:", error?.message || error);
+      deferredPromise = null;
       return false;
     });
     window.__bellaAdminBoot = deferredPromise;
@@ -143,16 +169,18 @@
   window.__bellaBoot = core.then(() => {
     const now = typeof performance !== "undefined" && performance.now ? performance.now() : Date.now();
     window.__bellaBootMetrics = Object.freeze({
-      version: "v33",
+      version: "v34",
       coreMs: Math.max(0, Math.round(now - bootStartedAt)),
       coreModules: coreModules.length,
+      backgroundModules: backgroundModules.length,
+      adminModules: adminModules.length,
       deferredModules: deferredModules.length,
-      strategy: "parallel-fetch-ordered-execution"
+      strategy: "parallel-fetch-ordered-execution+lazy-admin"
     });
 
-    // Give the first interaction/render a quiet window before parsing owner/admin
-    // modules. Owner surfaces can still call __bellaLoadDeferred immediately.
-    const schedule = () => loadDeferred();
+    // Warm only the normal-user cloud moments path. Heavy owner/moderator modules
+    // are loaded by the settings surface through __bellaLoadDeferred on demand.
+    const schedule = () => loadBackground();
     if ("requestIdleCallback" in window) {
       setTimeout(() => window.requestIdleCallback(schedule, { timeout: 3500 }), 1200);
     } else {
