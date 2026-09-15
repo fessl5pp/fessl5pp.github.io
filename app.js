@@ -16,6 +16,7 @@
   // Bella v24 Semantic Memory + Hybrid Context + Memory Distiller + Temporal Decay + Contextual Dialect marker.
   // Bella v25 Cleanup & Hardening + complete runtime graph validation + explicit durable memory + DB policy hygiene + Safe Mode quota protection marker.
   // Bella v30 Memory Intelligence v5 + topic/contradiction awareness + confidence/importance/recall ranking marker.
+  // Bella v33 Performance Polish + parallel core fetch + mobile GPU-light visual mode marker.
   // Previous validated runtime generation markers retained for regression checks: ?v=16 ?v=21 ?v=22 ?v=23 ?v=24 ?v=25
 
   function installSwitchInteractionFix() {
@@ -98,6 +99,9 @@
     return new Promise((resolve, reject) => {
       const script = document.createElement("script");
       script.src = `/${file}?v=30`;
+      // Dynamic classic scripts default to async=true. Setting async=false before
+      // insertion keeps execution order while allowing the browser to fetch the
+      // whole list concurrently instead of paying 42 serial network waits.
       script.async = false;
       script.onload = resolve;
       script.onerror = () => reject(new Error(`Failed to load ${file}`));
@@ -106,9 +110,8 @@
   }
 
   function loadList(list) {
-    let chain = Promise.resolve();
-    for (const file of list) chain = chain.then(() => loadScript(file));
-    return chain;
+    if (!Array.isArray(list) || !list.length) return Promise.resolve(true);
+    return Promise.all(list.map(file => loadScript(file))).then(() => true);
   }
 
   function showBootError(error) {
@@ -134,12 +137,27 @@
   }
   window.__bellaLoadDeferred = loadDeferred;
 
+  const bootStartedAt = typeof performance !== "undefined" && performance.now ? performance.now() : Date.now();
   const core = loadList(coreModules);
   window.__bellaCoreBoot = core;
   window.__bellaBoot = core.then(() => {
+    const now = typeof performance !== "undefined" && performance.now ? performance.now() : Date.now();
+    window.__bellaBootMetrics = Object.freeze({
+      version: "v33",
+      coreMs: Math.max(0, Math.round(now - bootStartedAt)),
+      coreModules: coreModules.length,
+      deferredModules: deferredModules.length,
+      strategy: "parallel-fetch-ordered-execution"
+    });
+
+    // Give the first interaction/render a quiet window before parsing owner/admin
+    // modules. Owner surfaces can still call __bellaLoadDeferred immediately.
     const schedule = () => loadDeferred();
-    if ("requestIdleCallback" in window) window.requestIdleCallback(schedule, { timeout: 1400 });
-    else setTimeout(schedule, 350);
+    if ("requestIdleCallback" in window) {
+      setTimeout(() => window.requestIdleCallback(schedule, { timeout: 3500 }), 1200);
+    } else {
+      setTimeout(schedule, 2500);
+    }
     return true;
   }).catch(error => { showBootError(error); throw error; });
 })();
