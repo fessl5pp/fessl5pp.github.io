@@ -16,14 +16,18 @@
       "source": "/",
       "headers": [
         { "key": "Cache-Control", "value": "no-store, max-age=0" },
-        { "key": "X-Bella-Release", "value": "v25" }
+        { "key": "X-Bella-Release", "value": "v25" },
+        { "key": "X-Bella-Site-Release", "value": "v34" },
+        { "key": "X-Bella-Avatar", "value": "v10" }
       ]
     },
     {
       "source": "/index.html",
       "headers": [
         { "key": "Cache-Control", "value": "no-store, max-age=0" },
-        { "key": "X-Bella-Release", "value": "v25" }
+        { "key": "X-Bella-Release", "value": "v25" },
+        { "key": "X-Bella-Site-Release", "value": "v34" },
+        { "key": "X-Bella-Avatar", "value": "v10" }
       ]
     },
     { "source": "/sw.js", "headers": [ { "key": "Cache-Control", "value": "no-store, max-age=0" } ] },

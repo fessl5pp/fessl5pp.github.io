@@ -11,10 +11,13 @@ const analytics = read('bella-analytics.js');
 const ownerAnalytics = read('bella-owner-analytics.js');
 const build = read('build.js');
 const sw = read('sw.js');
+const runtimeGeneration = app.match(/script\.src\s*=\s*`\/\$\{file\}\?v=(\d+)`/)?.[1];
+const pwaCore = sw.match(/const CORE = \[([\s\S]*?)\];/)?.[1] || '';
 
 assert.ok(app.indexOf('bella-account.js') < app.indexOf('bella-analytics.js'), 'usage analytics must load after account auth');
 assert.ok(app.indexOf('bella-owner-center.js') < app.indexOf('bella-owner-analytics.js'), 'owner activity UI must load after owner authorization UI');
-assert.ok(app.includes('?v=16'), 'analytics release must stay on the current loader generation');
+assert.ok(app.includes('?v=16'), 'analytics release history marker must stay available');
+assert.ok(runtimeGeneration, 'active runtime generation must be detectable');
 
 assert.ok(analytics.includes('/rpc/record_bella_event'), 'analytics client must use the restricted event RPC');
 assert.ok(analytics.includes('window.BellaAccount?.isSignedIn?.()'), 'analytics must only record signed-in usage');
@@ -44,7 +47,7 @@ assert.ok(!/window\.fetch\s*=(?!=)/.test(ownerAnalytics), 'owner analytics must 
 
 assert.ok(build.includes('bella-analytics.js'), 'build must syntax-check usage analytics');
 assert.ok(build.includes('bella-owner-analytics.js'), 'build must syntax-check owner analytics');
-assert.ok(sw.includes('/bella-analytics.js?v=16'), 'PWA must cache usage analytics');
-assert.ok(sw.includes('/bella-owner-analytics.js?v=16'), 'PWA must cache owner activity dashboard');
+assert.ok(pwaCore.includes(`/bella-analytics.js?v=${runtimeGeneration}`), 'PWA must cache normal-user usage analytics');
+assert.ok(!pwaCore.includes(`/bella-owner-analytics.js?v=${runtimeGeneration}`), 'owner analytics must be lazy-loaded, not precached for normal users');
 
-console.log('Bella owner analytics smoke tests passed: privacy-safe events, owner-only activity, feature usage and core ownership are valid.');
+console.log('Bella owner analytics smoke tests passed: privacy-safe public analytics stay core while owner analytics load only on demand.');

@@ -14,6 +14,8 @@ const gatedDira = read('api/gated-dira.js');
 const app = read('app.js');
 const sw = read('sw.js');
 const vercel = JSON.parse(read('vercel.json'));
+const runtimeGeneration = app.match(/script\.src\s*=\s*`\/\$\{file\}\?v=(\d+)`/)?.[1];
+const pwaCore = sw.match(/const CORE = \[([\s\S]*?)\];/)?.[1] || '';
 
 assert.ok(users.includes('bella_owner_users_v2'), 'owner UI must use the v2 protected user list');
 assert.ok(users.includes('bella_owner_user_detail'), 'owner UI must load protected account detail');
@@ -39,10 +41,12 @@ assert.ok(gatedDira.includes('checkBellaAccountAccess') && gatedDira.includes('d
 
 assert.ok(app.indexOf('bella-auth-bridge.js') < app.indexOf('bella-runtime.js'), 'auth bridge must load before runtime captures the network transport');
 assert.ok(app.indexOf('bella-owner-center.js') < app.indexOf('bella-owner-users.js'), 'owner user management must load after owner verification');
-assert.ok(sw.includes('/bella-auth-bridge.js?v=16') && sw.includes('/bella-owner-users.js?v=16'), 'PWA cache must include owner user management modules');
+assert.ok(runtimeGeneration, 'active runtime generation must be detectable');
+assert.ok(pwaCore.includes(`/bella-auth-bridge.js?v=${runtimeGeneration}`), 'PWA core must include the normal-user auth bridge');
+assert.ok(!pwaCore.includes(`/bella-owner-users.js?v=${runtimeGeneration}`), 'owner user management must be lazy-loaded, not precached for normal users');
 
 const rewriteMap = new Map((vercel.rewrites || []).map(rule => [rule.source, rule.destination]));
 assert.strictEqual(rewriteMap.get('/api/chat'), '/api/gated-chat', 'Vercel must route chat through the account gate');
 assert.strictEqual(rewriteMap.get('/api/dira'), '/api/gated-dira', 'Vercel must route Dira through the account gate');
 
-console.log('Bella owner user management smoke tests passed: owner-only account controls, audit log, suspended-account cloud/API gating and privacy boundaries are wired.');
+console.log('Bella owner user management smoke tests passed: owner-only account controls remain in the runtime graph but load on demand.');

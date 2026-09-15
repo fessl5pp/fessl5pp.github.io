@@ -55,8 +55,16 @@ test('account access survives home cleanup and opens the account center', async 
   await expect(page.locator('#bellaAccountModal')).toBeVisible();
   await page.locator('#bellaAccountModal').evaluate(node => node.remove());
 
+  // Owner/moderator bundles must not be parsed during normal-user boot.
+  expect(await page.locator('script[data-bella-module^="bella-owner-"]').count()).toBe(0);
+  expect(await page.locator('script[data-bella-module="bella-moderator-center.js"]').count()).toBe(0);
+
   await page.evaluate(() => window.openBellaSettings?.());
   await expect(page.locator('#bellaAccountSettings')).toBeVisible();
+  await expect(page.locator('#bellaSettingsAdmin')).toBeHidden();
+  await page.waitForFunction(() => !!window.__bellaAdminBoot);
+  await page.evaluate(() => window.__bellaAdminBoot);
+  await expect.poll(() => page.locator('script[data-bella-module^="bella-owner-"]').count()).toBeGreaterThan(0);
   await expect(page.locator('#bellaSettingsAdmin')).toBeHidden();
 
   expect(pageErrors).toEqual([]);
@@ -97,14 +105,18 @@ test('normal chat is AI-first while rumors and top-right moments stay coordinate
   expect(pageErrors).toEqual([]);
 });
 
-test('Bella visual identity renders and follows mood classes', async ({ page }) => {
+test('approved Bella avatar v10 loads and keeps a stable crop across moods', async ({ page }) => {
   const pageErrors = await bootBella(page);
 
-  await expect(page.locator('#heroAvatar .bella-face')).toHaveCount(1);
-  await expect(page.locator('#chatAvatar .bella-face')).toHaveCount(1);
-  await expect(page.locator('#heroAvatar .bella-kuwait-mark')).toHaveCount(1);
+  const heroPhoto = page.locator('#heroAvatar .bella-avatar-photo');
+  const chatPhoto = page.locator('#chatAvatar .bella-avatar-photo');
+  await expect(heroPhoto).toHaveCount(1);
+  await expect(chatPhoto).toHaveCount(1);
+  await expect(heroPhoto).toHaveAttribute('src', '/bella-avatar-v10.webp');
   await expect(page.locator('#chatAvatar')).toHaveAttribute('role', 'img');
+  await expect.poll(() => heroPhoto.evaluate(img => img.complete && img.naturalWidth > 0)).toBe(true);
 
+  const before = await chatPhoto.evaluate(img => getComputedStyle(img).transform);
   await page.evaluate(() => {
     const avatar = document.getElementById('chatAvatar');
     avatar.classList.remove('mood-angry', 'mood-cute', 'mood-happy', 'mood-chill');
@@ -113,6 +125,9 @@ test('Bella visual identity renders and follows mood classes', async ({ page }) 
 
   await expect(page.locator('#chatAvatar')).toHaveAttribute('data-bella-mood', 'cute');
   await expect(page.locator('#chatAvatar')).toHaveAttribute('aria-label', /دلّوعة/);
+  const after = await chatPhoto.evaluate(img => getComputedStyle(img).transform);
+  expect(after).toBe(before);
+  expect(await page.evaluate(() => window.BellaAvatar?.version)).toBe(10);
   expect(pageErrors).toEqual([]);
 });
 
@@ -163,9 +178,23 @@ test('emergency network fallback renders a JSON API reply', async ({ page }) => 
   await expect(page.locator('#box .m.bot').last()).toContainText('رد اختبار الشبكة');
 });
 
-test('mobile viewport keeps pinch zoom available', async ({ page }) => {
-  await page.goto('/');
+test('mobile viewport keeps pinch zoom and has no horizontal layout overflow', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const pageErrors = await bootBella(page);
   const content = await page.locator('meta[name="viewport"]').getAttribute('content');
   expect(content).not.toContain('user-scalable=no');
   expect(content).not.toContain('maximum-scale=1.0');
+
+  await page.evaluate(() => (window.openChat || window.__openBella)());
+  await expect(page.locator('#win')).toHaveClass(/active/);
+  const layout = await page.evaluate(() => ({
+    innerWidth: window.innerWidth,
+    rootWidth: document.documentElement.scrollWidth,
+    bodyWidth: document.body.scrollWidth,
+    chat: document.getElementById('win')?.getBoundingClientRect().width || 0
+  }));
+  expect(layout.rootWidth).toBeLessThanOrEqual(layout.innerWidth + 1);
+  expect(layout.bodyWidth).toBeLessThanOrEqual(layout.innerWidth + 1);
+  expect(layout.chat).toBeLessThanOrEqual(layout.innerWidth + 1);
+  expect(pageErrors).toEqual([]);
 });

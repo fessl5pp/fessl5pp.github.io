@@ -8,12 +8,16 @@ const owner = read('bella-owner-center.js');
 const app = read('app.js');
 const build = read('build.js');
 const sw = read('sw.js');
+const runtimeGeneration = app.match(/script\.src\s*=\s*`\/\$\{file\}\?v=(\d+)`/)?.[1];
+const pwaCore = sw.match(/const CORE = \[([\s\S]*?)\];/)?.[1] || '';
 
 assert.ok(app.indexOf('bella-account-center.js') < app.indexOf('bella-owner-center.js'), 'owner center must remain after signed-in account center');
 assert.ok(app.indexOf('bella-owner-center.js') > app.indexOf('const deferredModules'), 'owner center must live in the deferred admin group so core chat boots first');
 assert.ok(app.includes('__bellaLoadDeferred') && app.includes('__bellaAdminBoot'), 'deferred owner modules must remain explicitly loadable and observable');
 assert.ok(build.includes('bella-owner-center.js'), 'build must syntax-check owner center');
-assert.ok(sw.includes('/bella-owner-center.js?v=16'), 'PWA cache must include owner center');
+assert.ok(runtimeGeneration, 'active runtime generation must be detectable');
+assert.ok(!pwaCore.includes(`/bella-owner-center.js?v=${runtimeGeneration}`), 'owner center must not be precached for normal visitors');
+assert.ok(app.includes('const adminModules = deferredModules.filter'), 'owner center must participate in the v34 lazy-admin split');
 
 assert.ok(owner.includes('rpc("is_bella_owner")'), 'owner visibility must be verified by a server-side owner RPC');
 assert.ok(owner.includes('rpc("bella_owner_summary")'), 'owner center must use protected summary RPC');
@@ -38,4 +42,4 @@ assert.ok(!/window\.updateMood\s*=(?!=)/.test(owner), 'owner center must never o
 assert.ok(!/window\.fetch\s*=(?!=)/.test(owner), 'owner center must never replace network fetch');
 assert.ok(/window\.BellaOwnerCenter\s*=(?!=)/.test(owner), 'owner center must expose one isolated namespace');
 
-console.log('Bella owner center smoke tests passed: owner-only RPC gating, deferred loading, searchable accounts, privacy and chat ownership are valid.');
+console.log('Bella owner center smoke tests passed: owner-only RPC gating, true lazy loading, searchable accounts, privacy and chat ownership are valid.');
