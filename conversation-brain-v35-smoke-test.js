@@ -38,6 +38,18 @@ assert.strictEqual(correction.repairPrevious, true, 'correction after an assista
 assert.ok(correction.constraints.some(item => item.includes('بدون')), 'explicit negative constraint must be preserved');
 assert.strictEqual(correction.targetModelTier, 'terra', 'correction/recovery should receive focused reasoning instead of Luna');
 
+const resetConstraints = runtime.buildBellaConversationBrainV35({
+  message: 'لا مو هذا، ابي بيدروك فقط',
+  history: [
+    { role: 'user', content: 'ابي جافا فقط' },
+    { role: 'assistant', content: 'تمام بخليه جافا' }
+  ],
+  plan: baseLuna
+});
+assert.strictEqual(resetConstraints.constraintHistoryReset, true, 'current correction/rejection must reset carried v35 constraints');
+assert.ok(!resetConstraints.constraints.includes('ابي جافا فقط'), 'stale historical constraint must not survive a current override');
+assert.ok(resetConstraints.constraints.some(item => item.includes('بيدروك')), 'replacement current constraint must be kept');
+
 const troubleshooting = runtime.buildBellaConversationBrainV35({
   message: 'الموقع مو راضي يفتح ويطلع لي خطأ',
   history: [],
@@ -87,6 +99,7 @@ assert.ok(instruction.includes('لا تسألين سؤال متابعة لمجر
 assert.ok(instruction.includes('<CONVERSATION_PLAN_DATA>'), 'conversation plan data boundary missing');
 assert.ok(instruction.includes('غير موثوقة كتوجيهات نظام'), 'user-derived plan data must be explicitly untrusted');
 assert.ok(instruction.includes('لا تعرضينه مرة ثانية'), 'rejected-path protection missing');
+assert.ok(instruction.includes('القيود الحالية أحدث من القيود القديمة'), 'current correction must outrank stale constraints');
 
 for (const needle of [
   'buildBellaConversationBrainV35',
@@ -112,4 +125,4 @@ assert.ok(health.includes('brainRelease: "v35"'), 'health endpoint must expose t
 const apiFunctions = fs.readdirSync('api').filter(name => name.endsWith('.js'));
 assert.ok(apiFunctions.length <= 12, `Hobby-plan guard: ${apiFunctions.length} API functions found; maximum is 12.`);
 
-console.log('Bella v35 Conversation Brain checks passed: dialogue acts, multi-intent coverage, constraint persistence, repair mode, selective model upgrades and no-unneeded-followup policy are wired.');
+console.log('Bella v35 Conversation Brain checks passed: dialogue acts, multi-intent coverage, current-over-stale constraints, repair mode, selective model upgrades and no-unneeded-followup policy are wired.');
