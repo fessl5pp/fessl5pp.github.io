@@ -74,12 +74,13 @@ assert(health.includes('memoryCloudCapacity: 48'), 'Health must expose v30 cloud
 assert(app.includes('"bella-memory-v5.js"'), 'Memory v5 is not in the browser graph.');
 assert(app.includes('"bella-account-memory-v30.js"'), 'v30 account memory is not in the browser graph.');
 assert(!app.includes('"bella-account-memory.js",'), 'Legacy account-memory runtime must not load alongside v30.');
-assert(app.includes('?v=30'), 'Browser module generation must be v30.');
-assert(sw.includes('bella-pwa-v31-release-30'), 'PWA cache generation must be v30.');
+assert(app.includes('?v=30'), 'Browser module generation must remain v30 or newer server-only releases may build on it.');
+assert(sw.includes('bella-pwa-v31-release-30'), 'PWA cache generation must preserve the v30 browser release.');
 assert(sw.includes('/bella-memory-v5.js?v=30'), 'PWA must cache Memory v5.');
 assert(sw.includes('/bella-account-memory-v30.js?v=30'), 'PWA must cache v30 cloud memory.');
-assert(String(pkg.version) === '3.0.0', 'Package version must be 3.0.0 for v30.');
+const [pkgMajor, pkgMinor] = String(pkg.version || '0.0.0').split('.').map(Number);
+assert(pkgMajor > 3 || (pkgMajor === 3 && pkgMinor >= 0), `Package version must be 3.0.0 or newer; got ${pkg.version}.`);
 assert(String(pkg.scripts?.test || '').includes('memory-intelligence-v30-smoke-test.js'), 'v30 regression gate missing from npm test.');
 assert(String(pkg.scripts?.['vercel-build'] || '').includes('memory-intelligence-v30-smoke-test.js'), 'v30 regression gate missing from Vercel build.');
 
-console.log('Bella v30 Memory Intelligence checks passed: topic/polarity contradictions, 48-memory cloud capacity, 12-memory prompt bound, confidence/importance/confirmation/recall retrieval and RLS-safe RPCs are wired.');
+console.log('Bella v30 Memory Intelligence checks passed under the current release: topic/polarity contradictions, 48-memory cloud capacity, 12-memory prompt bound, confidence/importance/confirmation/recall retrieval and RLS-safe RPCs remain wired.');
