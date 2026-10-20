@@ -1,5 +1,15 @@
 const { test, expect } = require('@playwright/test');
 
+// Browser component tests are hermetic: failures in an external database must not
+// make unrelated buttons hang or cause nondeterministic assertions.
+test.beforeEach(async ({ page }) => {
+  await page.route(/\\.supabase\\.co\\//, route => route.fulfill({
+    status: 503,
+    contentType: 'application/json',
+    body: JSON.stringify({ message: 'Offline test backend' })
+  }));
+});
+
 async function bootBella(page) {
   const pageErrors = [];
   page.on('pageerror', error => pageErrors.push(error.message));
