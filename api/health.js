@@ -127,6 +127,25 @@ async function ownerDiagnostics(req, res) {
   return res.status(failed ? 207 : 200).json({ status: failed ? "degraded" : "ok", release: "v25-cleanup-hardening+brain-v35+eval-v28+telemetry-v29+memory-v30+thread-v31+visual-v32+perf-v33+qa-v34", checkedAt: new Date().toISOString(), failed, checks });
 }
 
+async function publicDatabaseHealth() {
+  const startedAt = Date.now();
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 2500);
+  try {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/bella_public_persona_server_v20`, {
+      method: "POST",
+      headers: { apikey: SUPABASE_KEY, "Content-Type": "application/json" },
+      body: "{}",
+      signal: controller.signal
+    });
+    return { ok: response.ok, latencyMs: Date.now() - startedAt, statusCode: response.status };
+  } catch {
+    return { ok: false, latencyMs: Date.now() - startedAt, statusCode: null };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export default async function handler(req, res) {
   if (req.method !== "GET" && req.method !== "HEAD") {
     res.setHeader("Allow", "GET, HEAD");
@@ -148,10 +167,16 @@ export default async function handler(req, res) {
   if (req.method === "HEAD") return res.status(204).end();
   if (ownerDiagnosticsRequested(req)) return ownerDiagnostics(req, res);
 
+  const database = await publicDatabaseHealth();
+  const aiConfigured = Boolean(process.env.OPENAI_API_KEY);
+  const ready = database.ok && aiConfigured;
   const commit = String(process.env.VERCEL_GIT_COMMIT_SHA || "unknown").slice(0, 12);
   const environment = String(process.env.VERCEL_ENV || "unknown");
-  return res.status(200).json({
-    ok: true,
+  return res.status(ready ? 200 : 503).json({
+    ok: ready,
+    status: ready ? "ok" : "degraded",
+    database,
+    aiConfigured,
     app: "Bella",
     release: "v25",
     siteRelease: "v34",
