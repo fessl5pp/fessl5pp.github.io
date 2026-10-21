@@ -1,4 +1,5 @@
 import { claimBellaAi } from "../lib/bella-control.js";
+import { checkBellaAccountAccess, rejectSuspendedAccount } from "../lib/bella-account-access.js";
 import { bellaPersonaInstruction } from "../lib/bella-persona.js";
 import { routeBellaIntelligenceV23 } from "../lib/bella-intelligence-v23.js";
 import { selectBellaDialectV24 } from "../lib/bella-dialect-v24.js";
@@ -138,6 +139,8 @@ export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
   if (rejectInvalidRequest(req, res)) return;
   if (rateLimited(req)) return res.status(429).json({ error: "هدي شوي 😅 كثرت الرسايل بسرعة، جرب عقب دقيقة." });
+  const accountAccess = req.__bellaAccountVerified || await checkBellaAccountAccess(req);
+  if (rejectSuspendedAccount(res, accountAccess)) return;
 
   const {
     message, mode, userName, history = [], memory = [], relationship = "جديد", relationshipVector = {},
