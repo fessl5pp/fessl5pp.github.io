@@ -8,6 +8,11 @@ on:
 permissions:
   contents: read
 
+# Keep only the newest test run for a branch or pull request.
+concurrency:
+  group: bella-browser-e2e-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   browser-e2e:
     runs-on: ubuntu-24.04
