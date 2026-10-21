@@ -3,12 +3,12 @@ const { test, expect } = require('@playwright/test');
 async function boot(page) {
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
-  await page.route('**/rest/v1/bella_moments_config*', route => route.fulfill({
+  await page.route(url => url.includes('/rest/v1/bella_moments_config?'), route => route.fulfill({
     status: 200,
     contentType: 'application/json',
     body: JSON.stringify([{ remote_enabled: true, enabled_categories: ['normal','night','gaming'], rare_chance: 0.12, legendary_chance: 0.02, global_intensity: 'normal' }])
   }));
-  await page.route('**/rest/v1/bella_moments?*', route => route.fulfill({
+  await page.route(url => url.includes('/rest/v1/bella_moments?'), route => route.fulfill({
     status: 200,
     contentType: 'application/json',
     body: JSON.stringify([{ id: '11111111-1111-1111-1111-111111111111', text: 'يقولون هذي إشاعة Remote حق اختبار v14 👀', category: 'normal', tier: 'common', source: 'manual', pinned_until: null, created_at: new Date().toISOString() }])
@@ -37,8 +37,9 @@ test('v14 merges approved remote moments and applies the owner global intensity 
 
 test('guest never gets a Moments Studio owner entry', async ({ page }) => {
   const errors = await boot(page);
-  expect(await page.evaluate(() => window.BellaOwnerCenter?.isOwner?.())).toBe(false);
+  expect(await page.evaluate(() => window.BellaOwnerCenter?.isOwner?.() ?? false)).toBe(false);
   await expect(page.locator('[data-bella-moments-studio-entry]')).toHaveCount(0);
-  expect(await page.evaluate(() => typeof window.BellaMomentsStudio?.open)).toBe('function');
+  // The owner studio is intentionally lazy-loaded in v34+ for guests.
+  expect(await page.evaluate(() => typeof window.BellaMomentsStudio?.open)).toBe('undefined');
   expect(errors).toEqual([]);
 });
