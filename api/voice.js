@@ -1,4 +1,5 @@
 import { claimBellaAi } from "../lib/bella-control.js";
+import { checkBellaAccountAccess, rejectSuspendedAccount } from "../lib/bella-account-access.js";
 
 const WINDOW_MS = 10 * 60 * 1000;
 const MAX_REQUESTS = 12;
@@ -52,6 +53,8 @@ export default async function handler(req, res) {
   const declaredLength = Number(req.headers?.["content-length"] || 0);
   if (declaredLength > 12000) return res.status(413).json({ error: "Request too large" });
   if (!rateAllowed(req)) return res.status(429).json({ error: "Voice rate limit reached" });
+  const accountAccess = req.__bellaAccountVerified || await checkBellaAccountAccess(req);
+  if (rejectSuspendedAccount(res, accountAccess)) return;
 
   const text = cleanText(req.body?.text);
   if (!text) return res.status(400).json({ error: "Voice text required" });
@@ -63,6 +66,7 @@ export default async function handler(req, res) {
   if (!control.allowed) {
     if (control.reason === "maintenance") return res.status(503).json({ error: "Bella is under maintenance" });
     if (control.reason === "voice_disabled") return res.status(503).json({ error: "Bella voice is disabled by owner" });
+    if (control.reason === "control_unavailable") return res.status(503).json({ error: "التحقق من حدود الصوت مو متاح مؤقتًا.", control: "control_unavailable" });
     return res.status(429).json({ error: "Daily AI limit reached" });
   }
 
