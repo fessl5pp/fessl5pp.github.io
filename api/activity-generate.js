@@ -1,4 +1,5 @@
 import { claimBellaAi } from "../lib/bella-control.js";
+import { checkBellaAccountAccess, rejectSuspendedAccount } from "../lib/bella-account-access.js";
 
 const WINDOW_MS = 10 * 60 * 1000;
 const MAX_REQUESTS = 10;
@@ -20,14 +21,24 @@ function outputText(data) {
 function clean(v,max=220){return String(v||"").replace(/[\u0000-\u001f]+/g," ").replace(/\s+/g," ").trim().slice(0,max);}
 
 export default async function handler(req,res){
+  // Physical Vercel API routes can take precedence over rewrites. Always pass
+  // public requests through the trusted account/brain gate before core logic.
+  if (!req.__bellaAccountVerified) {
+    const { default: gatedHandler } = await import("./gated-activity.js");
+    return gatedHandler(req, res);
+  }
+
   res.setHeader("Cache-Control","no-store, max-age=0");
   if(req.method!=="POST") return res.status(405).json({error:"Method not allowed"});
   if(rateLimited(req)) return res.status(429).json({error:"كثرنا تحديات بسرعة 😭 جرب عقب شوي."});
+  const accountAccess = req.__bellaAccountVerified || await checkBellaAccountAccess(req);
+  if (rejectSuspendedAccount(res, accountAccess)) return;
   const kind=["box","proverb","quick"].includes(req.body?.kind)?req.body.kind:"quick";
   const control=await claimBellaAi("activity");
   if(!control.allowed) {
     if (control.reason === "maintenance") return res.status(503).json({error:"بيلا تحت الصيانة شوي."});
     if (control.reason === "activity_disabled") return res.status(503).json({error:"تحديات AI موقفها المالك مؤقتًا."});
+    if (control.reason === "control_unavailable") return res.status(503).json({error:"التحقق من حدود الذكاء مو متاح مؤقتًا.",control:"control_unavailable"});
     return res.status(429).json({error:"وصلنا حد الذكاء اليوم."});
   }
   const apiKey=process.env.OPENAI_API_KEY;

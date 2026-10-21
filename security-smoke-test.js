@@ -3,6 +3,11 @@ const assert = require('assert');
 
 const index = fs.readFileSync('index.html', 'utf8');
 const chat = fs.readFileSync('api/chat.js', 'utf8');
+const voice = fs.readFileSync('api/voice.js', 'utf8');
+const dira = fs.readFileSync('api/dira.js', 'utf8');
+const activity = fs.readFileSync('api/activity-generate.js', 'utf8');
+const accountAccess = fs.readFileSync('lib/bella-account-access.js', 'utf8');
+const aiControl = fs.readFileSync('lib/bella-control.js', 'utf8');
 const vercel = fs.readFileSync('vercel.json', 'utf8');
 const pkg = fs.readFileSync('package.json', 'utf8');
 const playwright = fs.readFileSync('playwright.config.js', 'utf8');
@@ -39,5 +44,13 @@ assert.ok(playwright.includes("name: 'webkit-ipad'"), 'Playwright must test WebK
 assert.ok(e2e.includes("press('Enter')"), 'E2E must exercise Enter-to-send');
 assert.ok(e2e.includes("getByRole('button', { name: 'إرسال الرسالة' })"), 'E2E must exercise send button');
 assert.ok(e2e.includes('__bellaEmergencySend'), 'E2E must exercise emergency network fallback');
+
+for (const [label, handler] of Object.entries({ chat, voice, dira, activity })) {
+  assert.ok(handler.includes('checkBellaAccountAccess(req)'), label + ': directly reachable routes must verify account tokens');
+  assert.ok(handler.includes('rejectSuspendedAccount(res, accountAccess)'), label + ': directly reachable routes must reject invalid/blocked sessions');
+}
+assert.ok(accountAccess.includes('status: "invalid_session"'), 'invalid tokens must not silently become guests');
+assert.ok(accountAccess.includes('status: "access_unavailable"'), 'database outages must not bypass account verification');
+assert.ok(aiControl.includes('allowed: false,\n      reason: "control_unavailable"'), 'billable AI must not bypass usage caps if control database is offline');
 
 console.log('Bella security smoke tests passed: browser zoom, security headers, request validation, untrusted prompt context and Chromium/WebKit E2E coverage are present.');

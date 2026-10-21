@@ -117,6 +117,7 @@ export default async function handler(req, res) {
   const requestStartedAt = Date.now();
   const access = await checkBellaAccountAccess(req);
   if (rejectSuspendedAccount(res, access)) return;
+  req.__bellaAccountVerified = access;
 
   const history = Array.isArray(req.body?.history) ? req.body.history : [];
 

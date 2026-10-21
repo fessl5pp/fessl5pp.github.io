@@ -1,4 +1,5 @@
 import { claimBellaAi } from "../lib/bella-control.js";
+import { checkBellaAccountAccess, rejectSuspendedAccount } from "../lib/bella-account-access.js";
 
 const WINDOW_MS = 10 * 60 * 1000;
 const MAX_REQUESTS = 12;
@@ -51,8 +52,17 @@ function cleanVisibleReply(value) {
 }
 
 export default async function handler(req, res) {
+  // Physical Vercel API routes can take precedence over rewrites. Always pass
+  // public requests through the trusted account/brain gate before core logic.
+  if (!req.__bellaAccountVerified) {
+    const { default: gatedHandler } = await import("./gated-dira.js");
+    return gatedHandler(req, res);
+  }
+
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
   if (rateLimited(req)) return res.status(429).json({ error: "هدي شوي 😅 رادار الديرة عليه حد مؤقت، جرب عقب شوي." });
+  const accountAccess = req.__bellaAccountVerified || await checkBellaAccountAccess(req);
+  if (rejectSuspendedAccount(res, accountAccess)) return;
 
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) return res.status(500).json({ error: "AI is not configured" });

@@ -25,11 +25,11 @@ const brain = sandbox.__brain;
 ok(brain && typeof brain.routeBellaCognitionV26 === 'function', 'v26 cognition router is unavailable.');
 
 const social = brain.routeBellaCognitionV26({ message: 'هلا شلونج', history: [] });
-ok(social.model.tier === 'luna' && social.model.id === 'gpt-5.6-luna', 'simple social chat must use Luna.');
+ok(social.model.tier === 'luna' && social.model.id === 'gpt-6-luna', 'simple social chat must use Luna.');
 ok(social.reasoning.effort === 'low', 'simple social chat must keep low reasoning.');
 
 const technical = brain.routeBellaCognitionV26({ message: 'شلون أصلح خطأ API في Supabase؟', history: [] });
-ok(technical.model.tier === 'terra' && technical.model.id === 'gpt-5.6-terra', 'ordinary technical help must use Terra at minimum.');
+ok(technical.model.tier === 'terra' && technical.model.id === 'gpt-5-mini', 'ordinary technical help must use Terra at minimum.');
 ok(technical.verification.mode === 'self-check', 'technical help must self-check assumptions and failure modes.');
 
 const explanation = brain.routeBellaCognitionV26({ message: 'اشرح لي ليش السماء زرقا', history: [] });
@@ -64,7 +64,7 @@ must(gated, 'X-Bella-Cognitive-Brain', 'cognition diagnostics header is missing.
 must(gated, 'X-Bella-Model-Tier', 'model tier diagnostics header is missing.');
 
 must(control, 'applyCognitiveBrainV26', 'OpenAI request patch does not apply the v26 brain.');
-for (const model of ['gpt-5.6-luna','gpt-5.6-terra','gpt-5.6-sol']) must(cognition, model, `missing adaptive model ${model}.`);
+for (const model of ['gpt-6-luna','gpt-5-mini','gpt-5.6-sol']) must(cognition, model, `missing adaptive model ${model}.`);
 must(control, 'body.model = plan.model.id', 'server-side model selection is not active.');
 must(control, 'fetchOpenAiWithFallback', 'model availability fallback is missing.');
 must(cognition, 'fallback: "gpt-5-mini"', 'existing model fallback must remain available.');
