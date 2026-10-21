@@ -52,6 +52,13 @@ function cleanVisibleReply(value) {
 }
 
 export default async function handler(req, res) {
+  // Physical Vercel API routes can take precedence over rewrites. Always pass
+  // public requests through the trusted account/brain gate before core logic.
+  if (!req.__bellaAccountVerified) {
+    const { default: gatedHandler } = await import("./gated-dira.js");
+    return gatedHandler(req, res);
+  }
+
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
   if (rateLimited(req)) return res.status(429).json({ error: "هدي شوي 😅 رادار الديرة عليه حد مؤقت، جرب عقب شوي." });
   const accountAccess = req.__bellaAccountVerified || await checkBellaAccountAccess(req);
